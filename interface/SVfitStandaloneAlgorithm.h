@@ -9,6 +9,7 @@
 #include <TArrayF.h>
 #include <TString.h>
 #include <TH1.h>
+#include <TBenchmark.h>
 
 using svFitStandalone::Vector;
 using svFitStandalone::LorentzVector;
@@ -29,6 +30,54 @@ using svFitStandalone::MeasuredTauLepton;
 
 namespace svFitStandalone
 {
+  TH1* makeHistogram(const std::string& histogramName, double xMin, double xMax, double logBinWidth)
+  {
+    int numBins = 1 + TMath::Log(xMax/xMin)/TMath::Log(logBinWidth);
+    TArrayF binning(numBins + 1);
+    binning[0] = 0.;
+    double x = xMin;  
+    for ( int iBin = 1; iBin <= numBins; ++iBin ) {
+      binning[iBin] = x;
+      x *= logBinWidth;
+    }  
+    TH1* histogram = new TH1D(histogramName.data(), histogramName.data(), numBins, binning.GetArray());
+    return histogram;
+  }
+  void compHistogramDensity(const TH1* histogram, TH1* histogram_density) 
+  {
+    for ( int iBin = 1; iBin <= histogram->GetNbinsX(); ++iBin ) {
+      double binContent = histogram->GetBinContent(iBin);
+      double binError = histogram->GetBinError(iBin);
+      double binWidth = histogram->GetBinWidth(iBin);
+      //if ( histogram == histogramMass_ ) {
+      //  TAxis* xAxis = histogram->GetXaxis();
+      //  std::cout << "bin #" << iBin << " (x = " << xAxis->GetBinLowEdge(iBin) << ".." << xAxis->GetBinUpEdge(iBin) << ", width = " << binWidth << "):"
+      //	      << " " << binContent << " +/- " << binError << std::endl;
+      //}
+      assert(binWidth > 0.);
+      histogram_density->SetBinContent(iBin, binContent/binWidth);
+      histogram_density->SetBinError(iBin, binError/binWidth);
+    }
+  }
+  double extractValue(const TH1* histogram, TH1* histogram_density) 
+  {
+    double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
+    compHistogramDensity(histogram, histogram_density);
+    svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
+    //double value = maximum_interpol;
+    double value = maximum;
+    return value;
+  }
+  double extractUncertainty(const TH1* histogram, TH1* histogram_density)
+  {
+    double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
+    compHistogramDensity(histogram, histogram_density);
+    svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
+    //double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum_interpol, 2.) + TMath::Power(maximum_interpol - quantile016, 2.)));
+    double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum, 2.) + TMath::Power(maximum - quantile016, 2.)));
+    return uncertainty;
+  }
+
   class ObjectiveFunctionAdapter
   {
   public:
@@ -117,20 +166,7 @@ namespace svFitStandalone
     double getPhiUncert() const { return extractUncertainty(histogramPhi_, histogramPhi_density_); }
     double getMass() const { return extractValue(histogramMass_, histogramMass_density_); }
     double getMassUncert() const { return extractUncertainty(histogramMass_, histogramMass_density_); }
-   private:
-    TH1* makeHistogram(const std::string& histogramName, double xMin, double xMax, double logBinWidth)
-    {
-      int numBins = 1 + TMath::Log(xMax/xMin)/TMath::Log(logBinWidth);
-      TArrayF binning(numBins + 1);
-      binning[0] = 0.;
-      double x = xMin;  
-      for ( int iBin = 1; iBin <= numBins; ++iBin ) {
-	binning[iBin] = x;
-	x *= logBinWidth;
-      }  
-      TH1* histogram = new TH1D(histogramName.data(), histogramName.data(), numBins, binning.GetArray());
-      return histogram;
-    }    
+   private:    
     virtual double DoEval(const double* x) const
     {
       map_x(x, nDim_, x_mapped_);
@@ -147,38 +183,6 @@ namespace svFitStandalone
       histogramMass_->Fill(fittedDiTauSystem_.mass());
       return 0.;
     } 
-    void compHistogramDensity(const TH1* histogram, TH1* histogram_density) const
-    {
-      for ( int iBin = 1; iBin <= histogram->GetNbinsX(); ++iBin ) {
-	double binContent = histogram->GetBinContent(iBin);
-	double binError = histogram->GetBinError(iBin);
-	double binWidth = histogram->GetBinWidth(iBin);
-	//if ( histogram == histogramMass_ ) {
-	//  TAxis* xAxis = histogram->GetXaxis();
-	//  std::cout << "bin #" << iBin << " (x = " << xAxis->GetBinLowEdge(iBin) << ".." << xAxis->GetBinUpEdge(iBin) << ", width = " << binWidth << "):"
-	//	      << " " << binContent << " +/- " << binError << std::endl;
-	//}
-	assert(binWidth > 0.);
-	histogram_density->SetBinContent(iBin, binContent/binWidth);
-	histogram_density->SetBinError(iBin, binError/binWidth);
-      }
-    }
-    double extractValue(const TH1* histogram, TH1* histogram_density) const
-    {
-      double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
-      compHistogramDensity(histogram, histogram_density);
-      svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
-      double value = maximum_interpol;
-      return value;
-    }
-    double extractUncertainty(const TH1* histogram, TH1* histogram_density) const
-    {
-      double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
-      compHistogramDensity(histogram, histogram_density);
-      svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
-      double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum_interpol, 2.) + TMath::Power(maximum_interpol - quantile016, 2.)));
-      return uncertainty;
-    }
     mutable std::vector<svFitStandalone::LorentzVector> fittedTauLeptons_;
     mutable LorentzVector fittedDiTauSystem_;
     mutable TH1* histogramPt_;
@@ -272,9 +276,9 @@ class SVfitStandaloneAlgorithm
   /// fit to be called from outside
   void fit();
   /// integration by VEGAS (kept for legacy)
-  void integrate() { return integrateVEGAS(); }
+  void integrate() { return integrateVEGAS(""); }
   /// integration by VEGAS to be called from outside
-  void integrateVEGAS();
+  void integrateVEGAS(const std::string& likelihoodFileName = "");
   /// integration by Markov Chain MC to be called from outside
   void integrateMarkovChain();
 
@@ -380,6 +384,8 @@ class SVfitStandaloneAlgorithm
   double phi_;
   /// phi uncertainty of di-tau system
   double phiUncert_;
+
+  TBenchmark* clock_;
 };
 
 inline

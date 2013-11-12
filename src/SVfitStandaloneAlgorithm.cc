@@ -6,6 +6,8 @@
 #include "Math/LorentzVector.h"
 #include "Math/PtEtaPhiM4D.h"
 
+#include <TGraphErrors.h>
+
 namespace svFitStandalone
 {
   void map_x(const double* x, int nDim, double* x_mapped)
@@ -56,6 +58,8 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
   // instantiate the combined likelihood
   nll_ = new svFitStandalone::SVfitStandaloneLikelihood(measuredTauLeptons, measuredMET, covMET, (verbose_ > 2));
   nllStatus_ = nll_->error();
+
+  clock_ = new TBenchmark();
 }
 
 SVfitStandaloneAlgorithm::~SVfitStandaloneAlgorithm() 
@@ -201,12 +205,13 @@ SVfitStandaloneAlgorithm::fit()
 }
 
 void
-SVfitStandaloneAlgorithm::integrateVEGAS()
+SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
 {
   using namespace svFitStandalone;
   
-  if(verbose_>0){
-    std::cout << "<SVfitStandaloneAlgorithm::integrateVEGAS()>:" << std::endl;
+  if ( verbose_ >= 1 ){
+    std::cout << "<SVfitStandaloneAlgorithm::integrateVEGAS>:" << std::endl;
+    clock_->Start("<SVfitStandaloneAlgorithm::integrateVEGAS>");
   }
 
   double pi = 3.14159265;
@@ -241,9 +246,17 @@ SVfitStandaloneAlgorithm::integrateVEGAS()
   double xl5[5] = { 0.0, 0.0, -pi, 0.0, -pi };
   double xu5[5] = { 1.0, svFitStandalone::tauLeptonMass, pi, svFitStandalone::tauLeptonMass, pi };
 
+  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithm_histogramMass", measuredDiTauSystem().mass()/1.0125, 1.e+4, 1.025);
+  TH1* histogramMass_density = (TH1*)histogramMass->Clone(Form("%s_density", histogramMass->GetName()));
+
+  std::vector<double> xGraph;
+  std::vector<double> xErrGraph;
+  std::vector<double> yGraph;
+  std::vector<double> yErrGraph;
+
   // integrator instance
-  //ROOT::Math::IntegratorMultiDim ig2(ROOT::Math::IntegrationMultiDim::kVEGAS, 1.e-12, 1.e-5);
-  ROOT::Math::GSLMCIntegrator ig2("vegas", 1.e-12, 1.e-5, 2000);
+  //ROOT::Math::GSLMCIntegrator ig2("vegas", 0., 1.e-6, 10000);
+  ROOT::Math::GSLMCIntegrator ig2("vegas", 0., 1.e-6, 2000);
   ROOT::Math::Functor toIntegrate(&standaloneObjectiveFunctionAdapter_, &ObjectiveFunctionAdapter::Eval, par); 
   standaloneObjectiveFunctionAdapter_.SetPar(par);
   ig2.SetFunction(toIntegrate);
@@ -257,19 +270,20 @@ SVfitStandaloneAlgorithm::integrateVEGAS()
   for ( int i = 0; i < 100 && (!skiphighmasstail); ++i ) {
     standaloneObjectiveFunctionAdapter_.SetM(mtest);
     double p = -1.;
-    if(par == 4){
+    if ( par == 4 ) {
       p = ig2.Integral(xl4, xu4);
-    } else if(par == 5){
+    } else if ( par == 5 ) {
       p = ig2.Integral(xl5, xu5);
-    } else if(par == 3){
+    } else if ( par == 3 ) {
       p = ig2.Integral(xl3, xu3);
     } else{
       std::cout << " >> ERROR : the nubmer of measured leptons must be 2" << std::endl;
       assert(0);
     }
+    double pErr = ig2.Error();
     if ( verbose_ >= 2 ) {
-      std::cout << "--> scan idx = " << i << "  mtest = " << mtest << "  p = " << p << "  pmax = " << pMax << std::endl;
-    }
+      std::cout << "--> scan idx = " << i << ": mtest = " << mtest << ", p = " << p << " +/- " << pErr << " (pMax = " << pMax << ")" << std::endl;
+    }    
     if ( p > pMax ) {
       mass_ = mtest;
       pMax  = p;
@@ -284,11 +298,40 @@ SVfitStandaloneAlgorithm::integrateVEGAS()
 	count = 0;
       }
     }
-    mtest += TMath::Max(2.5, 0.025*mtest);
+    double mtest_step = TMath::Max(2.5, 0.025*mtest);
+    int bin = histogramMass->FindBin(mtest);
+    histogramMass->SetBinContent(bin, p*mtest_step);
+    histogramMass->SetBinError(bin, pErr*mtest_step);
+    xGraph.push_back(mtest);
+    xErrGraph.push_back(0.5*mtest_step);
+    yGraph.push_back(p);
+    yErrGraph.push_back(pErr);
+    mtest += mtest_step;
   }
+  //mass_ = extractValue(histogramMass, histogramMass_density);
+  massUncert_ = extractUncertainty(histogramMass, histogramMass_density);
   if ( verbose_ >= 1 ) {
-    std::cout << "--> mass  = " << mass_  << std::endl;
-    std::cout << "   (pmax = " << pMax << ", count = " << count << ")" << std::endl;
+    std::cout << "--> mass  = " << mass_  << " +/- " << massUncert_ << std::endl;
+    std::cout << "   (pMax = " << pMax << ", count = " << count << ")" << std::endl;
+  }
+  delete histogramMass;
+  delete histogramMass_density;
+  if ( likelihoodFileName != "" ) {
+    size_t numPoints = xGraph.size();
+    TGraphErrors* likelihoodGraph = new TGraphErrors(numPoints);
+    likelihoodGraph->SetName("svFitLikelihoodGraph");
+    for ( size_t iPoint = 0; iPoint < numPoints; ++iPoint ) {
+      likelihoodGraph->SetPoint(iPoint, xGraph[iPoint], yGraph[iPoint]);
+      likelihoodGraph->SetPointError(iPoint, xErrGraph[iPoint], yErrGraph[iPoint]);
+    }
+    TFile* likelihoodFile = new TFile(likelihoodFileName.data(), "RECREATE");
+    likelihoodGraph->Write();
+    delete likelihoodFile;
+    delete likelihoodGraph;
+  }
+
+  if ( verbose_ >= 1 ) {
+    clock_->Show("<SVfitStandaloneAlgorithm::integrateVEGAS>");
   }
 }
 
@@ -298,7 +341,8 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
   using namespace svFitStandalone;
   
   if ( verbose_ >= 1 ) {
-    std::cout << "<SVfitStandaloneAlgorithm::integrateMarkovChain()>:" << std::endl;
+    std::cout << "<SVfitStandaloneAlgorithm::integrateMarkovChain>:" << std::endl;
+    clock_->Start("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }
   if ( isInitialized2_ ) {
     mcPtEtaPhiMassAdapter_->Reset();
@@ -421,5 +465,6 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
   fittedDiTauSystem_ = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >(pt_, eta_, phi_, mass_);
   if ( verbose_ >= 1 ) {
     std::cout << "--> Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass  = " << mass_ << std::endl;
+    clock_->Show("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }
 }

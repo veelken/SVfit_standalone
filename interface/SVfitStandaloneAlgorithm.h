@@ -245,7 +245,7 @@ namespace svFitStandalone
    // run the fit in fit mode
    algo.fit();
    // retrieve the results upon success
-   if(algo.isValidSolution()){
+   if ( algo.isValidSolution() ) {
      std::cout << algo.mass();
    }
    // run the integration in integration mode
@@ -258,6 +258,7 @@ namespace svFitStandalone
    \var addLogM : specifying whether to use the LogM penalty term or not (default is true)     
    \var maxObjFunctionCalls : the maximum of function calls before the minimization procedure is terminated (default is 5000)
 */
+
 class SVfitStandaloneAlgorithm
 {
  public:
@@ -336,11 +337,11 @@ class SVfitStandaloneAlgorithm
   // return spacial vector of the measured MET
   Vector measuredMET() const { return nll_->measuredMET(); }
 
- private:
+ protected:
   /// setup the starting values for the minimization (default values for the fit parameters are taken from src/SVFitParameters.cc in the same package)
   void setup();
 
- private:
+ protected:
   /// return whether this is a valid solution or not
   int fitStatus_;
   /// return whether this is a valid solution or not

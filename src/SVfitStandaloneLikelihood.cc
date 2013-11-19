@@ -35,7 +35,7 @@ SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredT
     measuredTauLeptons_= measuredTauLeptons;
   }
   if ( measuredTauLeptons_.size() != 2 ) {
-    std::cout << " >> ERROR : the numer of measured leptons must be 2 but is found to be: " << measuredTauLeptons_.size() << std::endl;
+    std::cout << " >> ERROR : the number of measured leptons must be 2 but is found to be: " << measuredTauLeptons_.size() << std::endl;
     errorCode_ |= LeptonNumber;
   }
   // determine transfer matrix for MET

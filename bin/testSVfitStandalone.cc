@@ -3,8 +3,8 @@
    \class testSVfitStandalone testSVfitStandalone.cc "TauAnalysis/SVfitStandalone/bin/testSVfitStandalone.cc"
    \brief Basic example of the use of the standalone version of SVfit
 
-   This is an example executable to show the use of the standalone version of SVfit form a flat 
-   n-tuple or single event.
+   This is an example executable to show the use of the standalone version of SVfit 
+   from a flat n-tuple or single event.
 */
 
 #include "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneAlgorithm.h"
@@ -21,12 +21,6 @@ void singleEvent()
   Vector MET(11.7491, -51.9172, 0.); 
   // define MET covariance
   TMatrixD covMET(2, 2);
-  /*
-  covMET[0][0] = 0.;
-  covMET[1][0] = 0.;
-  covMET[0][1] = 0.;
-  covMET[1][1] = 0.;
-  */
   covMET[0][0] = 787.352;
   covMET[1][0] = -178.63;
   covMET[0][1] = -178.63;
@@ -35,10 +29,10 @@ void singleEvent()
   svFitStandalone::LorentzVector l1( 28.9132, -17.3888, 36.6411, 49.8088); //lepton
   svFitStandalone::LorentzVector l2(-24.19  ,  8.77449, 16.9413, 30.8086); //tau
   std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
-  measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kHadDecay, l2));
   measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kLepDecay, l1));
+  measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kHadDecay, l2));
   // define algorithm (set the debug level to 3 for testing)
-  SVfitStandaloneAlgorithm algo(measuredTauLeptons, MET, covMET, /*debug=*/0);
+  SVfitStandaloneAlgorithm algo(measuredTauLeptons, MET, covMET, 2);
   algo.addLogM(false);
   /* 
      the following lines show how to use the different methods on a single event
@@ -46,9 +40,9 @@ void singleEvent()
   // minuit fit method
   //algo.fit();
   // integration by VEGAS (same as function algo.integrate() that has been in use when markov chain integration had not yet been implemented)
-  //algo.integrateVEGAS();
+  algo.integrateVEGAS();
   // integration by markov chain MC
-  algo.integrateMarkovChain();
+  //algo.integrateMarkovChain();
 
   double mass = algo.getMass(); // return value is in units of GeV
   if ( algo.isValidSolution() ) {
@@ -78,21 +72,21 @@ void eventsFromTree(int argc, char* argv[])
   float l2M, l2Px, l2Py, l2Pz;
   float mTrue;
   // branch adresses
-  tree->SetBranchAddress("met"          , &met        );
-  tree->SetBranchAddress("mphi"         , &metPhi     );
-  tree->SetBranchAddress("mcov_11"      , &covMet11   );
-  tree->SetBranchAddress("mcov_12"      , &covMet12   );
-  tree->SetBranchAddress("mcov_21"      , &covMet21   );
-  tree->SetBranchAddress("mcov_22"      , &covMet22   );
-  tree->SetBranchAddress("l1_M"         , &l1M        );
-  tree->SetBranchAddress("l1_Px"        , &l1Px       );
-  tree->SetBranchAddress("l1_Py"        , &l1Py       );
-  tree->SetBranchAddress("l1_Pz"        , &l1Pz       );
-  tree->SetBranchAddress("l2_M"         , &l2M        );
-  tree->SetBranchAddress("l2_Px"        , &l2Px       );
-  tree->SetBranchAddress("l2_Py"        , &l2Py       );
-  tree->SetBranchAddress("l2_Pz"        , &l2Pz       );
-  tree->SetBranchAddress("m_true"       , &mTrue      );
+  tree->SetBranchAddress("met", &met);
+  tree->SetBranchAddress("mphi", &metPhi);
+  tree->SetBranchAddress("mcov_11", &covMet11);
+  tree->SetBranchAddress("mcov_12", &covMet12);
+  tree->SetBranchAddress("mcov_21", &covMet21);
+  tree->SetBranchAddress("mcov_22", &covMet22);
+  tree->SetBranchAddress("l1_M", &l1M);
+  tree->SetBranchAddress("l1_Px", &l1Px);
+  tree->SetBranchAddress("l1_Py", &l1Py);
+  tree->SetBranchAddress("l1_Pz", &l1Pz);
+  tree->SetBranchAddress("l2_M", &l2M);
+  tree->SetBranchAddress("l2_Px", &l2Px);
+  tree->SetBranchAddress("l2_Py", &l2Py);
+  tree->SetBranchAddress("l2_Pz", &l2Pz);
+  tree->SetBranchAddress("m_true", &mTrue);
   int nevent = tree->GetEntries();
   for ( int i = 0; i < nevent; ++i ) {
     tree->GetEvent(i);
@@ -119,14 +113,14 @@ void eventsFromTree(int argc, char* argv[])
     //algo.metPower(0.5)
     // minuit fit method
     //algo.fit();
-    // integration by VEGAS (same as function algo.integrate() that has been in use when markov chain integration had not yet been implemented)
-    //algo.integrateVEGAS();
+    // integration by VEGAS (default)
+    algo.integrateVEGAS();
     // integration by markov chain MC
-    algo.integrateMarkovChain();
+    //algo.integrateMarkovChain();
     // retrieve the results upon success
     std::cout << "... m truth : " << mTrue << std::endl;
     if ( algo.isValidSolution() ) {
-      std::cout << "... m svfit : " << algo.mass() << "+/-" << algo.massUncert() << std::endl; // return value is in units of GeV
+      std::cout << "... m svfit : " << algo.mass() << " +/- " << algo.massUncert() << std::endl; // return value is in units of GeV
     } else {
       std::cout << "... m svfit : ---" << std::endl;
     }

@@ -12,21 +12,21 @@ namespace svFitStandalone
 {
   void map_x(const double* x, int nDim, double* x_mapped)
   {
-    if(nDim == 4){
+    if ( nDim == 4 ) {
       x_mapped[kXFrac]                 = x[0];
       x_mapped[kMNuNu]                 = 0.;
       x_mapped[kPhi]                   = x[1];
       x_mapped[kMaxFitParams + kXFrac] = x[2];
       x_mapped[kMaxFitParams + kMNuNu] = 0.;
       x_mapped[kMaxFitParams + kPhi]   = x[3];
-    } else if(nDim == 5){
+    } else if ( nDim == 5 ) {
       x_mapped[kXFrac]                 = x[0];
       x_mapped[kMNuNu]                 = x[1];
       x_mapped[kPhi]                   = x[2];
       x_mapped[kMaxFitParams + kXFrac] = x[3];
       x_mapped[kMaxFitParams + kMNuNu] = 0.;
       x_mapped[kMaxFitParams + kPhi]   = x[4];
-    } else if(nDim == 6){
+    } else if ( nDim == 6 ) {
       x_mapped[kXFrac]                 = x[0];
       x_mapped[kMNuNu]                 = x[1];
       x_mapped[kPhi]                   = x[2];
@@ -80,7 +80,7 @@ SVfitStandaloneAlgorithm::setup()
     std::cout << "<SVfitStandaloneAlgorithm::setup()>:" << std::endl;
   }
   for ( size_t idx = 0; idx<nll_->measuredTauLeptons().size(); ++idx ) {
-    if ( verbose_ >= 1 ){
+    if ( verbose_ >= 1 ) {
       std::cout << " --> upper limit of leg1::mNuNu will be set to "; 
       if ( nll_->measuredTauLeptons()[idx].decayType() == kHadDecay ) { 
 	std::cout << "0";
@@ -190,7 +190,7 @@ SVfitStandaloneAlgorithm::fit()
 	      << "   value[xFrac1]   = " << minimizer_->X()[kXFrac]      << std::endl
 	      << "   error[xFrac2]   = " << minimizer_->Errors()[kMaxFitParams+kXFrac] << std::endl
 	      << "   value[xFrac2]   = " << minimizer_->X()[kMaxFitParams+kXFrac]      << std::endl;
-    for ( size_t leg = 0; leg < 2 ; ++leg ){
+    for ( size_t leg = 0; leg < 2 ; ++leg ) {
       std::cout << ">> -------------------------------------------------------------" << std::endl;
       std::cout << ">> Leg " << leg+1 << " Record: " << std::endl;
       std::cout << ">> -------------------------------------------------------------" << std::endl;
@@ -209,7 +209,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
 {
   using namespace svFitStandalone;
   
-  if ( verbose_ >= 1 ){
+  if ( verbose_ >= 1 ) {
     std::cout << "<SVfitStandaloneAlgorithm::integrateVEGAS>:" << std::endl;
     clock_->Start("<SVfitStandaloneAlgorithm::integrateVEGAS>");
   }
@@ -225,7 +225,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   // number of parameters for fit
   int par = nll_->measuredTauLeptons().size()*svFitStandalone::kMaxFitParams - (khad + 1);
   /* --------------------------------------------------------------------------------------
-     lower and upper bounds for integration. Boundaries are deefined for each decay channel
+     lower and upper bounds for integration. Boundaries are defined for each decay channel
      separately. The order is: 
      
      - 3dim : fully hadronic {xFrax, phihad1, phihad2}
@@ -277,7 +277,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     } else if ( par == 3 ) {
       p = ig2.Integral(xl3, xu3);
     } else{
-      std::cout << " >> ERROR : the nubmer of measured leptons must be 2" << std::endl;
+      std::cout << " >> ERROR : the number of measured leptons must be 2" << std::endl;
       assert(0);
     }
     double pErr = ig2.Error();
@@ -423,7 +423,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
   std::vector<double> xl(nDim);
   std::vector<double> xu(nDim);
   for ( int i = 0; i < nDim; ++i ) {
-    if ( nDim == 4 ){
+    if ( nDim == 4 ) {
       x0[i] = x04[i];
       xl[i] = xl4[i];
       xu[i] = xu4[i];

@@ -16,8 +16,10 @@ namespace svFitStandalone
      \brief   enumeration of all tau decay types
   */
   enum kDecayType {
+    kUndefinedDecayType,
     kHadDecay,       /* < hadronic tau lepton decay                                                        */ 
-    kLepDecay        /* < leptonic tau lepton decay                                                        */
+    kLepDecay,       /* < leptonic tau lepton decay                                                        */
+    kPrompt          /* < prompt electron or muon not originating from tau decay (for LFV analysis)        */
   };
   /**
      \enum    SVfitStandalone::kFitParams
@@ -57,29 +59,34 @@ namespace svFitStandalone
   class MeasuredTauLepton
   {
    public:
+    /// default constructor 
+    MeasuredTauLepton()
+      : decayType_(kUndefinedDecayType),
+        p4_(0.,0.,0.,0.)
+    {}
     /// constructor from the measured quantities per decay branch
-    MeasuredTauLepton(kDecayType type, LorentzVector p4) : decayType_(type), p4_(p4) {};
+    MeasuredTauLepton(kDecayType type, LorentzVector p4) : decayType_(type), p4_(p4) {}
     /// default destructor
-    ~MeasuredTauLepton(){};
+    ~MeasuredTauLepton() {}
 
     /// return px of the measured tau lepton in labframe
-    double px() const { return p4_.px(); };
+    double px() const { return p4_.px(); }
     /// return py of the measured tau lepton in labframe
-    double py() const { return p4_.py(); };
+    double py() const { return p4_.py(); }
     /// return visible mass in labframe
-    double mass() const { return p4_.mass(); };
+    double mass() const { return p4_.mass(); }
     /// return visible energy in labframe
-    double energy() const { return p4_.energy(); };
+    double energy() const { return p4_.energy(); }
     /// return visible momenumt in labframe
-    double momentum() const { return p4_.P(); };
+    double momentum() const { return p4_.P(); }
     /// return decay type of the reconstructed tau lepton
-    unsigned int decayType() const { return decayType_; };
+    unsigned int decayType() const { return decayType_; }
     /// return the spacial momentum vector in the labframe
-    Vector p() const { return p4_.Vect(); };
+    Vector p() const { return p4_.Vect(); }
     /// return the lorentz vector in the labframe
-    LorentzVector p4() const { return p4_; };
+    LorentzVector p4() const { return p4_; }
     /// return the direction of the visible 
-    Vector direction() const { return p4_.Vect().unit(); };
+    Vector direction() const { return p4_.Vect().unit(); }
     
    private:
     /// decay type
@@ -89,8 +96,8 @@ namespace svFitStandalone
   };
 
   /**
-     \class   SVfitStandaloneLikelihood SVfitStandaloneLikelihood.h "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneLikelihood.h"
-     
+   \class   SVfitStandaloneLikelihood SVfitStandaloneLikelihood.h "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneLikelihood.h"
+       
      \brief   Negative log likelihood for a resonance decay into two tau leptons that may themselves decay hadronically or leptonically
      
      Negative log likelihood for a resonance decay into two tau leptons that may themselves decay hadronically or leptonically 
@@ -115,6 +122,7 @@ namespace svFitStandalone
      interfaced to the ROOT minuit minimization package or to the VEGAS integration packages via the global function pointer 
      gSVfitStandaloneLikelihood as defined in src/SVfitStandaloneLikelihood.cc in the same package. 
   */
+
   class SVfitStandaloneLikelihood 
   {
    public:
@@ -125,9 +133,9 @@ namespace svFitStandalone
       LeptonNumber    = 0x00000010
     };
     /// constructor with a minimla set of configurables 
-    SVfitStandaloneLikelihood(const std::vector<MeasuredTauLepton>& measuredTauLeptons, const Vector& measuredMET, const TMatrixD& covMET, bool verbose);
+    SVfitStandaloneLikelihood(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, const svFitStandalone::Vector& measuredMET, const TMatrixD& covMET, bool verbose);
     /// default destructor
-    ~SVfitStandaloneLikelihood() {};
+    ~SVfitStandaloneLikelihood() {}
     /// static pointer to this (needed for the minuit function calls)
     static const SVfitStandaloneLikelihood* gSVfitStandaloneLikelihood;
 
@@ -150,18 +158,18 @@ namespace svFitStandalone
     /// same as above but for integration mode.     
     double probint(const double* x, const double mtt, const int par) const;	
     /// read out potential likelihood errors
-    unsigned error() const { return errorCode_; };
+    unsigned error() const { return errorCode_; }
 
     /// return vector of measured MET
-    Vector measuredMET() const { return measuredMET_; };
+    svFitStandalone::Vector measuredMET() const { return measuredMET_; }
     /// return vector of measured tau leptons
-    std::vector<MeasuredTauLepton> measuredTauLeptons() const { return measuredTauLeptons_; };
+    std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons() const { return measuredTauLeptons_; }
     /// return vector of fitted tau leptons, which will be the actual fit result. This function is a subset of transform.
     /// It needs to be factored out though as transform has to be const to be usable by minuit and therefore is not allowed 
     /// change the class members.  
-    void results(std::vector<LorentzVector>& fittedTauLeptons, const double* x) const;
+    void results(std::vector<svFitStandalone::LorentzVector>& fittedTauLeptons, const double* x) const;
 
-   private:
+   protected:
     /// transformation from x to xPrime, x are the actual fit parameters, xPrime are the transformed parameters that go into 
     /// the prob function. Has to be const to be usable by minuit.
     const double* transform(double* xPrime, const double* x) const;
@@ -173,7 +181,7 @@ namespace svFitStandalone
     /// is always 0. 
     double prob(const double* xPrime, double phiPenalty) const;
     
-   private:
+   protected:
     /// additional power to enhance MET term in the nll (default is 1.)
     double metPower_;
     /// add a logM penalty term in the nll
@@ -190,9 +198,9 @@ namespace svFitStandalone
     mutable unsigned int idxObjFunctionCall_;
 
     /// measured tau leptons
-    std::vector<MeasuredTauLepton> measuredTauLeptons_;
+    std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons_;
     /// measured MET
-    Vector measuredMET_;
+    svFitStandalone::Vector measuredMET_;
     /// transfer matrix for MET in (inverse covariance matrix) 
     TMatrixD invCovMET_;
     /// determinant of the covariance matrix of MET

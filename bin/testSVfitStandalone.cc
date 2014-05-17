@@ -32,7 +32,8 @@ void singleEvent()
   measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kLepDecay, l1));
   measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kHadDecay, l2));
   // define algorithm (set the debug level to 3 for testing)
-  SVfitStandaloneAlgorithm algo(measuredTauLeptons, MET, covMET, 2);
+  unsigned verbosity = 2;
+  SVfitStandaloneAlgorithm algo(measuredTauLeptons, MET, covMET, verbosity);
   algo.addLogM(false);
   /* 
      the following lines show how to use the different methods on a single event

@@ -82,11 +82,31 @@ probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, doubl
     prob /= (1. + 1.e+6*TMath::Power(x - x_limit, 2));
   } else if ( x > 1. ) {
     double visEnFracX_limit = 1.;
-    prob /= (1. + 1.e+6*TMath::Power(x - visEnFracX_limit, 2));
+    prob /= (1. + 1.e+6*TMath::Power(x - visEnFracX_limit, 2.));
   }
   if ( applySinTheta ) prob *= (0.5*TMath::Sin(decayAngle));
   if ( verbose ) {
     std::cout << "--> prob = " << prob << std::endl;
   }
+  return prob;
+}
+
+namespace
+{
+  double extractProbFromLUT(double x, const TH1* lut)
+  {
+    int bin = (const_cast<TH1*>(lut))->FindBin(x);
+    int numBins = lut->GetNbinsX();
+    if ( bin < 1       ) bin = 1;
+    if ( bin > numBins ) bin = numBins;
+    return lut->GetBinContent(bin);
+  }
+}
+
+double 
+probVisMassAndPtShift(double deltaVisMass, double recTauPtDivGenTauPt, const TH1* lutVisMassRes, const TH1* lutVisPtRes)
+{
+  double prob = extractProbFromLUT(deltaVisMass, lutVisMassRes);
+  prob *= extractProbFromLUT(recTauPtDivGenTauPt, lutVisPtRes);
   return prob;
 }

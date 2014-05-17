@@ -26,26 +26,32 @@ namespace svFitStandalone
      \brief   enumeration of all parameters used by the SVfitAlgorithm to reconstruct the di-tau system
   */
   enum kFitParams {
-    kXFrac,          /* < relative fraction of the visible energy on the total energy of the tau lepton    */
-    kMNuNu,          /* < invariant mass of the neutrino system                                            */
-    kPhi,            /* < phi angle of the tau lepton (this is parameter is not constraint by measurement) */
-    kMaxFitParams    /* < maximum number of fit parameters per resonance decay branch                      */
+    kXFrac,               /* < relative fraction of the visible energy on the total energy of the tau lepton    */
+    kMNuNu,               /* < invariant mass of the neutrino system                                            */
+    kPhi,                 /* < phi angle of the tau lepton (this is parameter is not constraint by measurement) */
+    kVisMassShifted,      /* < mass resolution of the visible parts of the first tau decay branch               */    
+    kRecTauPtDivGenTauPt, /* < Pt resolution of the visible parts of the first tau decay branch                 */       
+    kMaxFitParams         /* < maximum number of fit parameters per resonance decay branch                      */
   };
   /**
      \enum    SVfitStandalone::kNLLParams
      \brief   enumeration of all parameters used to construct the combined likelihood including the logM term
   */
   enum kNLLParams {
-    kNuNuMass1,      /* < mass of the neutrino system for the first decay branch                           */
-    kVisMass1,       /* < mass of the visible parts of the first tau decay branch                          */
-    kDecayAngle1,    /* < decay angle for the first decay branch (in restframe of the tau lepton decay)    */  
-    kNuNuMass2,      /* < mass of the neutrino system for the second decay branch                          */
-    kVisMass2,       /* < mass of the visible parts of the second tau decay branch                         */
-    kDecayAngle2,    /* < decay angle for the second decay branch (in restframe of the tau lepton decay)   */  
-    kDMETx,          /* < difference between the sum of the fitted neutrino px and px of the MET           */ 
-    kDMETy,          /* < difference between the sum of the fitted neutrino py and py of the MET           */
-    kMTauTau,        /* < invariant mass of the fitted di-tau system (used for the logM penalty term)      */
-    kMaxNLLParams    /* < max number of parameters used for for the combined likelihood                    */
+    kNuNuMass1,            /* < mass of the neutrino system for the first decay branch                           */
+    kVisMass1,             /* < mass of the visible parts of the first tau decay branch                          */
+    kDecayAngle1,          /* < decay angle for the first decay branch (in restframe of the tau lepton decay)    */
+    kDeltaVisMass1,        /* < mass resolution of the visible parts of the first tau decay branch               */    
+    kRecTauPtDivGenTauPt1, /* < Pt resolution of the visible parts of the first tau decay branch                 */       
+    kNuNuMass2,            /* < mass of the neutrino system for the second decay branch                          */
+    kVisMass2,             /* < mass of the visible parts of the second tau decay branch                         */
+    kDecayAngle2,          /* < decay angle for the second decay branch (in restframe of the tau lepton decay)   */  
+    kDeltaVisMass2,        /* < mass resolution of the visible parts of the first tau decay branch               */    
+    kRecTauPtDivGenTauPt2, /* < Pt resolution of the visible parts of the first tau decay branch                 */ 
+    kDMETx,                /* < difference between the sum of the fitted neutrino px and px of the MET           */ 
+    kDMETy,                /* < difference between the sum of the fitted neutrino py and py of the MET           */
+    kMTauTau,              /* < invariant mass of the fitted di-tau system (used for the logM penalty term)      */
+    kMaxNLLParams          /* < max number of parameters used for for the combined likelihood                    */
   };
   /**
      \class   MeasuredTauLepton SVfitStandaloneLikelihood.h "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneLikelihood.h"
@@ -61,11 +67,16 @@ namespace svFitStandalone
    public:
     /// default constructor 
     MeasuredTauLepton()
-      : decayType_(kUndefinedDecayType),
-        p4_(0.,0.,0.,0.)
+      : type_(kUndefinedDecayType),
+        p4_(0.,0.,0.,0.),
+        decayMode_(-1)
     {}
     /// constructor from the measured quantities per decay branch
-    MeasuredTauLepton(kDecayType type, LorentzVector p4) : decayType_(type), p4_(p4) {}
+      MeasuredTauLepton(kDecayType type, const LorentzVector& p4, int decayMode = -1) 
+      : type_(type), 
+        p4_(p4), 
+	decayMode_(decayMode)
+    {}
     /// default destructor
     ~MeasuredTauLepton() {}
 
@@ -79,8 +90,10 @@ namespace svFitStandalone
     double energy() const { return p4_.energy(); }
     /// return visible momenumt in labframe
     double momentum() const { return p4_.P(); }
-    /// return decay type of the reconstructed tau lepton
-    unsigned int decayType() const { return decayType_; }
+    /// return decay type of the tau lepton
+    unsigned int type() const { return type_; }
+    /// return decay mode of the reconstructed hadronic tau decay
+    unsigned int decayMode() const { return decayMode_; }    
     /// return the spacial momentum vector in the labframe
     Vector p() const { return p4_.Vect(); }
     /// return the lorentz vector in the labframe
@@ -90,9 +103,11 @@ namespace svFitStandalone
     
    private:
     /// decay type
-    kDecayType decayType_;
+    kDecayType type_;
     /// visible momentum in labframe 
     LorentzVector p4_;
+    /// decay mode (hadronic tau decays only)
+    int decayMode_;
   };
 
   /**
@@ -144,10 +159,14 @@ namespace svFitStandalone
     /// add derrivative of delta-function 
     /// WARNING: to be used when SVfit is run in "integration" mode only
     void addDelta(bool value) { addDelta_ = value; }
+    /// add a penalty term in case phi runs outside of interval 
+    /// WARNING: to be used when SVfit is run in "fit" mode only
+    void addPhiPenalty(bool value) { addPhiPenalty_ = value; }        
     /// add sin(theta) term to likelihood for tau lepton decays
-    void addPhiPenalty(bool value) { addPhiPenalty_ = value; }    
     /// WARNING: to be used when SVfit is run in "fit" mode only
     void addSinTheta(bool value) { addSinTheta_ = value; }  
+    /// take resolution on energy and mass of hadronic tau decays into account
+    void shiftVisMassAndPt(bool value, const TH1* l1lutVisMassRes, const TH1* l1lutVisPtRes, const TH1* l2lutVisMassRes, const TH1* l2lutVisPtRes);
     /// add a penalty term in case phi runs outside of interval 
     /// modify the MET term in the nll by an additional power (default is 1.)
     void metPower(double value) { metPower_=value; };    
@@ -155,8 +174,6 @@ namespace svFitStandalone
     /// fit function to be called from outside. Has to be const to be usable by minuit. This function will call the actual 
     /// functions transform and prob internally 
     double prob(const double* x) const;
-    /// same as above but for integration mode.     
-    double probint(const double* x, const double mtt, const int par) const;	
     /// read out potential likelihood errors
     unsigned error() const { return errorCode_; }
 
@@ -173,8 +190,6 @@ namespace svFitStandalone
     /// transformation from x to xPrime, x are the actual fit parameters, xPrime are the transformed parameters that go into 
     /// the prob function. Has to be const to be usable by minuit.
     const double* transform(double* xPrime, const double* x) const;
-    /// same as above but for integration mode. This function provides the mapping of integration parameters.
-    const double* transformint(double* xPrime, const double* x, const double mtt, const int par) const;
     /// combined likelihood function. The same function os called for fit and integratino mode. Has to be const to be usable 
     /// by minuit/VEGAS/MarkovChain. The additional boolean phiPenalty is added to prevent singularities at the +/-pi boundaries 
     /// of kPhi within the fit parameters (kFitParams). It is only used in fit mode. In integration mode the passed on value 
@@ -207,6 +222,13 @@ namespace svFitStandalone
     double covDet_;
     /// error code that can be passed on
     unsigned int errorCode_;
+
+    /// resolution on energy and mass of hadronic taus
+    bool shiftVisMassAndPt_;
+    const TH1* l1lutVisMassRes_;
+    const TH1* l1lutVisPtRes_;
+    const TH1* l2lutVisMassRes_;
+    const TH1* l2lutVisPtRes_;
   };
 }
 

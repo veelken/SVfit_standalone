@@ -2,9 +2,10 @@
 #define TauAnalysis_SVfitStandalone_LikelihoodFunctions_h
 
 #include "TMatrixD.h"
+#include "TH1.h"
 
 /**
-   \class   probMET LikelihoodFunctions.h "TauAnalysis/CandidateTools/interface/LikelihoodFunctions.h"
+   \class   probMET LikelihoodFunctions.h "TauAnalysis/SVfitStandalone/interface/LikelihoodFunctions.h"
    
    \brief   Likelihood for MET
 
@@ -20,7 +21,7 @@
 double probMET(double dMETX, double dMETY, double covDet, const TMatrixD& covInv, double power = 1., bool verbose = false);
 
 /**
-   \class   probTauToLepPhaseSpace LikelihoodFunctions.h "TauAnalysis/CandidateTools/interface/LikelihoodFunctions.h"
+   \class   probTauToLepPhaseSpace LikelihoodFunctions.h "TauAnalysis/SVfitStandalone/interface/LikelihoodFunctions.h"
    
    \brief   Matrix Element for leptonic tau decays. Input parameters are:
 
@@ -39,7 +40,7 @@ double probMET(double dMETX, double dMETY, double covDet, const TMatrixD& covInv
 double probTauToLepMatrixElement(double decayAngle, double nunuMass, double visMass, double x, bool applySinTheta, bool verbose = false);
 
 /**
-   \class   probTauToHadPhaseSpace LikelihoodFunctions.h "TauAnalysis/CandidateTools/interface/LikelihoodFunctions.h"
+   \class   probTauToHadPhaseSpace LikelihoodFunctions.h "TauAnalysis/SVfitStandalone/interface/LikelihoodFunctions.h"
    
    \brief   Likelihood for a two body tau decay into two hadrons
 
@@ -48,5 +49,17 @@ double probTauToLepMatrixElement(double decayAngle, double nunuMass, double visM
     decayAngle : decay angle in the restframe of the tau lepton decay
 */
 double probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, double x, bool applySinTheta, bool verbose = false);
+
+/**
+   \class   probVisMassAndPtShift LikelihoodFunctions.h "TauAnalysis/SVfitStandalone/interface/LikelihoodFunctions.h"
+   
+   \brief   Resolution on Pt and mass of hadronic taus
+
+   Likelihood for a hadronic tau of true Pt and mass (visMass, visPt)
+   to be reconstructed with Pt and mass of (visMass + deltaVisMass, recTauPtDivGenTauPt*visPt)
+
+    lutVisMassRes, lutVisPtRes : histograms that parametrize the Pt and mass resolution for hadronic taus
+*/
+double probVisMassAndPtShift(double deltaVisMass, double recTauPtDivGenTauPt, const TH1* lutVisMassRes, const TH1* lutVisPtRes);
 
 #endif

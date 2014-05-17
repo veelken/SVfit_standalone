@@ -78,12 +78,11 @@ namespace svFitStandalone
     return uncertainty;
   }
 
-  class ObjectiveFunctionAdapter
+  // for "fit" (MINUIT) mode
+  class ObjectiveFunctionAdapterMINUIT
   {
   public:
-    // for minuit fit
-    double operator()(const double* x) const // function to be called in "fit" (MINUIT) mode
-                                             // NOTE: return value = -log(likelihood)
+    double operator()(const double* x) const // NOTE: return value = -log(likelihood)
     {
       double prob = SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->prob(x);
       double nll;
@@ -91,38 +90,55 @@ namespace svFitStandalone
       else nll = std::numeric_limits<float>::max();
       return nll;
     }
-    // for VEGAS integration
-    double Eval(const double* x) const // function to be called in "integration" (VEGAS) mode
-                                       // NOTE: return value = likelihood, **not** -log(likelihood)
+  };
+  // for VEGAS integration
+  void map_xVEGAS(const double*, bool, bool, bool, double, double, double*);
+  class ObjectiveFunctionAdapterVEGAS
+  {
+  public:
+    double Eval(const double* x) const // NOTE: return value = likelihood, **not** -log(likelihood)
     {
-      double prob = SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->probint(x, mtest, par);      
+      map_xVEGAS(x, l1isLep_, l2isLep_, shiftVisMassAndPt_, mvis_, mtest_, x_mapped_);      
+      double prob = SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->prob(x_mapped_);
       if ( TMath::IsNaN(prob) ) prob = 0.;
       return prob;
     }
-    void SetPar(int parr) { par = parr; }
-    void SetM(double m) { mtest = m; }
+    void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
+    void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
+    void SetShiftVisMassAndPt(bool shiftVisMassAndPt) { shiftVisMassAndPt_ = shiftVisMassAndPt; }
+    void SetMvis(double mvis) { mvis_ = mvis; }
+    void SetMtest(double mtest) { mtest_ = mtest; }
   private:
-    int par;      //final state type
-    double mtest; //current mass hypothesis
+    mutable double x_mapped_[10];
+    bool l1isLep_;
+    bool l2isLep_;
+    bool shiftVisMassAndPt_;
+    double mvis_;  // mass of visible tau decay products
+    double mtest_; // current mass hypothesis
   };
   // for markov chain integration
-  void map_x(const double*, int, double*);
-  // class definitions for markov chain integration method
+  void map_xMarkovChain(const double*, bool, bool, bool, double*);
   class MCObjectiveFunctionAdapter : public ROOT::Math::Functor
   {
    public:
+    void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
+    void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
+    void SetShiftVisMassAndPt(bool shiftVisMassAndPt) { shiftVisMassAndPt_ = shiftVisMassAndPt; }
     void SetNDim(int nDim) { nDim_ = nDim; }
     unsigned int NDim() const { return nDim_; }
    private:
     virtual double DoEval(const double* x) const
     {
-      map_x(x, nDim_, x_mapped_);
+      map_xMarkovChain(x, l1isLep_, l2isLep_, shiftVisMassAndPt_, x_mapped_);
       double prob = SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->prob(x_mapped_);
       if ( TMath::IsNaN(prob) ) prob = 0.;
       return prob;
     } 
-    mutable double x_mapped_[6];
+    mutable double x_mapped_[10];
     int nDim_;
+    bool l1isLep_;
+    bool l2isLep_;
+    bool shiftVisMassAndPt_;
   };
   class MCPtEtaPhiMassAdapter : public ROOT::Math::Functor
   {
@@ -149,6 +165,9 @@ namespace svFitStandalone
       delete histogramMass_;
       delete histogramMass_density_;
     }
+    void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
+    void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
+    void SetShiftVisMassAndPt(bool shiftVisMassAndPt) { shiftVisMassAndPt_ = shiftVisMassAndPt; }
     void SetNDim(int nDim) { nDim_ = nDim; }
     unsigned int NDim() const { return nDim_; }
     void Reset()
@@ -169,7 +188,7 @@ namespace svFitStandalone
    private:    
     virtual double DoEval(const double* x) const
     {
-      map_x(x, nDim_, x_mapped_);
+      map_xMarkovChain(x, l1isLep_, l2isLep_, shiftVisMassAndPt_, x_mapped_);
       SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->results(fittedTauLeptons_, x_mapped_);
       fittedDiTauSystem_ = fittedTauLeptons_[0] + fittedTauLeptons_[1];
       //std::cout << "<MCPtEtaPhiMassAdapter::DoEval>" << std::endl;
@@ -193,8 +212,11 @@ namespace svFitStandalone
     mutable TH1* histogramPhi_density_;
     mutable TH1* histogramMass_;
     mutable TH1* histogramMass_density_;
-    mutable double x_mapped_[6];
+    mutable double x_mapped_[10];
     int nDim_;
+    bool l1isLep_;
+    bool l2isLep_;
+    bool shiftVisMassAndPt_;
   };
 }
 
@@ -271,6 +293,8 @@ class SVfitStandaloneAlgorithm
   void addLogM(bool value) { nll_->addLogM(value); }
   /// modify the MET term in the nll by an additional power (default is 1.)
   void metPower(double value) { nll_->metPower(value); }
+  /// take resolution on energy and mass of hadronic tau decays into account
+  void shiftVisMassAndPt(bool value, TFile* inputFile);
   /// maximum function calls after which to stop the minimization procedure (default is 5000)
   void maxObjFunctionCalls(double value) { maxObjFunctionCalls_ = value; }
 
@@ -356,8 +380,12 @@ class SVfitStandaloneAlgorithm
   /// standalone combined likelihood
   svFitStandalone::SVfitStandaloneLikelihood* nll_;
   /// needed to make the fit function callable from within minuit
-  svFitStandalone::ObjectiveFunctionAdapter standaloneObjectiveFunctionAdapter_;
+  svFitStandalone::ObjectiveFunctionAdapterMINUIT standaloneObjectiveFunctionAdapterMINUIT_;
+
+  /// needed for VEGAS integration
+  svFitStandalone::ObjectiveFunctionAdapterVEGAS* standaloneObjectiveFunctionAdapterVEGAS_;   
   
+  /// fitted di-tau mass
   double mass_;
   /// uncertainty of the fitted di-tau mass
   double massUncert_;
@@ -387,6 +415,20 @@ class SVfitStandaloneAlgorithm
   double phiUncert_;
 
   TBenchmark* clock_;
+
+  /// resolution on Pt and mass of hadronic taus
+  bool shiftVisMassAndPt_;
+  const TH1* lutVisMassResDM0_;
+  const TH1* lutVisMassResDM1_;
+  const TH1* lutVisMassResDM10_;
+  const TH1* lutVisPtResDM0_;
+  const TH1* lutVisPtResDM1_;
+  const TH1* lutVisPtResDM10_;
+
+  bool l1isLep_;
+  int idxFitParLeg1_;
+  bool l2isLep_;
+  int idxFitParLeg2_;
 };
 
 inline

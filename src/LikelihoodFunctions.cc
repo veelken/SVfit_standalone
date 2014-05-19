@@ -21,7 +21,7 @@ probMET(double dMETX, double dMETY, double covDet, const TMatrixD& covInv, doubl
   }
   double nll = 0.;
   if ( covDet != 0. ) {
-    nll = TMath::Log(2*TMath::Pi()) + 0.5*TMath::Log(TMath::Abs(covDet)) 
+    nll = TMath::Log(2.*TMath::Pi()) + 0.5*TMath::Log(TMath::Abs(covDet)) 
          + 0.5*(dMETX*(covInv(0,0)*dMETX + covInv(0,1)*dMETY) + dMETY*(covInv(1,0)*dMETX + covInv(1,1)*dMETY));
   } else {
     nll = std::numeric_limits<float>::max();
@@ -51,10 +51,10 @@ probTauToLepMatrixElement(double decayAngle, double nunuMass, double visMass, do
   if ( nunuMass < TMath::Sqrt((1. - x)*tauLeptonMass2) ) { // LB: physical solution
     prob = (13./tauLeptonMass4)*(tauLeptonMass2 - nuMass2)*(tauLeptonMass2 + 2.*nuMass2)*nunuMass;
   } else {    
-    double nuMass_limit  = TMath::Sqrt((1. - x)*tauLeptonMass2);
-    double nuMass2_limit = nuMass_limit*nuMass_limit;
-    prob = (13./tauLeptonMass4)*(tauLeptonMass2 - nuMass2_limit)*(tauLeptonMass2 + 2.*nuMass2_limit)*nuMass_limit;
-    prob /= (1. + 1.e+6*TMath::Power(nunuMass - nuMass_limit, 2));
+    double nunuMass_limit  = TMath::Sqrt((1. - x)*tauLeptonMass2);
+    double nunuMass2_limit = nunuMass_limit*nunuMass_limit;
+    prob = (13./tauLeptonMass4)*(tauLeptonMass2 - nunuMass2_limit)*(tauLeptonMass2 + 2.*nunuMass2_limit)*nunuMass_limit;
+    prob /= (1. + 1.e+6*TMath::Power(nunuMass - nunuMass_limit, 2.));
   }
   if ( applySinTheta ) prob *= (0.5*TMath::Sin(decayAngle));
   if ( verbose ) {
@@ -79,7 +79,7 @@ probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, doubl
   double prob = tauLeptonMass/(2.*Pvis_rf);
   if ( x < (visMass2/tauLeptonMass2) ) {
     double x_limit = visMass2/tauLeptonMass2;
-    prob /= (1. + 1.e+6*TMath::Power(x - x_limit, 2));
+    prob /= (1. + 1.e+6*TMath::Power(x - x_limit, 2.));
   } else if ( x > 1. ) {
     double visEnFracX_limit = 1.;
     prob /= (1. + 1.e+6*TMath::Power(x - visEnFracX_limit, 2.));

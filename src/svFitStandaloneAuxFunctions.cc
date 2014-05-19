@@ -1,14 +1,11 @@
 #include "TauAnalysis/SVfitStandalone/interface/svFitStandaloneAuxFunctions.h"
 
 #include <TMath.h>
+#include <Math/VectorUtil.h>
 
 namespace svFitStandalone
 {
   //-----------------------------------------------------------------------------
-  // define auxiliary functions for internal usage
-  inline double energyFromMomentum(double momentum, double mass) {
-    return TMath::Sqrt(square(mass) + square(momentum));
-  }
   
   // Adapted for our vector types from TVector3 class
   Vector rotateUz(const ROOT::Math::DisplacementVector3D<ROOT::Math::Polar3D<double> >& toRotate, const Vector& newUzVector)
@@ -23,7 +20,7 @@ namespace svFitStandalone
     Double_t fY = toRotate.Y();
     Double_t fZ = toRotate.Z();
 
-    if ( up ) {
+    if ( up > 0. ) {
       up = TMath::Sqrt(up);
       Double_t px = fX;
       Double_t py = fY;
@@ -39,11 +36,77 @@ namespace svFitStandalone
     return Vector(fX, fY, fZ);
   }
 
+  LorentzVector boostToCOM(const LorentzVector& comSystem, const LorentzVector& p4ToBoost) {
+    Vector boost = comSystem.BoostToCM();
+    return ROOT::Math::VectorUtil::boost(p4ToBoost, boost);
+  }
+
+  LorentzVector boostToLab(const LorentzVector& rfSystem, const LorentzVector& p4ToBoost) {
+    Vector boost = rfSystem.BoostToCM();
+    return ROOT::Math::VectorUtil::boost(p4ToBoost, -boost);
+  }
+
+  double gjAngleLabFrameFromX(double x, double visMass, double invisMass, double pVis_lab, double enVis_lab, double motherMass, bool& isValidSolution) 
+  {
+    // CV: the expression for the Gottfried-Jackson angle as function of X = Etau/Evis
+    //     was obtained by solving equation (1) of AN-2010/256:
+    //       http://cms.cern.ch/iCMS/jsp/openfile.jsp?tp=draft&files=AN2010_256_v2.pdf
+    //     for cosThetaGJ
+    //    (generalized to the case of non-zero mass of the neutrino system in leptonic tau decays, using Mathematica)
+
+    double x2 = x*x;
+    double visMass2 = visMass*visMass;
+    double invisMass2 = invisMass*invisMass;
+    double pVis2_lab = pVis_lab*pVis_lab;
+    double enVis2_lab = enVis_lab*enVis_lab;
+    double motherMass2 = motherMass*motherMass;
+    double term1 = enVis2_lab - motherMass2*x2;
+    double term2 = 2.*TMath::Sqrt(pVis2_lab*enVis2_lab*enVis2_lab*term1);
+    double term3 = ((visMass2 - invisMass2) + motherMass2)*pVis_lab*x*TMath::Sqrt(term1);
+    double term4 = 2.*pVis2_lab*term1;
+    double cosGjAngle_lab1 =  (term2 - term3)/term4;
+    double cosGjAngle_lab2 = -(term2 + term3)/term4;
+    double gjAngle = 0.;
+    if ( TMath::Abs(cosGjAngle_lab1) <= 1. && TMath::Abs(cosGjAngle_lab2) > 1. ) {
+      gjAngle = TMath::ACos(cosGjAngle_lab1);
+    } else if ( TMath::Abs(cosGjAngle_lab1) > 1. && TMath::Abs(cosGjAngle_lab2) <= 1. ) {
+      gjAngle = TMath::ACos(cosGjAngle_lab2);
+    } else if ( TMath::Abs(cosGjAngle_lab1) <= 1. && TMath::Abs(cosGjAngle_lab2) <= 1. ) {
+      isValidSolution = false;
+    } else {
+      isValidSolution = false;
+    }
+
+    return gjAngle;
+  }
+
+  double pVisRestFrame(double visMass, double invisMass, double motherMass)
+  {
+    double motherMass2 = motherMass*motherMass;
+    double pVis = TMath::Sqrt((motherMass2 - square(visMass + invisMass))
+                             *(motherMass2 - square(visMass - invisMass)))/(2.*motherMass);
+    return pVis;
+  }
+
+  Vector motherDirection(const Vector& pVisLabFrame, double angleVisLabFrame, double phiLab) 
+  {
+    // The direction is defined using polar coordinates in a system where the visible energy
+    // defines the Z axis.
+    ROOT::Math::DisplacementVector3D<ROOT::Math::Polar3D<double> > motherDirectionVisibleSystem(1.0, angleVisLabFrame, phiLab);
+
+    // Rotate into the LAB coordinate system
+    return rotateUz(motherDirectionVisibleSystem, pVisLabFrame.Unit());
+  }
+
+  LorentzVector motherP4(const Vector& motherP3_unit, double motherP_lab, double motherEn_lab)
+  {
+    LorentzVector motherP4_lab = LorentzVector(motherP_lab*motherP3_unit.x(), motherP_lab*motherP3_unit.y(), motherP_lab*motherP3_unit.z(), motherEn_lab);
+    return motherP4_lab;
+  }
+
+  //-----------------------------------------------------------------------------
   double getMeanOfBinsAboveThreshold(const TH1* histogram, double threshold, int verbosity)
   {
-    //std::cout << "<getMeanOfBinsAboveThreshold>:" << std::endl;
-    //std::cout << " threshold = " << threshold << std::endl;
-    
     double mean = 0.;
     double normalization = 0.;
     int numBins = histogram->GetNbinsX();
@@ -59,79 +122,6 @@ namespace svFitStandalone
     if ( normalization > 0. ) mean /= normalization;
     if ( verbosity ) std::cout << "--> mean = " << mean << std::endl;
     return mean;
-  }
-  //-----------------------------------------------------------------------------
-
-  double gjAngleFromX(double x, double visMass, double pVis_rf, double enVis_lab, double motherMass) 
-  {
-    double enVis_rf = energyFromMomentum(pVis_rf, visMass);
-    double beta = TMath::Sqrt(1. - square(motherMass*x/enVis_lab));
-    double cosGjAngle = (motherMass*x - enVis_rf)/(pVis_rf*beta);
-    double gjAngle = TMath::ACos(cosGjAngle);
-    return gjAngle;
-  }
-
-  double pVisRestFrame(double visMass, double invisMass, double motherMass)
-  {
-    double motherMass2 = motherMass*motherMass;
-    double pVis = TMath::Sqrt((motherMass2 - square(visMass + invisMass))
-                             *(motherMass2 - square(visMass - invisMass)))/(2.*motherMass);
-    return pVis;
-  }
-
-  double gjAngleToLabFrame(double pVisRestFrame, double gjAngle, double pVisLabFrame)
-  {
-    // Get the compenent of the rest frame momentum perpindicular to the tau
-    // boost direction. This quantity is Lorentz invariant.
-    double pVisRestFramePerp = pVisRestFrame*TMath::Sin(gjAngle);
-
-    // Determine the corresponding opening angle in the LAB frame
-    double gjAngleLabFrame = TMath::ASin(pVisRestFramePerp/pVisLabFrame);
-
-    return gjAngleLabFrame;
-  }
-
-  double motherMomentumLabFrame(double visMass, double pVisRestFrame, double gjAngle, double pVisLabFrame, double motherMass)
-  {
-    // Determine the corresponding opening angle in the LAB frame
-    double angleVisLabFrame = gjAngleToLabFrame(pVisRestFrame, gjAngle, pVisLabFrame);
-
-    // Get the visible momentum perpindicular/parallel to the tau boost direction in the LAB
-    double pVisLabFrame_parallel = pVisLabFrame*TMath::Cos(angleVisLabFrame);
-
-    // Now use the Lorentz equation for pVis along the tau direction to solve for
-    // the gamma of the tau boost.
-    double pVisRestFrame_parallel = pVisRestFrame*TMath::Cos(gjAngle);
-
-    double enVisRestFrame = TMath::Sqrt(square(visMass) + square(pVisRestFrame));
-
-    double gamma = (enVisRestFrame*TMath::Sqrt(square(enVisRestFrame) + square(pVisLabFrame_parallel) - square(pVisRestFrame_parallel)) 
-                  - pVisRestFrame_parallel*pVisLabFrame_parallel)/(square(enVisRestFrame) - square(pVisRestFrame_parallel));
-
-    double pMotherLabFrame = TMath::Sqrt(square(gamma) - 1)*motherMass;
-
-    return pMotherLabFrame;
-  }
-
-  Vector motherDirection(const Vector& pVisLabFrame, double angleVisLabFrame, double phiLab) 
-  {
-    // The direction is defined using polar coordinates in a system where the visible energy
-    // defines the Z axis.
-    ROOT::Math::DisplacementVector3D<ROOT::Math::Polar3D<double> > motherDirectionVisibleSystem(1.0, angleVisLabFrame, phiLab);
-
-    // Rotate into the LAB coordinate system
-    return rotateUz(motherDirectionVisibleSystem, pVisLabFrame.Unit());
-  }
-
-  LorentzVector motherP4(const Vector& motherDirection, double motherMomentumLabFrame, double motherMass) 
-  {
-    // NB: tauDirection must be a unit vector !
-    LorentzVector motherP4LabFrame(
-                    motherDirection.x()*motherMomentumLabFrame,
-		    motherDirection.y()*motherMomentumLabFrame,
-		    motherDirection.z()*motherMomentumLabFrame,
-		    TMath::Sqrt(motherMomentumLabFrame*motherMomentumLabFrame + motherMass*motherMass));
-    return motherP4LabFrame;
   }
 
   void extractHistogramProperties(const TH1* histogram, const TH1* histogram_density,
@@ -198,4 +188,5 @@ namespace svFitStandalone
       xMean5sigmaWithinMax = 0.;
     }
   }
+  //-----------------------------------------------------------------------------
 }

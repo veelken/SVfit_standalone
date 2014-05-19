@@ -59,19 +59,13 @@ namespace svFitStandalone
   typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 
   /// Determine Gottfried-Jackson angle from visible energy fraction X
-  double gjAngleFromX(double, double, double, double, double);
+  double gjAngleLabFrameFromX(double, double, double, double, double, double, bool&);
 
   /// Determine visible tau rest frame energy given visible mass and neutrino mass
   double pVisRestFrame(double, double, double);
 
-  /// Convert the Gottfried-Jackson angle into a lab frame opening angle
-  double gjAngleToLabFrame(double, double, double);
-
-  /// Determine the tau momentum in the lab frame given the rest frame assumptions
-  double motherMomentumLabFrame(double, double, double, double, double);
-
   /// Determine the tau direction given our parameterization
-  Vector motherDirection(const Vector&, double, double);
+  Vector motherDirection(const Vector&, double, double); 
 
   /// Compute the tau four vector given the tau direction and momentum
   LorentzVector motherP4(const Vector&, double, double);

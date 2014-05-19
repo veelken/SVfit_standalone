@@ -17,8 +17,9 @@ namespace svFitStandalone
   */
   enum kDecayType {
     kUndefinedDecayType,
-    kHadDecay,       /* < hadronic tau lepton decay                                                        */ 
-    kLepDecay,       /* < leptonic tau lepton decay                                                        */
+    kTauToHadDecay,  /* < hadronic tau lepton decay                                                        */ 
+    kTauToElecDecay, /* < tau lepton decay to electron                                                     */
+    kTauToMuDecay,   /* < tau lepton decay to muon                                                         */
     kPrompt          /* < prompt electron or muon not originating from tau decay (for LFV analysis)        */
   };
   /**
@@ -72,11 +73,45 @@ namespace svFitStandalone
         decayMode_(-1)
     {}
     /// constructor from the measured quantities per decay branch
-      MeasuredTauLepton(kDecayType type, const LorentzVector& p4, int decayMode = -1) 
+    MeasuredTauLepton(kDecayType type, const LorentzVector& p4, int decayMode = -1) 
       : type_(type), 
         p4_(p4), 
 	decayMode_(decayMode)
-    {}
+    {
+      double minVisMass = electronMass;
+      double maxVisMass = tauLeptonMass;
+      std::string type_string;
+      if ( type_ == kTauToElecDecay ) {
+	minVisMass = electronMass;
+	maxVisMass = minVisMass;
+      } else if ( type_ == kTauToMuDecay ) {
+	minVisMass = muonMass;
+	maxVisMass = minVisMass;
+      } else if ( type_ == kTauToHadDecay ) {
+	if ( decayMode_ == 0 ) {
+	  minVisMass = chargedPionMass;
+	  maxVisMass = minVisMass;
+	} else {
+	  minVisMass = 0.3;
+	  maxVisMass = 1.5;
+	}
+      } 
+      preciseVisMass_ = p4_.mass();
+      if ( preciseVisMass_ < (0.9*minVisMass) || preciseVisMass_ > (1.1*minVisMass) ) {
+	std::string type_string;
+	if      ( type_ == kTauToElecDecay ) type_string = "tau -> electron decay";
+	else if ( type_ == kTauToMuDecay   ) type_string = "tau -> muon decay";
+	else if ( type_ == kTauToHadDecay  ) type_string = "tau -> had decay";
+	else if ( type_ == kPrompt         ) type_string = "prompt lepton"; 
+	else {
+	  std::cerr << "Error: Invalid type " << type_ << " declared for leg: Pt = " << p4_.pt() << ", eta = " << p4_.eta() << ", phi = " << p4_.phi() << ", mass = " << p4_.mass() << " !!" << std::endl;
+	  assert(0);
+	}
+	std::cerr << "Warning: " << type_string << " declared for leg: Pt = " << p4_.pt() << ", eta = " << p4_.eta() << ", phi = " << p4_.phi() << ", mass = " << p4_.mass() << " !!" << std::endl;
+      }
+      if ( preciseVisMass_ < minVisMass ) preciseVisMass_ = minVisMass;
+      if ( preciseVisMass_ > maxVisMass ) preciseVisMass_ = maxVisMass;
+    }
     /// default destructor
     ~MeasuredTauLepton() {}
 
@@ -85,7 +120,7 @@ namespace svFitStandalone
     /// return py of the measured tau lepton in labframe
     double py() const { return p4_.py(); }
     /// return visible mass in labframe
-    double mass() const { return p4_.mass(); }
+    double mass() const { return preciseVisMass_; }    
     /// return visible energy in labframe
     double energy() const { return p4_.energy(); }
     /// return visible momenumt in labframe
@@ -106,6 +141,8 @@ namespace svFitStandalone
     kDecayType type_;
     /// visible momentum in labframe 
     LorentzVector p4_;
+    /// mass of visible tau decay products (recomputed to reduce rounding errors)
+    double preciseVisMass_;
     /// decay mode (hadronic tau decays only)
     int decayMode_;
   };
@@ -171,9 +208,13 @@ namespace svFitStandalone
     /// modify the MET term in the nll by an additional power (default is 1.)
     void metPower(double value) { metPower_=value; };    
 
+    /// flag to force prob to be zero in case of unphysical solutions
+    /// (to be used in integration, but not in fit mode, as MINUIT will get confused otherwise)
+    void requirePhysicalSolution(bool value) { requirePhysicalSolution_ = value; }
+
     /// fit function to be called from outside. Has to be const to be usable by minuit. This function will call the actual 
     /// functions transform and prob internally 
-    double prob(const double* x) const;
+    double prob(const double* x, bool fixToMtest = false, double mtest = -1.) const;
     /// read out potential likelihood errors
     unsigned error() const { return errorCode_; }
 
@@ -189,7 +230,7 @@ namespace svFitStandalone
    protected:
     /// transformation from x to xPrime, x are the actual fit parameters, xPrime are the transformed parameters that go into 
     /// the prob function. Has to be const to be usable by minuit.
-    const double* transform(double* xPrime, const double* x) const;
+    const double* transform(double* xPrime, const double* x, bool fixToMtest, double mtest) const;
     /// combined likelihood function. The same function os called for fit and integratino mode. Has to be const to be usable 
     /// by minuit/VEGAS/MarkovChain. The additional boolean phiPenalty is added to prevent singularities at the +/-pi boundaries 
     /// of kPhi within the fit parameters (kFitParams). It is only used in fit mode. In integration mode the passed on value 
@@ -222,6 +263,10 @@ namespace svFitStandalone
     double covDet_;
     /// error code that can be passed on
     unsigned int errorCode_;
+
+    /// flag to force prob to be zero in case of unphysical solutions
+    /// (to be used in integration, but not in fit mode, as MINUIT will get confused otherwise)
+    bool requirePhysicalSolution_;
 
     /// resolution on energy and mass of hadronic taus
     bool shiftVisMassAndPt_;

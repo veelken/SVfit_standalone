@@ -99,7 +99,7 @@ namespace svFitStandalone
     double Eval(const double* x) const // NOTE: return value = likelihood, **not** -log(likelihood)
     {
       map_xVEGAS(x, l1isLep_, l2isLep_, shiftVisMassAndPt_, mvis_, mtest_, x_mapped_);      
-      double prob = SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->prob(x_mapped_);
+      double prob = SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->prob(x_mapped_, true, mtest_);
       if ( TMath::IsNaN(prob) ) prob = 0.;
       return prob;
     }
@@ -202,6 +202,7 @@ namespace svFitStandalone
       histogramMass_->Fill(fittedDiTauSystem_.mass());
       return 0.;
     } 
+   protected:
     mutable std::vector<svFitStandalone::LorentzVector> fittedTauLeptons_;
     mutable LorentzVector fittedDiTauSystem_;
     mutable TH1* histogramPt_;

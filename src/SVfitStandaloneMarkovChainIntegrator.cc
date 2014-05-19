@@ -55,6 +55,7 @@ SVfitStandaloneMarkovChainIntegrator::SVfitStandaloneMarkovChainIntegrator(const
     integrand_(0),
     startPosition_and_MomentumFinder_(0),
     x_(0),
+    useVariableEpsilon0_(false),
     numIntegrationCalls_(0),
     numMovesTotal_accepted_(0),
     numMovesTotal_rejected_(0)

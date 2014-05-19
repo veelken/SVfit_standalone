@@ -26,10 +26,10 @@ void singleEvent()
   covMET[0][1] = -178.63;
   covMET[1][1] = 179.545;
   // define lepton four vectors
-  svFitStandalone::LorentzVector l1( 28.9132, -17.3888, 36.6411, 49.8088); //muon
-  svFitStandalone::LorentzVector l2(-24.19  ,  8.77449, 16.9413, 30.8086); //tau
+  svFitStandalone::LorentzVector l1( 28.9132, -17.3888, 36.6411, 49.8088); // tau -> electron decay
+  svFitStandalone::LorentzVector l2(-24.19  ,  8.77449, 16.9413, 30.8086); // tau -> hadron decay
   std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
-  measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToMuDecay, l1));
+  measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToElecDecay, l1));
   measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay, l2));
   // define algorithm (set the debug level to 3 for testing)
   unsigned verbosity = 2;
@@ -47,7 +47,7 @@ void singleEvent()
 
   double mass = algo.getMass(); // return value is in units of GeV
   if ( algo.isValidSolution() ) {
-    std::cout << "found mass = " << mass << " (expected value = 125.243)" << std::endl;
+    std::cout << "found mass = " << mass << " (expected value = 120.129)" << std::endl;
   } else {
     std::cout << "sorry -- status of NLL is not valid [" << algo.isValidSolution() << "]" << std::endl;
   }

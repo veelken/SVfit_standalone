@@ -113,9 +113,19 @@ namespace svFitStandalone
       if ( preciseVisMass_ < minVisMass ) preciseVisMass_ = minVisMass;
       if ( preciseVisMass_ > maxVisMass ) preciseVisMass_ = maxVisMass;
     }
+    /// copy constructor
+    MeasuredTauLepton(const MeasuredTauLepton& measuredTauLepton)
+      : type_(measuredTauLepton.type()), 
+        p4_(measuredTauLepton.p4()), 
+        decayMode_(measuredTauLepton.decayMode())     
+    {
+      preciseVisMass_ = measuredTauLepton.mass();
+    }
     /// default destructor
     ~MeasuredTauLepton() {}
 
+    /// return pt of the measured tau lepton in labframe
+    double pt() const { return p4_.pt(); }
     /// return px of the measured tau lepton in labframe
     double px() const { return p4_.px(); }
     /// return py of the measured tau lepton in labframe
@@ -126,10 +136,14 @@ namespace svFitStandalone
     double energy() const { return p4_.energy(); }
     /// return visible momenumt in labframe
     double momentum() const { return p4_.P(); }
+    /// return pseudo-rapidity of the measured tau lepton in labframe
+    double eta() const { return p4_.eta(); }
+    /// return azimuthal angle of the measured tau lepton in labframe
+    double phi() const { return p4_.phi(); }
     /// return decay type of the tau lepton
-    unsigned int type() const { return type_; }
+    int type() const { return type_; }
     /// return decay mode of the reconstructed hadronic tau decay
-    unsigned int decayMode() const { return decayMode_; }    
+    int decayMode() const { return decayMode_; }    
     /// return the spacial momentum vector in the labframe
     Vector p() const { return p4_.Vect(); }
     /// return the lorentz vector in the labframe
@@ -139,7 +153,7 @@ namespace svFitStandalone
     
    private:
     /// decay type
-    kDecayType type_;
+    int type_;
     /// visible momentum in labframe 
     LorentzVector p4_;
     /// mass of visible tau decay products (recomputed to reduce rounding errors)
@@ -220,9 +234,9 @@ namespace svFitStandalone
     unsigned error() const { return errorCode_; }
 
     /// return vector of measured MET
-    svFitStandalone::Vector measuredMET() const { return measuredMET_; }
+    const svFitStandalone::Vector& measuredMET() const { return measuredMET_; }
     /// return vector of measured tau leptons
-    std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons() const { return measuredTauLeptons_; }
+    const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons() const { return measuredTauLeptons_; }
     /// return vector of fitted tau leptons, which will be the actual fit result. This function is a subset of transform.
     /// It needs to be factored out though as transform has to be const to be usable by minuit and therefore is not allowed 
     /// change the class members.  

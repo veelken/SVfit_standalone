@@ -260,6 +260,8 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
 	std::cout << " *probTauToLep  = " << prob << std::endl;
       }
       break;
+    default :
+      break;
     }
   }
   // add additional logM term if configured such 

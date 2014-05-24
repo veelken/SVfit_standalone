@@ -97,8 +97,13 @@ SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixTo
       labframePhi = x[idx*kMaxFitParams + kPhi];
       if ( shiftVisMassAndPt_ ) {
 	visMass = x[idx*kMaxFitParams + kVisMassShifted];
-	labframeVisMom *= (1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt]);
-	labframeVisEn = TMath::Sqrt(labframeVisMom*labframeVisMom + visMass*visMass);
+	double shiftInv = 1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt];
+	double shift = ( shiftInv > 1.e-1 ) ?
+	  (1./shiftInv) : 1.e+1;
+	labframeVisMom *= shift;
+	//visMass *= shift; // CV: take mass and momentum to be correlated
+	//labframeVisEn = TMath::Sqrt(labframeVisMom*labframeVisMom + visMass*visMass);
+	labframeVisEn *= shift;
       }
     }
     bool isValidSolution = true;
@@ -116,6 +121,10 @@ SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixTo
     }
     double gjAngle_lab = gjAngleLabFrameFromX(labframeXFrac, visMass, nunuMass, labframeVisMom, labframeVisEn, tauLeptonMass, isValidSolution);
     double enTau_lab = labframeVisEn/labframeXFrac;
+    if ( (enTau_lab*enTau_lab) < tauLeptonMass2 ) {
+      enTau_lab = tauLeptonMass;
+      isValidSolution = false;
+    }  
     double pTau_lab = TMath::Sqrt(square(enTau_lab) - tauLeptonMass2);
     double gamma = enTau_lab/tauLeptonMass;
     double beta = TMath::Sqrt(1. - 1./(gamma*gamma));
@@ -231,7 +240,8 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
 	prob *= probVisMassAndPtShift(
                   xPrime[idx == 0 ? kDeltaVisMass1 : kDeltaVisMass2], 
 		  xPrime[idx == 0 ? kRecTauPtDivGenTauPt1 : kRecTauPtDivGenTauPt2], 
-		  l1lutVisMassRes_, l1lutVisPtRes_);
+		  l1lutVisMassRes_, l1lutVisPtRes_, 
+		  (verbose_&& FIRST));
       }
       if ( verbose_ && FIRST ) {
 	std::cout << " *probTauToHad  = " << prob << std::endl;
@@ -299,9 +309,14 @@ SVfitStandaloneLikelihood::results(std::vector<LorentzVector>& fittedTauLeptons,
     double labframeVisMom           = labframeVisMom_unshifted; // visible momentum in lab-frame
     double labframeVisEn            = measuredTauLepton.energy(); // visible energy in lab-frame    
     if ( measuredTauLepton.type() == kTauToHadDecay && shiftVisMassAndPt_ ) {
-      visMass = x[ idx*kMaxFitParams + kVisMassShifted ];
-      labframeVisMom *= (1. + x[ idx*kMaxFitParams + kRecTauPtDivGenTauPt ]);
-      labframeVisEn = TMath::Sqrt(labframeVisMom*labframeVisMom + visMass*visMass);
+      visMass = x[idx*kMaxFitParams + kVisMassShifted];
+      double shiftInv = 1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt];
+      double shift = ( shiftInv > 1.e-1 ) ?
+	(1./shiftInv) : 1.e+1;
+      labframeVisMom *= shift;
+      //visMass *= shift; // CV: take mass and momentum to be correlated
+      //labframeVisEn = TMath::Sqrt(labframeVisMom*labframeVisMom + visMass*visMass);
+      labframeVisEn *= shift;
     }
     if ( visMass < 5.1e-4 ) { 
       visMass = 5.1e-4; 

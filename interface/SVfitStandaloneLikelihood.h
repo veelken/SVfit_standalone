@@ -97,7 +97,7 @@ namespace svFitStandalone
 	}
       } 
       preciseVisMass_ = p4_.mass();
-      if ( preciseVisMass_ < (0.9*minVisMass) || preciseVisMass_ > (1.1*minVisMass) ) {
+      if ( preciseVisMass_ < (0.9*minVisMass) || preciseVisMass_ > (1.1*maxVisMass) ) {
 	std::string type_string;
 	if      ( type_ == kTauToElecDecay ) type_string = "tau -> electron decay";
 	else if ( type_ == kTauToMuDecay   ) type_string = "tau -> muon decay";
@@ -108,6 +108,7 @@ namespace svFitStandalone
 	  assert(0);
 	}
 	std::cerr << "Warning: " << type_string << " declared for leg: Pt = " << p4_.pt() << ", eta = " << p4_.eta() << ", phi = " << p4_.phi() << ", mass = " << p4_.mass() << " !!" << std::endl;
+	std::cerr << " (mass expected in the range = " << minVisMass << ".." << maxVisMass << ")" << std::endl;
       }
       if ( preciseVisMass_ < minVisMass ) preciseVisMass_ = minVisMass;
       if ( preciseVisMass_ > maxVisMass ) preciseVisMass_ = maxVisMass;

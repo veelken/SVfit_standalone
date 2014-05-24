@@ -11,6 +11,7 @@ using namespace svFitStandalone;
 double 
 probMET(double dMETX, double dMETY, double covDet, const TMatrixD& covInv, double power, bool verbose)
 {
+#ifdef SVFIT_DEBUG 
   if ( verbose ) {
     std::cout << "<probMET>:" << std::endl;
     std::cout << " dMETX = " << dMETX << std::endl;
@@ -19,6 +20,7 @@ probMET(double dMETX, double dMETY, double covDet, const TMatrixD& covInv, doubl
     std::cout << " covInv:" << std::endl;
     covInv.Print();
   }
+#endif 
   double nll = 0.;
   if ( covDet != 0. ) {
     nll = TMath::Log(2.*TMath::Pi()) + 0.5*TMath::Log(TMath::Abs(covDet)) 
@@ -36,6 +38,7 @@ probMET(double dMETX, double dMETY, double covDet, const TMatrixD& covInv, doubl
 double 
 probTauToLepMatrixElement(double decayAngle, double nunuMass, double visMass, double x, bool applySinTheta, bool verbose)
 {
+#ifdef SVFIT_DEBUG 
   if ( verbose ) {
     std::cout << "<probTauToLepMatrixElement>:" << std::endl;
     std::cout << " decayAngle = " << decayAngle << std::endl;
@@ -44,6 +47,7 @@ probTauToLepMatrixElement(double decayAngle, double nunuMass, double visMass, do
     std::cout << " x = " << x << std::endl;
     std::cout << " applySinTheta = " << applySinTheta << std::endl;
   }
+#endif
   double nuMass2 = nunuMass*nunuMass;
   // protect against rounding errors that may lead to negative masses
   if ( nunuMass < 0. ) nunuMass = 0.; 
@@ -57,15 +61,18 @@ probTauToLepMatrixElement(double decayAngle, double nunuMass, double visMass, do
     prob /= (1. + 1.e+6*TMath::Power(nunuMass - nunuMass_limit, 2.));
   }
   if ( applySinTheta ) prob *= (0.5*TMath::Sin(decayAngle));
+#ifdef SVFIT_DEBUG 
   if ( verbose ) {
     std::cout << "--> prob = " << prob << std::endl;
   }
+#endif
   return prob;
 }
 
 double 
 probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, double x, bool applySinTheta, bool verbose)
 {
+#ifdef SVFIT_DEBUG 
   if ( verbose ) {
     std::cout << "<probTauToHadPhaseSpace>:" << std::endl;
     std::cout << " decayAngle = " << decayAngle << std::endl;
@@ -74,6 +81,7 @@ probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, doubl
     std::cout << " x = " << x << std::endl;
     std::cout << " applySinTheta = " << applySinTheta << std::endl;
   }
+#endif
   double Pvis_rf = svFitStandalone::pVisRestFrame(visMass, nunuMass, svFitStandalone::tauLeptonMass);
   double visMass2 = visMass*visMass;
   double prob = tauLeptonMass/(2.*Pvis_rf);
@@ -85,9 +93,11 @@ probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, doubl
     prob /= (1. + 1.e+6*TMath::Power(x - visEnFracX_limit, 2.));
   }
   if ( applySinTheta ) prob *= (0.5*TMath::Sin(decayAngle));
+#ifdef SVFIT_DEBUG 
   if ( verbose ) {
     std::cout << "--> prob = " << prob << std::endl;
   }
+#endif
   return prob;
 }
 
@@ -95,18 +105,41 @@ namespace
 {
   double extractProbFromLUT(double x, const TH1* lut)
   {
+    //std::cout << "<extractProbFromLUT>:" << std::endl;
+    //std::cout << " lut = " << lut->GetName() << " (type = " << lut->ClassName() << ")" << std::endl;
+    //std::cout << " x = " << x << std::endl;
     int bin = (const_cast<TH1*>(lut))->FindBin(x);
     int numBins = lut->GetNbinsX();
     if ( bin < 1       ) bin = 1;
     if ( bin > numBins ) bin = numBins;
+    //std::cout << "bin = " << bin << " (numBins = " << numBins << ")" << std::endl;
     return lut->GetBinContent(bin);
   }
 }
 
 double 
-probVisMassAndPtShift(double deltaVisMass, double recTauPtDivGenTauPt, const TH1* lutVisMassRes, const TH1* lutVisPtRes)
+probVisMassAndPtShift(double deltaVisMass, double recTauPtDivGenTauPt, const TH1* lutVisMassRes, const TH1* lutVisPtRes, bool verbose)
 {
-  double prob = extractProbFromLUT(deltaVisMass, lutVisMassRes);
-  prob *= extractProbFromLUT(recTauPtDivGenTauPt, lutVisPtRes);
+#ifdef SVFIT_DEBUG 
+  if ( verbose ) {
+    std::cout << "<probVisMassAndPtShift>:" << std::endl;
+    std::cout << " deltaVisMass = " << deltaVisMass << std::endl;
+    std::cout << " recTauPtDivGenTauPt = " << recTauPtDivGenTauPt << std::endl;
+  }
+#endif
+  double probCorr_mass = extractProbFromLUT(deltaVisMass, lutVisMassRes);
+  double probCorr_pt = extractProbFromLUT(recTauPtDivGenTauPt, lutVisPtRes);
+  // CV: account for Jacobi factor 
+  double genTauPtDivRecTauPt = ( recTauPtDivGenTauPt > 0. ) ? 
+    (1./recTauPtDivGenTauPt) : 1.e+1;
+  probCorr_pt *= genTauPtDivRecTauPt;
+  double prob = probCorr_mass*probCorr_pt;
+#ifdef SVFIT_DEBUG 
+  if ( verbose ) {
+    std::cout << " probCorr(mass) = " << probCorr_mass << std::endl;
+    std::cout << " probCorr(Pt) = " << probCorr_pt << std::endl;
+    std::cout << "--> prob = " << prob << std::endl;
+  }
+#endif
   return prob;
 }

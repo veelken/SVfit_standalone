@@ -60,6 +60,6 @@ double probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass
 
     lutVisMassRes, lutVisPtRes : histograms that parametrize the Pt and mass resolution for hadronic taus
 */
-double probVisMassAndPtShift(double deltaVisMass, double recTauPtDivGenTauPt, const TH1* lutVisMassRes, const TH1* lutVisPtRes);
+double probVisMassAndPtShift(double deltaVisMass, double recTauPtDivGenTauPt, const TH1* lutVisMassRes, const TH1* lutVisPtRes, bool verbose = false);
 
 #endif

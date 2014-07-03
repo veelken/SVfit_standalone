@@ -10,6 +10,53 @@
 
 namespace svFitStandalone
 {
+  TH1* makeHistogram(const std::string& histogramName, double xMin, double xMax, double logBinWidth)
+  {
+    int numBins = 1 + TMath::Log(xMax/xMin)/TMath::Log(logBinWidth);
+    TArrayF binning(numBins + 1);
+    binning[0] = 0.;
+    double x = xMin;  
+    for ( int iBin = 1; iBin <= numBins; ++iBin ) {
+      binning[iBin] = x;
+      x *= logBinWidth;
+    }  
+    TH1* histogram = new TH1D(histogramName.data(), histogramName.data(), numBins, binning.GetArray());
+    return histogram;
+  }
+  void compHistogramDensity(const TH1* histogram, TH1* histogram_density) 
+  {
+    for ( int iBin = 1; iBin <= histogram->GetNbinsX(); ++iBin ) {
+      double binContent = histogram->GetBinContent(iBin);
+      double binError = histogram->GetBinError(iBin);
+      double binWidth = histogram->GetBinWidth(iBin);
+      //if ( histogram == histogramMass_ ) {
+      //  TAxis* xAxis = histogram->GetXaxis();
+      //  std::cout << "bin #" << iBin << " (x = " << xAxis->GetBinLowEdge(iBin) << ".." << xAxis->GetBinUpEdge(iBin) << ", width = " << binWidth << "):"
+      //	      << " " << binContent << " +/- " << binError << std::endl;
+      //}
+      assert(binWidth > 0.);
+      histogram_density->SetBinContent(iBin, binContent/binWidth);
+      histogram_density->SetBinError(iBin, binError/binWidth);
+    }
+  }
+  double extractValue(const TH1* histogram, TH1* histogram_density) 
+  {
+    double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
+    compHistogramDensity(histogram, histogram_density);
+    svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
+    //double value = maximum_interpol;
+    double value = maximum;
+    return value;
+  }
+  double extractUncertainty(const TH1* histogram, TH1* histogram_density)
+  {
+    double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
+    compHistogramDensity(histogram, histogram_density);
+    svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
+    //double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum_interpol, 2.) + TMath::Power(maximum_interpol - quantile016, 2.)));
+    double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum, 2.) + TMath::Power(maximum - quantile016, 2.)));
+    return uncertainty;
+  }
   void map_xVEGAS(const double* x, bool l1isLep, bool l2isLep, bool shiftVisMassAndPt, double mvis, double mtest, double* x_mapped)
   {
     int offset = 0;

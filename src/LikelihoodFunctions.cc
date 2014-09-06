@@ -104,7 +104,7 @@ probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, doubl
 namespace
 {
   double extractProbFromLUT(double x, const TH1* lut)
-  {
+  {    
     //std::cout << "<extractProbFromLUT>:" << std::endl;
     //std::cout << " lut = " << lut->GetName() << " (type = " << lut->ClassName() << ")" << std::endl;
     //std::cout << " x = " << x << std::endl;
@@ -118,26 +118,57 @@ namespace
 }
 
 double 
-probVisMassAndPtShift(double deltaVisMass, double recTauPtDivGenTauPt, const TH1* lutVisMassRes, const TH1* lutVisPtRes, bool verbose)
+probVisMass(double visMass, const TH1* lutVisMass, bool verbose)
 {
 #ifdef SVFIT_DEBUG 
   if ( verbose ) {
-    std::cout << "<probVisMassAndPtShift>:" << std::endl;
+    std::cout << "<probVisMass>:" << std::endl;
+    std::cout << " visMass = " << deltaVisMass << std::endl;
+  }
+#endif
+  double prob = ( lutVisMass ) ? extractProbFromLUT(visMass, lutVisMass) : 1.0;
+#ifdef SVFIT_DEBUG 
+  if ( verbose ) {
+    std::cout << "--> prob = " << prob << std::endl;
+  }
+#endif
+  return prob;
+}
+
+double 
+probVisMassShift(double deltaVisMass, const TH1* lutVisMassRes, bool verbose)
+{
+#ifdef SVFIT_DEBUG 
+  if ( verbose ) {
+    std::cout << "<probVisMassShift>:" << std::endl;
     std::cout << " deltaVisMass = " << deltaVisMass << std::endl;
+  }
+#endif
+  double prob = ( lutVisMassRes ) ? extractProbFromLUT(deltaVisMass, lutVisMassRes) : 1.0;
+#ifdef SVFIT_DEBUG 
+  if ( verbose ) {
+    std::cout << "--> prob = " << prob << std::endl;
+  }
+#endif
+  return prob;
+}
+
+double 
+probVisPtShift(double recTauPtDivGenTauPt, const TH1* lutVisPtRes, bool verbose)
+{
+#ifdef SVFIT_DEBUG 
+  if ( verbose ) {
+    std::cout << "<probVisPtShift>:" << std::endl;
     std::cout << " recTauPtDivGenTauPt = " << recTauPtDivGenTauPt << std::endl;
   }
 #endif
-  double probCorr_mass = extractProbFromLUT(deltaVisMass, lutVisMassRes);
-  double probCorr_pt = extractProbFromLUT(recTauPtDivGenTauPt, lutVisPtRes);
+  double prob = ( lutVisPtRes ) ? extractProbFromLUT(recTauPtDivGenTauPt, lutVisPtRes) : 1.0;
   // CV: account for Jacobi factor 
   double genTauPtDivRecTauPt = ( recTauPtDivGenTauPt > 0. ) ? 
     (1./recTauPtDivGenTauPt) : 1.e+1;
-  probCorr_pt *= genTauPtDivRecTauPt;
-  double prob = probCorr_mass*probCorr_pt;
+  prob *= genTauPtDivRecTauPt;
 #ifdef SVFIT_DEBUG 
   if ( verbose ) {
-    std::cout << " probCorr(mass) = " << probCorr_mass << std::endl;
-    std::cout << " probCorr(Pt) = " << probCorr_pt << std::endl;
     std::cout << "--> prob = " << prob << std::endl;
   }
 #endif

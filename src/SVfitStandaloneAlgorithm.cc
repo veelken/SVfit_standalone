@@ -10,46 +10,58 @@
 
 namespace svFitStandalone
 {
-  void map_xVEGAS(const double* x, bool l1isLep, bool l2isLep, bool shiftVisMassAndPt, double mvis, double mtest, double* x_mapped)
+  void map_xVEGAS(const double* x, bool l1isLep, bool l2isLep, bool marginalizeVisMass, bool shiftVisMass, bool shiftVisPt, double mvis, double mtest, double* x_mapped)
   {
-    int offset = 0;
+    int offset1 = 0;
     if ( l1isLep ) {
       x_mapped[kXFrac]                 = x[0];
       x_mapped[kMNuNu]                 = x[1];
       x_mapped[kPhi]                   = x[2];
       x_mapped[kVisMassShifted]        = 0.;
       x_mapped[kRecTauPtDivGenTauPt]   = 0.;
-      offset = 3;
+      offset1 = 3;
     } else {
       x_mapped[kXFrac]                 = x[0];
       x_mapped[kMNuNu]                 = 0.;
       x_mapped[kPhi]                   = x[1];
-      if ( shiftVisMassAndPt ) {
-	x_mapped[kVisMassShifted]      = x[2];
-	x_mapped[kRecTauPtDivGenTauPt] = x[3];
-	offset = 4;
+      offset1 = 2;
+      if ( marginalizeVisMass || shiftVisMass ) {
+	x_mapped[kVisMassShifted]      = x[offset1];
+	++offset1;
       } else {
 	x_mapped[kVisMassShifted]      = 0.;
-	x_mapped[kRecTauPtDivGenTauPt] = 0.;
-	offset = 2;
       }
-    }
+      if ( shiftVisPt ) {
+	x_mapped[kRecTauPtDivGenTauPt] = x[offset1];
+	++offset1;
+      } else {
+	x_mapped[kRecTauPtDivGenTauPt] = 0.;
+      }
+    }    
     double x2 = ( x[0] > 0. ) ? TMath::Power(mvis/mtest, 2.)/x[0] : 1.e+3;
+    int offset2 = 0;
     if ( l2isLep ) {
       x_mapped[kMaxFitParams + kXFrac]                 = x2;
-      x_mapped[kMaxFitParams + kMNuNu]                 = x[0 + offset];
-      x_mapped[kMaxFitParams + kPhi]                   = x[1 + offset];
+      x_mapped[kMaxFitParams + kMNuNu]                 = x[offset1 + 0];
+      x_mapped[kMaxFitParams + kPhi]                   = x[offset1 + 1];
       x_mapped[kMaxFitParams + kVisMassShifted]        = 0.;
       x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt]   = 0.;
+      offset2 = 2;
     } else {
       x_mapped[kMaxFitParams + kXFrac]                 = x2;
       x_mapped[kMaxFitParams + kMNuNu]                 = 0.;
-      x_mapped[kMaxFitParams + kPhi]                   = x[0 + offset];
-      if ( shiftVisMassAndPt ) {
-	x_mapped[kMaxFitParams + kVisMassShifted]      = x[1 + offset];
-	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[2 + offset];
+      x_mapped[kMaxFitParams + kPhi]                   = x[offset1 + 0];
+      offset2 = 1;
+      if ( marginalizeVisMass || shiftVisMass ) {
+	x_mapped[kMaxFitParams + kVisMassShifted]      = x[offset1 + offset2];
+	++offset2;
       } else {
 	x_mapped[kMaxFitParams + kVisMassShifted]      = 0.;
+      }
+      if ( shiftVisPt ) {
+	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[offset1 + offset2];
+	++offset2;
+      } else {
 	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = 0.;
       }
     }
@@ -60,45 +72,57 @@ namespace svFitStandalone
     //assert(0);
   }
 
-  void map_xMarkovChain(const double* x, bool l1isLep, bool l2isLep, bool shiftVisMassAndPt, double* x_mapped)
+  void map_xMarkovChain(const double* x, bool l1isLep, bool l2isLep, bool marginalizeVisMass, bool shiftVisMass, bool shiftVisPt, double* x_mapped)
   {
-    int offset = 0;
+    int offset1 = 0;
     if ( l1isLep ) {
       x_mapped[kXFrac]                 = x[0];
       x_mapped[kMNuNu]                 = x[1];
       x_mapped[kPhi]                   = x[2];
       x_mapped[kVisMassShifted]        = 0.;
       x_mapped[kRecTauPtDivGenTauPt]   = 0.;
-      offset = 3;
+      offset1 = 3;
     } else {
       x_mapped[kXFrac]                 = x[0];
       x_mapped[kMNuNu]                 = 0.;
       x_mapped[kPhi]                   = x[1];
-      if ( shiftVisMassAndPt ) {
-	x_mapped[kVisMassShifted]      = x[2];
-	x_mapped[kRecTauPtDivGenTauPt] = x[3];
-	offset = 4;
+      offset1 = 2;
+      if ( marginalizeVisMass || shiftVisMass ) {
+	x_mapped[kVisMassShifted]      = x[offset1];
+	++offset1;
       } else {
 	x_mapped[kVisMassShifted]      = 0.;
+      }
+      if ( shiftVisPt ) {
+	x_mapped[kRecTauPtDivGenTauPt] = x[offset1];
+	++offset1;
+      } else {
 	x_mapped[kRecTauPtDivGenTauPt] = 0.;
-	offset = 2;
       }
     }
+    int offset2 = 0;
     if ( l2isLep ) {
-      x_mapped[kMaxFitParams + kXFrac]                 = x[0 + offset];
-      x_mapped[kMaxFitParams + kMNuNu]                 = x[1 + offset];
-      x_mapped[kMaxFitParams + kPhi]                   = x[2 + offset];
+      x_mapped[kMaxFitParams + kXFrac]                 = x[offset1 + 0];
+      x_mapped[kMaxFitParams + kMNuNu]                 = x[offset1 + 1];
+      x_mapped[kMaxFitParams + kPhi]                   = x[offset1 + 2];
       x_mapped[kMaxFitParams + kVisMassShifted]        = 0.;
       x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt]   = 0.;
+      offset2 = 3;
     } else {
-      x_mapped[kMaxFitParams + kXFrac]                 = x[0 + offset];
+      x_mapped[kMaxFitParams + kXFrac]                 = x[offset1 + 0];
       x_mapped[kMaxFitParams + kMNuNu]                 = 0.;
-      x_mapped[kMaxFitParams + kPhi]                   = x[1 + offset];
-      if ( shiftVisMassAndPt ) {
-	x_mapped[kMaxFitParams + kVisMassShifted]      = x[2 + offset];
-	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[3 + offset];
+      x_mapped[kMaxFitParams + kPhi]                   = x[offset1 + 1];
+      offset2 = 2;
+      if ( marginalizeVisMass || shiftVisMass ) {
+	x_mapped[kMaxFitParams + kVisMassShifted]      = x[offset1 + offset2];
+	++offset2;
       } else {
 	x_mapped[kMaxFitParams + kVisMassShifted]      = 0.;
+      }
+      if ( shiftVisPt ) {	
+	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[offset1 + offset2];
+	++offset2;
+      } else {
 	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = 0.;
       }
     }
@@ -113,18 +137,21 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
 						   unsigned int verbose) 
   : fitStatus_(-1), 
     verbose_(verbose), 
-    maxObjFunctionCalls_(5000),
+    maxObjFunctionCalls_(10000),
     standaloneObjectiveFunctionAdapterVEGAS_(0),
     mcObjectiveFunctionAdapter_(0),
     mcPtEtaPhiMassAdapter_(0),
     integrator2_(0),
     integrator2_nDim_(0),
     isInitialized2_(false),
-    maxObjFunctionCalls2_(100000),
-    shiftVisMassAndPt_(false),
+    maxObjFunctionCalls2_(250000),
+    marginalizeVisMass_(false),
+    lutVisMassAllDMs_(0),
+    shiftVisMass_(false),
     lutVisMassResDM0_(0),
     lutVisMassResDM1_(0),
     lutVisMassResDM10_(0),
+    shiftVisPt_(false),
     lutVisPtResDM0_(0),
     lutVisPtResDM1_(0),
     lutVisPtResDM10_(0)
@@ -148,12 +175,13 @@ SVfitStandaloneAlgorithm::~SVfitStandaloneAlgorithm()
   delete mcObjectiveFunctionAdapter_;
   delete mcPtEtaPhiMassAdapter_;
   delete integrator2_;
-  delete lutVisMassResDM0_;
-  delete lutVisMassResDM1_;
-  delete lutVisMassResDM10_;
-  delete lutVisPtResDM0_;
-  delete lutVisPtResDM1_;
-  delete lutVisPtResDM10_;
+  //delete lutVisMassAllDMs_;
+  //delete lutVisMassResDM0_;
+  //delete lutVisMassResDM1_;
+  //delete lutVisMassResDM10_;
+  //delete lutVisPtResDM0_;
+  //delete lutVisPtResDM1_;
+  //delete lutVisPtResDM10_;
 }
 
 namespace
@@ -170,16 +198,45 @@ namespace
 }
 
 void 
-SVfitStandaloneAlgorithm::shiftVisMassAndPt(bool value, TFile* inputFile)
+SVfitStandaloneAlgorithm::marginalizeVisMass(bool value, TFile* inputFile)
 {
-  shiftVisMassAndPt_ = value;
-  if ( shiftVisMassAndPt_ ) {
+  marginalizeVisMass_ = value;
+  if ( marginalizeVisMass_ ) {
+    delete lutVisMassAllDMs_;
+    TH1* lutVisMassAllDMs_tmp = readHistogram(inputFile, "DQMData/genTauMassAnalyzer/genTauJetMass");
+    if ( lutVisMassAllDMs_tmp->GetNbinsX() >= 1000 ) lutVisMassAllDMs_tmp->Rebin(100);
+    lutVisMassAllDMs_ = lutVisMassAllDMs_tmp;
+  }
+}
+
+void 
+SVfitStandaloneAlgorithm::marginalizeVisMass(bool value, const TH1* lut)
+{
+  marginalizeVisMass_ = value;
+  if ( marginalizeVisMass_ ) {
+    lutVisMassAllDMs_ = lut;
+  }
+}
+
+void 
+SVfitStandaloneAlgorithm::shiftVisMass(bool value, TFile* inputFile)
+{
+  shiftVisMass_ = value;
+  if ( shiftVisMass_ ) {
     delete lutVisMassResDM0_;
     lutVisMassResDM0_ = readHistogram(inputFile, "recMinusGenTauMass_recDecayModeEq0");
     delete lutVisMassResDM1_;
     lutVisMassResDM1_ = readHistogram(inputFile, "recMinusGenTauMass_recDecayModeEq1");
     delete lutVisMassResDM10_;
     lutVisMassResDM10_ = readHistogram(inputFile, "recMinusGenTauMass_recDecayModeEq10");
+  }
+}
+
+void 
+SVfitStandaloneAlgorithm::shiftVisPt(bool value, TFile* inputFile)
+{
+  shiftVisPt_ = value;
+  if ( shiftVisPt_ ) {
     delete lutVisPtResDM0_;
     lutVisPtResDM0_ = readHistogram(inputFile, "recTauPtDivGenTauPt_recDecayModeEq0");
     delete lutVisPtResDM1_;
@@ -231,20 +288,23 @@ SVfitStandaloneAlgorithm::setup()
       std::string(TString::Format("leg%i::phi", (int)idx + 1)).c_str(), 
       0.0, 0.25);
     // start values for Pt and mass of visible tau decay products (hadronic tau decays only)
-    if ( measuredTauLepton.type() == kTauToHadDecay && shiftVisMassAndPt_ ) {
+    if ( measuredTauLepton.type() == kTauToHadDecay && (marginalizeVisMass_ || shiftVisMass_) ) {
       minimizer_->SetLimitedVariable(
         idx*kMaxFitParams + kVisMassShifted, 
         std::string(TString::Format("leg%i::mVisShift", (int)idx + 1)).c_str(), 
         0.8, 0.10, svFitStandalone::chargedPionMass, svFitStandalone::tauLeptonMass);
-      minimizer_->SetLimitedVariable(
-        idx*kMaxFitParams + kRecTauPtDivGenTauPt, 
-        std::string(TString::Format("leg%i::tauPtDivGenVisPt", (int)idx + 1)).c_str(), 
-        0., 0.10, -1., +1.5);
     } else {
       minimizer_->SetFixedVariable(
         idx*kMaxFitParams + kVisMassShifted, 
         std::string(TString::Format("leg%i::mVisShift", (int)idx + 1)).c_str(), 
         measuredTauLepton.mass());
+    }
+    if ( measuredTauLepton.type() == kTauToHadDecay && shiftVisPt_ ) {
+      minimizer_->SetLimitedVariable(
+        idx*kMaxFitParams + kRecTauPtDivGenTauPt, 
+        std::string(TString::Format("leg%i::tauPtDivGenVisPt", (int)idx + 1)).c_str(), 
+        0., 0.10, -1., +1.5);
+    } else {     
       minimizer_->SetFixedVariable(
         idx*kMaxFitParams + kRecTauPtDivGenTauPt, 
         std::string(TString::Format("leg%i::tauPtDivGenVisPt", (int)idx + 1)).c_str(), 
@@ -358,8 +418,10 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   int nDim = 0;
   l1isLep_ = false;
   l2isLep_ = false;
+  const TH1* l1lutVisMass = 0;
   const TH1* l1lutVisMassRes = 0;
   const TH1* l1lutVisPtRes = 0;
+  const TH1* l2lutVisMass = 0;
   const TH1* l2lutVisMassRes = 0;
   const TH1* l2lutVisPtRes = 0;
   for ( size_t idx = 0; idx < nll_->measuredTauLeptons().size(); ++idx ) {
@@ -367,25 +429,40 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     if ( idx == 0 ) {
       idxFitParLeg1_ = 0;
       if ( measuredTauLepton.type() == kTauToHadDecay ) { 
-	if ( shiftVisMassAndPt_ ) {
+	nDim += 2;
+	if ( marginalizeVisMass_ ) {
+	  l1lutVisMass = lutVisMassAllDMs_;
+	}	
+	if ( shiftVisMass_ ) {
 	  if ( measuredTauLepton.decayMode() == 0 ) {
 	    l1lutVisMassRes = lutVisMassResDM0_;
-	    l1lutVisPtRes = lutVisPtResDM0_;
 	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
 	    l1lutVisMassRes = lutVisMassResDM1_;
-	    l1lutVisPtRes = lutVisPtResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l1lutVisMassRes = lutVisMassResDM10_;
-	    l1lutVisPtRes = lutVisPtResDM10_;
 	  } else {
-	    std::cerr << "Warning: shiftVisMassAndPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisMassAndPt for this event !!" << std::endl;
+	    std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+		      << " --> disabling shiftVisMass for this event !!" << std::endl;
 	  }
         }
-        if ( l1lutVisMassRes && l1lutVisPtRes ) {
-	  nDim += 4;
-	} else {
-	  nDim += 2;
+	if ( shiftVisPt_ ) {
+	  if ( measuredTauLepton.decayMode() == 0 ) {
+	    l1lutVisPtRes = lutVisPtResDM0_;
+	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+	    l1lutVisPtRes = lutVisPtResDM1_;
+	  } else if ( measuredTauLepton.decayMode() == 10 ) {
+	    l1lutVisPtRes = lutVisPtResDM10_;
+	  } else {
+	    std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+		      << " --> disabling shiftVisPt for this event !!" << std::endl;
+	  }
+        }
+	nDim += 2;
+	if ( l1lutVisMass || l1lutVisMassRes ) {
+	  ++nDim;
+	}
+	if ( l1lutVisPtRes ) {
+	  ++nDim;
 	}
       } else {
 	l1isLep_ = true;
@@ -395,25 +472,39 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     if ( idx == 1 ) {
       idxFitParLeg2_ = nDim;
       if ( measuredTauLepton.type() == kTauToHadDecay ) { 
-	if ( shiftVisMassAndPt_ ) {
+	if ( marginalizeVisMass_ ) {
+	  l2lutVisMass = lutVisMassAllDMs_;
+	}	
+	if ( shiftVisMass_ ) {
 	  if ( measuredTauLepton.decayMode() == 0 ) {
 	    l2lutVisMassRes = lutVisMassResDM0_;
-	    l2lutVisPtRes = lutVisPtResDM0_;
 	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
 	    l2lutVisMassRes = lutVisMassResDM1_;
-	    l2lutVisPtRes = lutVisPtResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l2lutVisMassRes = lutVisMassResDM10_;
-	    l2lutVisPtRes = lutVisPtResDM10_;
 	  } else {
-	    std::cerr << "Warning: shiftVisMassAndPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisMassAndPt for this event !!" << std::endl;
+	    std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+		      << " --> disabling shiftVisMass for this event !!" << std::endl;
 	  }
 	}
-	if ( l2lutVisMassRes && l2lutVisPtRes ) { 
-	  nDim += 4;
-	} else {
-	  nDim += 2;
+	if ( shiftVisPt_ ) {
+	  if ( measuredTauLepton.decayMode() == 0 ) {
+	    l2lutVisPtRes = lutVisPtResDM0_;
+	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+	    l2lutVisPtRes = lutVisPtResDM1_;
+	  } else if ( measuredTauLepton.decayMode() == 10 ) {
+	    l2lutVisPtRes = lutVisPtResDM10_;
+	  } else {
+	    std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+		      << " --> disabling shiftVisPt for this event !!" << std::endl;
+	  }
+	}
+	nDim += 2;
+	if ( l2lutVisMass || l2lutVisMassRes ) {
+	  ++nDim;
+	}
+	if ( l2lutVisPtRes ) {
+	  ++nDim;
 	}
       } else {
 	l2isLep_ = true;
@@ -458,13 +549,18 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     x0[idxFitParLeg1_ + 1] = 0.0; 
     xl[idxFitParLeg1_ + 1] = -TMath::Pi(); 
     xh[idxFitParLeg1_ + 1] = +TMath::Pi();
-    if ( shiftVisMassAndPt_ ) {
-      x0[idxFitParLeg1_ + 2] = nll_->measuredTauLeptons()[0].mass();
-      xl[idxFitParLeg1_ + 2] = svFitStandalone::chargedPionMass; 
-      xh[idxFitParLeg1_ + 2] = svFitStandalone::tauLeptonMass; 
-      x0[idxFitParLeg1_ + 3] = 0.0; 
-      xl[idxFitParLeg1_ + 3] = -1.0; 
-      xh[idxFitParLeg1_ + 3] = +1.5;
+    int offset1 = 2;
+    if ( marginalizeVisMass_ || shiftVisMass_ ) {
+      x0[idxFitParLeg1_ + offset1] = nll_->measuredTauLeptons()[0].mass();
+      xl[idxFitParLeg1_ + offset1] = svFitStandalone::chargedPionMass; 
+      xh[idxFitParLeg1_ + offset1] = svFitStandalone::tauLeptonMass; 
+      ++offset1;
+    }
+    if ( shiftVisPt_ ) {
+      x0[idxFitParLeg1_ + offset1] = 0.0; 
+      xl[idxFitParLeg1_ + offset1] = -1.0; 
+      xh[idxFitParLeg1_ + offset1] = +1.5;
+      ++offset1;
     }
   }
   if ( l2isLep_ ) {
@@ -478,17 +574,22 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     x0[idxFitParLeg2_ + 0] = 0.0; 
     xl[idxFitParLeg2_ + 0] = -TMath::Pi(); 
     xh[idxFitParLeg2_ + 0] = +TMath::Pi();
-    if ( shiftVisMassAndPt_ ) {
-      x0[idxFitParLeg2_ + 1] = nll_->measuredTauLeptons()[1].mass(); 
-      xl[idxFitParLeg2_ + 1] = svFitStandalone::chargedPionMass; 
-      xh[idxFitParLeg2_ + 1] = svFitStandalone::tauLeptonMass; 
-      x0[idxFitParLeg2_ + 2] = 0.0; 
-      xl[idxFitParLeg2_ + 2] = -1.0; 
-      xh[idxFitParLeg2_ + 2] = +1.5;
+    int offset2 = 1;
+    if ( marginalizeVisMass_ || shiftVisMass_ ) {
+      x0[idxFitParLeg2_ + offset2] = nll_->measuredTauLeptons()[1].mass(); 
+      xl[idxFitParLeg2_ + offset2] = svFitStandalone::chargedPionMass; 
+      xh[idxFitParLeg2_ + offset2] = svFitStandalone::tauLeptonMass; 
+      ++offset2;
+    }
+    if ( shiftVisPt_ ) {
+      x0[idxFitParLeg2_ + offset2] = 0.0; 
+      xl[idxFitParLeg2_ + offset2] = -1.0; 
+      xh[idxFitParLeg2_ + offset2] = +1.5;
+      ++offset2;
     }
   }
 
-  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithm_histogramMass", measuredDiTauSystem().mass()/1.0125, 1.e+4, 1.025);
+  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithmVEGAS_histogramMass", measuredDiTauSystem().mass()/1.0125, 1.e+4, 1.025);
   TH1* histogramMass_density = (TH1*)histogramMass->Clone(Form("%s_density", histogramMass->GetName()));
 
   std::vector<double> xGraph;
@@ -502,12 +603,20 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   ROOT::Math::Functor toIntegrate(standaloneObjectiveFunctionAdapterVEGAS_, &ObjectiveFunctionAdapterVEGAS::Eval, nDim); 
   standaloneObjectiveFunctionAdapterVEGAS_->SetL1isLep(l1isLep_);
   standaloneObjectiveFunctionAdapterVEGAS_->SetL2isLep(l2isLep_);
-  standaloneObjectiveFunctionAdapterVEGAS_->SetShiftVisMassAndPt(shiftVisMassAndPt_ && l1lutVisMassRes && l1lutVisPtRes && l2lutVisMassRes && l2lutVisPtRes);
+  if ( marginalizeVisMass_ && shiftVisMass_ ) {
+    std::cerr << "Error: marginalizeVisMass and shiftVisMass flags must not both be enabled !!" << std::endl;
+    assert(0);
+  }
+  standaloneObjectiveFunctionAdapterVEGAS_->SetMarginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass));
+  standaloneObjectiveFunctionAdapterVEGAS_->SetShiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes));
+  standaloneObjectiveFunctionAdapterVEGAS_->SetShiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes));
   ig2.SetFunction(toIntegrate);
   nll_->addDelta(true);
   nll_->addSinTheta(false);
   nll_->addPhiPenalty(false);
-  nll_->shiftVisMassAndPt(shiftVisMassAndPt_ && l1lutVisMassRes && l1lutVisPtRes && l2lutVisMassRes && l2lutVisPtRes, l1lutVisMassRes, l1lutVisPtRes, l2lutVisMassRes, l2lutVisPtRes);
+  nll_->marginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass), l1lutVisMass, l2lutVisMass);
+  nll_->shiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes), l1lutVisMassRes, l2lutVisMassRes);
+  nll_->shiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes), l1lutVisPtRes, l2lutVisPtRes);
   nll_->requirePhysicalSolution(true);
   int count = 0;
   double pMax = 0.;
@@ -548,6 +657,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   }
   //mass_ = extractValue(histogramMass, histogramMass_density);
   massUncert_ = extractUncertainty(histogramMass, histogramMass_density);
+  massLmax_ = extractLmax(histogramMass, histogramMass_density);
   if ( verbose_ >= 1 ) {
     std::cout << "--> mass  = " << mass_  << " +/- " << massUncert_ << std::endl;
     std::cout << "   (pMax = " << pMax << ", count = " << count << ")" << std::endl;
@@ -597,7 +707,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
     unsigned numIterSimAnnealingPhase2 = TMath::Nint(0.06*maxObjFunctionCalls2_);
     double T0 = 15.;
     double alpha = 1.0 - 1.e+2/maxObjFunctionCalls2_;
-    unsigned numChains = 1;
+    unsigned numChains = 7;
     unsigned numBatches = 1;
     unsigned L = 1;
     double epsilon0 = 1.e-2;
@@ -619,8 +729,10 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
   int nDim = 0;
   l1isLep_ = false;
   l2isLep_ = false;
+  const TH1* l1lutVisMass = 0;
   const TH1* l1lutVisMassRes = 0;
   const TH1* l1lutVisPtRes = 0;
+  const TH1* l2lutVisMass = 0;
   const TH1* l2lutVisMassRes = 0;
   const TH1* l2lutVisPtRes = 0;
   for ( size_t idx = 0; idx < nll_->measuredTauLeptons().size(); ++idx ) {
@@ -628,25 +740,39 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
     if ( idx == 0 ) {
       idxFitParLeg1_ = 0;
       if ( measuredTauLepton.type() == kTauToHadDecay ) { 
-	if ( shiftVisMassAndPt_ ) {
+	if ( marginalizeVisMass_ ) {
+	  l1lutVisMass = lutVisMassAllDMs_;
+	}
+	if ( shiftVisMass_ ) {
 	  if ( measuredTauLepton.decayMode() == 0 ) {
 	    l1lutVisMassRes = lutVisMassResDM0_;
-	    l1lutVisPtRes = lutVisPtResDM0_;
 	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
 	    l1lutVisMassRes = lutVisMassResDM1_;
-	    l1lutVisPtRes = lutVisPtResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l1lutVisMassRes = lutVisMassResDM10_;
-	    l1lutVisPtRes = lutVisPtResDM10_;
 	  } else {
-	    std::cerr << "Warning: shiftVisMassAndPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisMassAndPt for this event !!" << std::endl;
+	    std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+		      << " --> disabling shiftVisMass for this event !!" << std::endl;
 	  }
         }
-        if ( l1lutVisMassRes && l1lutVisPtRes ) {
-	  nDim += 4;
-	} else {
-	  nDim += 2;
+	if ( shiftVisPt_ ) {
+	  if ( measuredTauLepton.decayMode() == 0 ) {
+	    l1lutVisPtRes = lutVisPtResDM0_;
+	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+	    l1lutVisPtRes = lutVisPtResDM1_;
+	  } else if ( measuredTauLepton.decayMode() == 10 ) {
+	    l1lutVisPtRes = lutVisPtResDM10_;
+	  } else {
+	    std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+		      << " --> disabling shiftVisPt for this event !!" << std::endl;
+	  }
+        }
+	nDim += 2;
+	if ( l1lutVisMass || l1lutVisMassRes ) {
+	  ++nDim;
+	}
+	if ( l1lutVisPtRes ) {
+	  ++nDim;
 	}
       } else {
 	l1isLep_ = true;
@@ -656,25 +782,39 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
     if ( idx == 1 ) {
       idxFitParLeg2_ = nDim;
       if ( measuredTauLepton.type() == kTauToHadDecay ) { 
-	if ( shiftVisMassAndPt_ ) {
+	if ( marginalizeVisMass_ ) {
+	  l2lutVisMass = lutVisMassAllDMs_;
+	}
+	if ( shiftVisMass_ ) {
 	  if ( measuredTauLepton.decayMode() == 0 ) {
 	    l2lutVisMassRes = lutVisMassResDM0_;
-	    l2lutVisPtRes = lutVisPtResDM0_;
 	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
 	    l2lutVisMassRes = lutVisMassResDM1_;
-	    l2lutVisPtRes = lutVisPtResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l2lutVisMassRes = lutVisMassResDM10_;
-	    l2lutVisPtRes = lutVisPtResDM10_;
 	  } else {
-	    std::cerr << "Warning: shiftVisMassAndPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisMassAndPt for this event !!" << std::endl;
+	    std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+		      << " --> disabling shiftVisMass for this event !!" << std::endl;
 	  }
         }
-        if ( l2lutVisMassRes && l2lutVisPtRes ) {
-	  nDim += 4;
-	} else {
-	  nDim += 2;
+	if ( shiftVisPt_ ) {
+	  if ( measuredTauLepton.decayMode() == 0 ) {
+	    l2lutVisPtRes = lutVisPtResDM0_;
+	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+	    l2lutVisPtRes = lutVisPtResDM1_;
+	  } else if ( measuredTauLepton.decayMode() == 10 ) {
+	    l2lutVisPtRes = lutVisPtResDM10_;
+	  } else {
+	    std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+		      << " --> disabling shiftVisPt for this event !!" << std::endl;
+	  }
+        }
+	nDim += 2;
+	if ( l2lutVisMass || l2lutVisMassRes ) {
+	  ++nDim;
+	}
+	if ( l2lutVisPtRes ) {
+	  ++nDim;
 	}
       } else {
 	l2isLep_ = true;
@@ -682,7 +822,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
       }
     }
   }
-  
+
   if ( nDim != integrator2_nDim_ ) {
     mcObjectiveFunctionAdapter_->SetNDim(nDim);    
     integrator2_->setIntegrand(*mcObjectiveFunctionAdapter_);
@@ -691,10 +831,23 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
   }
   mcObjectiveFunctionAdapter_->SetL1isLep(l1isLep_);
   mcObjectiveFunctionAdapter_->SetL2isLep(l2isLep_);
-  mcObjectiveFunctionAdapter_->SetShiftVisMassAndPt(shiftVisMassAndPt_ && l1lutVisMassRes && l1lutVisPtRes && l2lutVisMassRes && l2lutVisPtRes);
+  if ( marginalizeVisMass_ && shiftVisMass_ ) {
+    std::cerr << "Error: marginalizeVisMass and shiftVisMass flags must not both be enabled !!" << std::endl;
+    assert(0);
+  }  
+  mcObjectiveFunctionAdapter_->SetMarginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass));
+  mcObjectiveFunctionAdapter_->SetShiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes));
+  mcObjectiveFunctionAdapter_->SetShiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes));
+  // CV: use same binning for Markov Chain and VEGAS integration.
+  //     The binning relative to the visible mass avoids that SVfit mass is "quantizied" at the same discrete values for all events.
+  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithmMarkovChain_histogramMass", measuredDiTauSystem().mass()/1.0125, 1.e+4, 1.025);
+  TH1* histogramMass_density = (TH1*)histogramMass->Clone(Form("%s_density", histogramMass->GetName()));
+  mcPtEtaPhiMassAdapter_->SetHistogramMass(histogramMass, histogramMass_density);
   mcPtEtaPhiMassAdapter_->SetL1isLep(l1isLep_);
   mcPtEtaPhiMassAdapter_->SetL2isLep(l2isLep_);
-  mcPtEtaPhiMassAdapter_->SetShiftVisMassAndPt(shiftVisMassAndPt_ && l1lutVisMassRes && l1lutVisPtRes && l2lutVisMassRes && l2lutVisPtRes);
+  mcPtEtaPhiMassAdapter_->SetMarginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass));
+  mcPtEtaPhiMassAdapter_->SetShiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes));
+  mcPtEtaPhiMassAdapter_->SetShiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes));
   
   /* --------------------------------------------------------------------------------------
      lower and upper bounds for integration. Boundaries are defined for each decay channel
@@ -731,13 +884,18 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
     x0[idxFitParLeg1_ + 1] = 0.0; 
     xl[idxFitParLeg1_ + 1] = -TMath::Pi(); 
     xh[idxFitParLeg1_ + 1] = +TMath::Pi();
-    if ( shiftVisMassAndPt_ ) {
-      x0[idxFitParLeg1_ + 2] = 0.8; 
-      xl[idxFitParLeg1_ + 2] = svFitStandalone::chargedPionMass; 
-      xh[idxFitParLeg1_ + 2] = svFitStandalone::tauLeptonMass; 
-      x0[idxFitParLeg1_ + 3] = 0.0; 
-      xl[idxFitParLeg1_ + 3] = -1.0; 
-      xh[idxFitParLeg1_ + 3] = +1.5;
+    int offset1 = 2;
+    if ( marginalizeVisMass_ || shiftVisMass_ ) {
+      x0[idxFitParLeg1_ + offset1] = 0.8; 
+      xl[idxFitParLeg1_ + offset1] = svFitStandalone::chargedPionMass; 
+      xh[idxFitParLeg1_ + offset1] = svFitStandalone::tauLeptonMass; 
+      ++offset1;
+    }
+    if ( shiftVisPt_ ) {
+      x0[idxFitParLeg1_ + offset1] = 0.0; 
+      xl[idxFitParLeg1_ + offset1] = -1.0; 
+      xh[idxFitParLeg1_ + offset1] = +1.5;
+      ++offset1;
     }
   }
   if ( l2isLep_ ) {
@@ -757,13 +915,18 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
     x0[idxFitParLeg2_ + 1] = 0.0; 
     xl[idxFitParLeg2_ + 1] = -TMath::Pi(); 
     xh[idxFitParLeg2_ + 1] = +TMath::Pi();
-    if ( shiftVisMassAndPt_ ) {
-      x0[idxFitParLeg2_ + 2] = 0.8; 
-      xl[idxFitParLeg2_ + 2] = svFitStandalone::chargedPionMass; 
-      xh[idxFitParLeg2_ + 2] = svFitStandalone::tauLeptonMass; 
-      x0[idxFitParLeg2_ + 3] = 0.0; 
-      xl[idxFitParLeg2_ + 3] = -1.0; 
-      xh[idxFitParLeg2_ + 3] = +1.5;
+    int offset2 = 2;
+    if ( marginalizeVisMass_ || shiftVisMass_ ) {
+      x0[idxFitParLeg2_ + offset2] = 0.8; 
+      xl[idxFitParLeg2_ + offset2] = svFitStandalone::chargedPionMass; 
+      xh[idxFitParLeg2_ + offset2] = svFitStandalone::tauLeptonMass; 
+      ++offset2;
+    }
+    if ( shiftVisPt_ ) {     
+      x0[idxFitParLeg2_ + offset2] = 0.0; 
+      xl[idxFitParLeg2_ + offset2] = -1.0; 
+      xh[idxFitParLeg2_ + offset2] = +1.5;
+      ++offset2;
     }
   }
   for ( int i = 0; i < nDim; ++i ) {
@@ -776,7 +939,9 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
   nll_->addDelta(false);
   nll_->addSinTheta(false);
   nll_->addPhiPenalty(false);
-  nll_->shiftVisMassAndPt(shiftVisMassAndPt_ && l1lutVisMassRes && l1lutVisPtRes && l2lutVisMassRes && l2lutVisPtRes, l1lutVisMassRes, l1lutVisPtRes, l2lutVisMassRes, l2lutVisPtRes);
+  nll_->marginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass), l1lutVisMass, l2lutVisMass);
+  nll_->shiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes), l1lutVisMassRes, l2lutVisMassRes);
+  nll_->shiftVisPt(shiftVisPt_ && (l1lutVisPtRes && l2lutVisPtRes), l1lutVisPtRes, l2lutVisPtRes);
   nll_->requirePhysicalSolution(true);
   double integral = 0.;
   double integralErr = 0.;
@@ -785,13 +950,22 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
   fitStatus_ = errorFlag;
   pt_ = mcPtEtaPhiMassAdapter_->getPt();
   ptUncert_ = mcPtEtaPhiMassAdapter_->getPtUncert();
+  ptLmax_ = mcPtEtaPhiMassAdapter_->getPtLmax();
   eta_ = mcPtEtaPhiMassAdapter_->getEta();
   etaUncert_ = mcPtEtaPhiMassAdapter_->getEtaUncert();
+  etaLmax_ = mcPtEtaPhiMassAdapter_->getEtaLmax();
   phi_ = mcPtEtaPhiMassAdapter_->getPhi();
   phiUncert_ = mcPtEtaPhiMassAdapter_->getPhiUncert();
+  phiLmax_ = mcPtEtaPhiMassAdapter_->getPhiLmax();
   mass_ = mcPtEtaPhiMassAdapter_->getMass();
   massUncert_ = mcPtEtaPhiMassAdapter_->getMassUncert();
+  massLmax_ = mcPtEtaPhiMassAdapter_->getMassLmax();
   fittedDiTauSystem_ = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >(pt_, eta_, phi_, mass_);
+
+  delete histogramMass;
+  delete histogramMass_density;
+  mcPtEtaPhiMassAdapter_->SetHistogramMass(0, 0);
+
   if ( verbose_ >= 1 ) {
     std::cout << "--> Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass  = " << mass_ << std::endl;
     clock_->Show("<SVfitStandaloneAlgorithm::integrateMarkovChain>");

@@ -51,7 +51,18 @@ double probTauToLepMatrixElement(double decayAngle, double nunuMass, double visM
 double probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, double x, bool applySinTheta, bool verbose = false);
 
 /**
-   \class   probVisMassAndPtShift LikelihoodFunctions.h "TauAnalysis/SVfitStandalone/interface/LikelihoodFunctions.h"
+   \class   probVisMass LikelihoodFunctions.h "TauAnalysis/SVfitStandalone/interface/LikelihoodFunctions.h"
+   
+   \brief   Likelihood for producing system of given mass in hadronic tau decay
+
+   Likelihood for hadronic tau decay to produce visible decay products of true mass (visMass)
+
+    lutVisMass : histograms that parametrize the mass distribution of the visible decay products produced in hadronic tau decays on generator level
+*/
+double probVisMass(double visMass, const TH1* lutVisMass, bool verbose = false);
+
+/**
+   \class   probVisMassShift, probVisPtShift LikelihoodFunctions.h "TauAnalysis/SVfitStandalone/interface/LikelihoodFunctions.h"
    
    \brief   Resolution on Pt and mass of hadronic taus
 
@@ -60,6 +71,7 @@ double probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass
 
     lutVisMassRes, lutVisPtRes : histograms that parametrize the Pt and mass resolution for hadronic taus
 */
-double probVisMassAndPtShift(double deltaVisMass, double recTauPtDivGenTauPt, const TH1* lutVisMassRes, const TH1* lutVisPtRes, bool verbose = false);
+double probVisMassShift(double deltaVisMass, const TH1* lutVisMassRes, bool verbose = false);
+double probVisPtShift(double recTauPtDivGenTauPt, const TH1* lutVisPtRes, bool verbose = false);
 
 #endif

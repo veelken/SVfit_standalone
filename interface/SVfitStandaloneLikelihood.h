@@ -217,8 +217,11 @@ namespace svFitStandalone
     /// add sin(theta) term to likelihood for tau lepton decays
     /// WARNING: to be used when SVfit is run in "fit" mode only
     void addSinTheta(bool value) { addSinTheta_ = value; }  
+    /// marginalize unknown mass of hadronic tau decay products (ATLAS case)
+    void marginalizeVisMass(bool value, const TH1* l1lutVisMass, const TH1* l2lutVisMass);  
     /// take resolution on energy and mass of hadronic tau decays into account
-    void shiftVisMassAndPt(bool value, const TH1* l1lutVisMassRes, const TH1* l1lutVisPtRes, const TH1* l2lutVisMassRes, const TH1* l2lutVisPtRes);
+    void shiftVisMass(bool value, const TH1* l1lutVisMassRes, const TH1* l2lutVisMassRes);
+    void shiftVisPt(bool value, const TH1* l1lutVisPtRes, const TH1* l2lutVisPtRes);
     /// add a penalty term in case phi runs outside of interval 
     /// modify the MET term in the nll by an additional power (default is 1.)
     void metPower(double value) { metPower_=value; };    
@@ -284,10 +287,14 @@ namespace svFitStandalone
     bool requirePhysicalSolution_;
 
     /// resolution on energy and mass of hadronic taus
-    bool shiftVisMassAndPt_;
+    bool marginalizeVisMass_;
+    const TH1* l1lutVisMass_;
+    const TH1* l2lutVisMass_;
+    bool shiftVisMass_;
     const TH1* l1lutVisMassRes_;
-    const TH1* l1lutVisPtRes_;
     const TH1* l2lutVisMassRes_;
+    bool shiftVisPt_;
+    const TH1* l1lutVisPtRes_;
     const TH1* l2lutVisPtRes_;
   };
 }

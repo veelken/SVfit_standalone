@@ -75,7 +75,13 @@ namespace svFitStandalone
     svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
     //double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum_interpol, 2.) + TMath::Power(maximum_interpol - quantile016, 2.)));
     double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum, 2.) + TMath::Power(maximum - quantile016, 2.)));
-    return uncertainty;
+    return uncertainty;  
+  }
+  double extractLmax(const TH1* histogram, TH1* histogram_density)
+  {
+    compHistogramDensity(histogram, histogram_density);
+    double Lmax = histogram_density->GetMaximum();
+    return Lmax;
   }
 
   // for "fit" (MINUIT) mode
@@ -92,44 +98,50 @@ namespace svFitStandalone
     }
   };
   // for VEGAS integration
-  void map_xVEGAS(const double*, bool, bool, bool, double, double, double*);
+  void map_xVEGAS(const double*, bool, bool, bool, bool, bool, double, double, double*);
   class ObjectiveFunctionAdapterVEGAS
   {
   public:
     double Eval(const double* x) const // NOTE: return value = likelihood, **not** -log(likelihood)
     {
-      map_xVEGAS(x, l1isLep_, l2isLep_, shiftVisMassAndPt_, mvis_, mtest_, x_mapped_);      
+      map_xVEGAS(x, l1isLep_, l2isLep_, marginalizeVisMass_, shiftVisMass_, shiftVisPt_, mvis_, mtest_, x_mapped_);      
       double prob = SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->prob(x_mapped_, true, mtest_);
       if ( TMath::IsNaN(prob) ) prob = 0.;
       return prob;
     }
     void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
     void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
-    void SetShiftVisMassAndPt(bool shiftVisMassAndPt) { shiftVisMassAndPt_ = shiftVisMassAndPt; }
+    void SetMarginalizeVisMass(bool marginalizeVisMass) { marginalizeVisMass_ = marginalizeVisMass; }
+    void SetShiftVisMass(bool shiftVisMass) { shiftVisMass_ = shiftVisMass; }
+    void SetShiftVisPt(bool shiftVisPt) { shiftVisPt_ = shiftVisPt; }
     void SetMvis(double mvis) { mvis_ = mvis; }
     void SetMtest(double mtest) { mtest_ = mtest; }
   private:
     mutable double x_mapped_[10];
     bool l1isLep_;
     bool l2isLep_;
-    bool shiftVisMassAndPt_;
+    bool marginalizeVisMass_;
+    bool shiftVisMass_;
+    bool shiftVisPt_;
     double mvis_;  // mass of visible tau decay products
     double mtest_; // current mass hypothesis
   };
   // for markov chain integration
-  void map_xMarkovChain(const double*, bool, bool, bool, double*);
+  void map_xMarkovChain(const double*, bool, bool, bool, bool, bool, double*);
   class MCObjectiveFunctionAdapter : public ROOT::Math::Functor
   {
    public:
     void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
     void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
-    void SetShiftVisMassAndPt(bool shiftVisMassAndPt) { shiftVisMassAndPt_ = shiftVisMassAndPt; }
+    void SetMarginalizeVisMass(bool marginalizeVisMass) { marginalizeVisMass_ = marginalizeVisMass; }
+    void SetShiftVisMass(bool shiftVisMass) { shiftVisMass_ = shiftVisMass; }
+    void SetShiftVisPt(bool shiftVisPt) { shiftVisPt_ = shiftVisPt; }
     void SetNDim(int nDim) { nDim_ = nDim; }
     unsigned int NDim() const { return nDim_; }
    private:
     virtual double DoEval(const double* x) const
     {
-      map_xMarkovChain(x, l1isLep_, l2isLep_, shiftVisMassAndPt_, x_mapped_);
+      map_xMarkovChain(x, l1isLep_, l2isLep_, marginalizeVisMass_, shiftVisMass_, shiftVisPt_, x_mapped_);
       double prob = SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->prob(x_mapped_);
       if ( TMath::IsNaN(prob) ) prob = 0.;
       return prob;
@@ -138,7 +150,9 @@ namespace svFitStandalone
     int nDim_;
     bool l1isLep_;
     bool l2isLep_;
-    bool shiftVisMassAndPt_;
+    bool marginalizeVisMass_;
+    bool shiftVisMass_;
+    bool shiftVisPt_;
   };
   class MCPtEtaPhiMassAdapter : public ROOT::Math::Functor
   {
@@ -165,9 +179,20 @@ namespace svFitStandalone
       delete histogramMass_;
       delete histogramMass_density_;
     }
+    void SetHistogramMass(TH1* histogramMass, TH1* histogramMass_density)
+    {
+      // CV: passing null pointers to the SetHistogramMass function
+      //     indicates that the histograms have been deleted by the calling code
+      if ( histogramMass != 0 ) delete histogramMass_;
+      histogramMass_ = histogramMass;
+      if ( histogramMass_density != 0 ) delete histogramMass_density_;
+      histogramMass_density_ = histogramMass_density;
+    }
     void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
     void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
-    void SetShiftVisMassAndPt(bool shiftVisMassAndPt) { shiftVisMassAndPt_ = shiftVisMassAndPt; }
+    void SetMarginalizeVisMass(bool marginalizeVisMass) { marginalizeVisMass_ = marginalizeVisMass; }
+    void SetShiftVisMass(bool shiftVisMass) { shiftVisMass_ = shiftVisMass; }
+    void SetShiftVisPt(bool shiftVisPt) { shiftVisPt_ = shiftVisPt; }
     void SetNDim(int nDim) { nDim_ = nDim; }
     unsigned int NDim() const { return nDim_; }
     void Reset()
@@ -179,16 +204,20 @@ namespace svFitStandalone
     }
     double getPt() const { return extractValue(histogramPt_, histogramPt_density_); }
     double getPtUncert() const { return extractUncertainty(histogramPt_, histogramPt_density_); }
+    double getPtLmax() const { return extractLmax(histogramPt_, histogramPt_density_); }
     double getEta() const { return extractValue(histogramEta_, histogramEta_density_); }
     double getEtaUncert() const { return extractUncertainty(histogramEta_, histogramEta_density_); }
+    double getEtaLmax() const { return extractLmax(histogramEta_, histogramEta_density_); }
     double getPhi() const { return extractValue(histogramPhi_, histogramPhi_density_); }
     double getPhiUncert() const { return extractUncertainty(histogramPhi_, histogramPhi_density_); }
+    double getPhiLmax() const { return extractLmax(histogramPhi_, histogramPhi_density_); }
     double getMass() const { return extractValue(histogramMass_, histogramMass_density_); }
     double getMassUncert() const { return extractUncertainty(histogramMass_, histogramMass_density_); }
+    double getMassLmax() const { return extractLmax(histogramMass_, histogramMass_density_); }
    private:    
     virtual double DoEval(const double* x) const
     {
-      map_xMarkovChain(x, l1isLep_, l2isLep_, shiftVisMassAndPt_, x_mapped_);
+      map_xMarkovChain(x, l1isLep_, l2isLep_, marginalizeVisMass_, shiftVisMass_, shiftVisPt_, x_mapped_);
       SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->results(fittedTauLeptons_, x_mapped_);
       fittedDiTauSystem_ = fittedTauLeptons_[0] + fittedTauLeptons_[1];
       //std::cout << "<MCPtEtaPhiMassAdapter::DoEval>" << std::endl;
@@ -217,7 +246,9 @@ namespace svFitStandalone
     int nDim_;
     bool l1isLep_;
     bool l2isLep_;
-    bool shiftVisMassAndPt_;
+    bool marginalizeVisMass_;
+    bool shiftVisMass_;
+    bool shiftVisPt_;
   };
 }
 
@@ -294,8 +325,12 @@ class SVfitStandaloneAlgorithm
   void addLogM(bool value) { nll_->addLogM(value); }
   /// modify the MET term in the nll by an additional power (default is 1.)
   void metPower(double value) { nll_->metPower(value); }
+  /// marginalize unknown mass of hadronic tau decay products (ATLAS case)
+  void marginalizeVisMass(bool value, TFile* inputFile);
+  void marginalizeVisMass(bool value, const TH1*);    
   /// take resolution on energy and mass of hadronic tau decays into account
-  void shiftVisMassAndPt(bool value, TFile* inputFile);
+  void shiftVisMass(bool value, TFile* inputFile);
+  void shiftVisPt(bool value, TFile* inputFile);
   /// maximum function calls after which to stop the minimization procedure (default is 5000)
   void maxObjFunctionCalls(double value) { maxObjFunctionCalls_ = value; }
 
@@ -317,19 +352,20 @@ class SVfitStandaloneAlgorithm
       4: Reached maximum number of function calls before reaching convergence
       5: Any other failure
   */
-  int fitStatus() { return fitStatus_; };
+  int fitStatus() { return fitStatus_; }
   /// return whether this is a valid solution or not
-  bool isValidSolution() { return (nllStatus_ == 0 && fitStatus_ <= 0); };
+  bool isValidSolution() { return (nllStatus_ == 0 && fitStatus_ <= 0); }
   /// return whether this is a valid solution or not
-  bool isValidFit() { return fitStatus_ == 0; };
+  bool isValidFit() { return fitStatus_ == 0; }
   /// return whether this is a valid solution or not
-  bool isValidNLL() { return nllStatus_ == 0; };
+  bool isValidNLL() { return nllStatus_ == 0; }
   /// return mass of the di-tau system 
-  double mass() const { return mass_; };
+  double mass() const { return mass_; }
   /// return uncertainty on the mass of the fitted di-tau system
-  double massUncert() const { return massUncert_; };
+  double massUncert() const { return massUncert_; }
+
   /// return mass of the di-tau system (kept for legacy)
-  double getMass() const {return mass();};
+  double getMass() const {return mass(); }
 
   /// return pt, eta, phi values and their uncertainties
   /*
@@ -349,6 +385,13 @@ class SVfitStandaloneAlgorithm
   double phi() const { return phi_; }
   /// return phi uncertainty of the di-tau system
   double phiUncert() const { return phiUncert_; }
+ 
+  /// return maxima of likelihood scan
+  double massLmax() const { return massLmax_; }
+  double ptLmax() const { return ptLmax_; }
+  double etaLmax() const { return etaLmax_; }
+  double phiLmax() const { return phiLmax_; }
+
   /// return 4-vectors of the fitted tau leptons
   std::vector<LorentzVector> fittedTauLeptons() const { return fittedTauLeptons_; }
   /// return 4-vectors of measured tau leptons
@@ -415,13 +458,22 @@ class SVfitStandaloneAlgorithm
   /// phi uncertainty of di-tau system
   double phiUncert_;
 
+  /// maxima of likelihood scan
+  double massLmax_;
+  double ptLmax_;
+  double etaLmax_;
+  double phiLmax_;
+
   TBenchmark* clock_;
 
   /// resolution on Pt and mass of hadronic taus
-  bool shiftVisMassAndPt_;
+  bool marginalizeVisMass_;
+  const TH1* lutVisMassAllDMs_;
+  bool shiftVisMass_;
   const TH1* lutVisMassResDM0_;
   const TH1* lutVisMassResDM1_;
   const TH1* lutVisMassResDM10_;
+  bool shiftVisPt_;  
   const TH1* lutVisPtResDM0_;
   const TH1* lutVisPtResDM1_;
   const TH1* lutVisPtResDM10_;

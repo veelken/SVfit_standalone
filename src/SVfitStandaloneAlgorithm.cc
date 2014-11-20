@@ -12,6 +12,8 @@ namespace svFitStandalone
 {
   TH1* makeHistogram(const std::string& histogramName, double xMin, double xMax, double logBinWidth)
   {
+    if(xMin <= 0)
+      xMin = 0.1;
     int numBins = 1 + TMath::Log(xMax/xMin)/TMath::Log(logBinWidth);
     TArrayF binning(numBins + 1);
     binning[0] = 0.;

@@ -88,7 +88,10 @@ namespace svFitStandalone
 	minVisMass = muonMass;
 	maxVisMass = minVisMass;
       } else if ( type_ == kTauToHadDecay ) {
-	if ( decayMode_ == 0 ) {
+	if ( decayMode_ == -1 ) {
+	  minVisMass = chargedPionMass;
+	  maxVisMass = 1.5;
+	} else if ( decayMode_ == 0 ) {
 	  minVisMass = chargedPionMass;
 	  maxVisMass = minVisMass;
 	} else {

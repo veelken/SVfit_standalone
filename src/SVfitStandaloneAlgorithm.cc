@@ -485,7 +485,6 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     if ( idx == 0 ) {
       idxFitParLeg1_ = 0;
       if ( measuredTauLepton.type() == kTauToHadDecay ) { 
-	nDim += 2;
 	if ( marginalizeVisMass_ ) {
 	  l1lutVisMass = lutVisMassAllDMs_;
 	}	
@@ -642,6 +641,11 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
       xl[idxFitParLeg2_ + offset2] = -1.0; 
       xh[idxFitParLeg2_ + offset2] = +1.5;
       ++offset2;
+    }
+  }
+  if ( verbose_ >= 1 ) {
+    for ( int iDim = 0; iDim < nDim; ++iDim ) {
+      std::cout << "x0[" << iDim << "] = " << x0[iDim] << " (xl = " << xl[iDim] << ", xh = " << xh[iDim] << ")" << std::endl;
     }
   }
 

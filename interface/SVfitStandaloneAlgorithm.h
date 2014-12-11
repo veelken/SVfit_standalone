@@ -273,8 +273,8 @@ class SVfitStandaloneAlgorithm
   /// destructor
   ~SVfitStandaloneAlgorithm();
 
-  /// add an additional logM(tau,tau) term to the nll to suppress tails on M(tau,tau) (default is true)
-  void addLogM(bool value) { nll_->addLogM(value); }
+  /// add an additional logM(tau,tau) term to the nll to suppress tails on M(tau,tau) (default is false)
+  void addLogM(bool value, double power = 1.) { nll_->addLogM(value, power); }
   /// modify the MET term in the nll by an additional power (default is 1.)
   void metPower(double value) { nll_->metPower(value); }
   /// marginalize unknown mass of hadronic tau decay products (ATLAS case)

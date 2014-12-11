@@ -209,8 +209,8 @@ namespace svFitStandalone
     /// static pointer to this (needed for the minuit function calls)
     static const SVfitStandaloneLikelihood* gSVfitStandaloneLikelihood;
 
-    /// add an additional logM(tau,tau) term to the nll to suppress tails on M(tau,tau) (default is true)
-    void addLogM(bool value) { addLogM_ = value; }
+    /// add an additional logM(tau,tau) term to the nll to suppress tails on M(tau,tau) (default is false)
+    void addLogM(bool value, double power = 1.) { addLogM_ = value; powerLogM_ = power; }
     /// add derrivative of delta-function 
     /// WARNING: to be used when SVfit is run in "integration" mode only
     void addDelta(bool value) { addDelta_ = value; }
@@ -263,6 +263,7 @@ namespace svFitStandalone
     double metPower_;
     /// add a logM penalty term in the nll
     bool addLogM_;
+    double powerLogM_;
     /// delta-function derrivative 
     bool addDelta_;
     /// sin(theta) term in the nll

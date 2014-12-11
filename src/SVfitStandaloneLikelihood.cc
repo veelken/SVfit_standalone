@@ -13,6 +13,7 @@ static bool FIRST = true;
 SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredTauLepton>& measuredTauLeptons, const Vector& measuredMET, const TMatrixD& covMET, bool verbose) 
   : metPower_(1.0), 
     addLogM_(false), 
+    powerLogM_(1.),
     addDelta_(true),
     addSinTheta_(false),
     addPhiPenalty_(true),
@@ -301,9 +302,9 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
     }
   }
   // add additional logM term if configured such 
-  if ( addLogM_ ) {
+  if ( addLogM_ && powerLogM_ > 0. ) {
     if ( xPrime[kMTauTau] > 0. ) {
-      prob *= (1.0/xPrime[kMTauTau]);
+      prob *= TMath::Power(1.0/xPrime[kMTauTau], powerLogM_);
     }
     if ( verbose_ && FIRST ) {
       std::cout << " *1/mtautau     = " << prob << std::endl;

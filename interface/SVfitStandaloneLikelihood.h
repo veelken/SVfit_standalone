@@ -69,15 +69,24 @@ namespace svFitStandalone
     /// default constructor 
     MeasuredTauLepton()
       : type_(kUndefinedDecayType),
-        p4_(0.,0.,0.,0.),
+        pt_(0.),
+        eta_(0.),
+        phi_(0.),
+        mass_(0.),
         decayMode_(-1)
-    {}
-    /// constructor from the measured quantities per decay branch
-    MeasuredTauLepton(kDecayType type, const LorentzVector& p4, int decayMode = -1) 
-      : type_(type), 
-        p4_(p4), 
-	decayMode_(decayMode)
     {
+      initialize();
+    }
+    /// constructor from the measured quantities per decay branch
+    MeasuredTauLepton(kDecayType type, double pt, double eta, double phi, double mass, int decayMode = -1) 
+      : type_(type), 
+        pt_(roundToNdigits(pt)),
+        eta_(roundToNdigits(eta)),
+        phi_(roundToNdigits(phi)),
+        mass_(roundToNdigits(mass)),
+ 	decayMode_(decayMode)
+    {
+      //std::cout << "<MeasuredTauLepton>: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << std::endl;
       double minVisMass = electronMass;
       double maxVisMass = tauLeptonMass;
       std::string type_string;
@@ -99,7 +108,7 @@ namespace svFitStandalone
 	  maxVisMass = 1.5;
 	}
       } 
-      preciseVisMass_ = p4_.mass();
+      preciseVisMass_ = mass_;
       if ( preciseVisMass_ < (0.9*minVisMass) || preciseVisMass_ > (1.1*maxVisMass) ) {
 	std::string type_string;
 	if      ( type_ == kTauToElecDecay ) type_string = "tau -> electron decay";
@@ -107,58 +116,86 @@ namespace svFitStandalone
 	else if ( type_ == kTauToHadDecay  ) type_string = "tau -> had decay";
 	else if ( type_ == kPrompt         ) type_string = "prompt lepton"; 
 	else {
-	  std::cerr << "Error: Invalid type " << type_ << " declared for leg: Pt = " << p4_.pt() << ", eta = " << p4_.eta() << ", phi = " << p4_.phi() << ", mass = " << p4_.mass() << " !!" << std::endl;
+	  std::cerr << "Error: Invalid type " << type_ << " declared for leg: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << " !!" << std::endl;
 	  assert(0);
 	}
-	std::cerr << "Warning: " << type_string << " declared for leg: Pt = " << p4_.pt() << ", eta = " << p4_.eta() << ", phi = " << p4_.phi() << ", mass = " << p4_.mass() << " !!" << std::endl;
+	std::cerr << "Warning: " << type_string << " declared for leg: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << " !!" << std::endl;
 	std::cerr << " (mass expected in the range = " << minVisMass << ".." << maxVisMass << ")" << std::endl;
       }
       if ( preciseVisMass_ < minVisMass ) preciseVisMass_ = minVisMass;
       if ( preciseVisMass_ > maxVisMass ) preciseVisMass_ = maxVisMass;
+      initialize();
     }
     /// copy constructor
     MeasuredTauLepton(const MeasuredTauLepton& measuredTauLepton)
       : type_(measuredTauLepton.type()), 
-        p4_(measuredTauLepton.p4()), 
+        pt_(measuredTauLepton.pt()),
+        eta_(measuredTauLepton.eta()),
+        phi_(measuredTauLepton.phi()),
+        mass_(measuredTauLepton.mass()), 
         decayMode_(measuredTauLepton.decayMode())     
     {
       preciseVisMass_ = measuredTauLepton.mass();
+      initialize();
     }
     /// default destructor
     ~MeasuredTauLepton() {}
 
+    void initialize()
+    {
+      momentum_ = pt_*TMath::CosH(eta_);
+      energy_ = TMath::Sqrt(momentum_*momentum_ + mass_*mass_);
+      px_ = pt_*TMath::Cos(phi_);
+      py_ = pt_*TMath::Sin(phi_);
+      pz_ = pt_*TMath::SinH(eta_);
+      p4_ = LorentzVector(px_, py_, pz_, energy_);
+      p_ = p4_.Vect();
+      direction_ = p_.unit();
+    }
+
     /// return pt of the measured tau lepton in labframe
-    double pt() const { return p4_.pt(); }
+    double pt() const { return pt_; }
     /// return px of the measured tau lepton in labframe
-    double px() const { return p4_.px(); }
+    double px() const { return px_; }
     /// return py of the measured tau lepton in labframe
-    double py() const { return p4_.py(); }
+    double py() const { return py_; }
     /// return visible mass in labframe
     double mass() const { return preciseVisMass_; }    
     /// return visible energy in labframe
-    double energy() const { return p4_.energy(); }
+    double energy() const { return energy_; }
     /// return visible momenumt in labframe
-    double momentum() const { return p4_.P(); }
+    double momentum() const { return momentum_; }
     /// return pseudo-rapidity of the measured tau lepton in labframe
-    double eta() const { return p4_.eta(); }
+    double eta() const { return eta_; }
     /// return azimuthal angle of the measured tau lepton in labframe
-    double phi() const { return p4_.phi(); }
+    double phi() const { return phi_; }
     /// return decay type of the tau lepton
     int type() const { return type_; }
     /// return decay mode of the reconstructed hadronic tau decay
     int decayMode() const { return decayMode_; }    
     /// return the spacial momentum vector in the labframe
-    Vector p() const { return p4_.Vect(); }
+    Vector p() const { return p_; }
     /// return the lorentz vector in the labframe
     LorentzVector p4() const { return p4_; }
     /// return the direction of the visible 
-    Vector direction() const { return p4_.Vect().unit(); }
+    Vector direction() const { return direction_; }
     
    private:
     /// decay type
     int type_;
     /// visible momentum in labframe 
+    double pt_;
+    double eta_;
+    double phi_;
+    double mass_;
+    double energy_;
+    double px_;
+    double py_;
+    double pz_;
+    double momentum_;
     LorentzVector p4_;
+    Vector p_;
+    Vector direction_;
     /// mass of visible tau decay products (recomputed to reduce rounding errors)
     double preciseVisMass_;
     /// decay mode (hadronic tau decays only)

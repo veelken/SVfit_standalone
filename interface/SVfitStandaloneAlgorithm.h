@@ -269,7 +269,7 @@ class SVfitStandaloneAlgorithm
 {
  public:
   /// constructor from a minimal set of configurables
-  SVfitStandaloneAlgorithm(const std::vector<MeasuredTauLepton>& measuredTauLeptons, const Vector& measuredMET, const TMatrixD& covMET, unsigned int verbose = 0);
+  SVfitStandaloneAlgorithm(const std::vector<MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, unsigned int verbose = 0);
   /// destructor
   ~SVfitStandaloneAlgorithm();
 

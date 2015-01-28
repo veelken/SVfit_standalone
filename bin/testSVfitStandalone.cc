@@ -18,22 +18,21 @@ void singleEvent()
      This is a single event for testing in the integration mode.
   */
   // define MET
-  Vector MET(11.7491, -51.9172, 0.); 
+  double measuredMETx =  11.7491;
+  double measuredMETy = -51.9172; 
   // define MET covariance
   TMatrixD covMET(2, 2);
-  covMET[0][0] = 787.352;
+  covMET[0][0] =  787.352;
   covMET[1][0] = -178.63;
   covMET[0][1] = -178.63;
-  covMET[1][1] = 179.545;
+  covMET[1][1] =  179.545;
   // define lepton four vectors
-  svFitStandalone::LorentzVector l1( 28.9132, -17.3888, 36.6411, 49.8088); // tau -> electron decay
-  svFitStandalone::LorentzVector l2(-24.19  ,  8.77449, 16.9413, 30.8086); // tau -> hadron decay
   std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
-  measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToElecDecay, l1));
-  measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay, l2));
+  measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToElecDecay, 33.7393, 0.9409,  -0.541458, 0.51100e-3)); // tau -> electron decay (Pt, eta, phi, mass)
+  measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay,  25.7322, 0.618228, 2.79362,  0.13957));    // tau -> hadron decay   (Pt, eta, phi, mass)
   // define algorithm (set the debug level to 3 for testing)
   unsigned verbosity = 2;
-  SVfitStandaloneAlgorithm algo(measuredTauLeptons, MET, covMET, verbosity);
+  SVfitStandaloneAlgorithm algo(measuredTauLeptons, measuredMETx, measuredMETy, covMET, verbosity);
   algo.addLogM(false);
   /* 
      the following lines show how to use the different methods on a single event
@@ -47,7 +46,7 @@ void singleEvent()
 
   double mass = algo.getMass(); // return value is in units of GeV
   if ( algo.isValidSolution() ) {
-    std::cout << "found mass = " << mass << " (expected value = 120.129)" << std::endl;
+    std::cout << "found mass = " << mass << " (expected value = 123.126)" << std::endl;
   } else {
     std::cout << "sorry -- status of NLL is not valid [" << algo.isValidSolution() << "]" << std::endl;
   }
@@ -69,8 +68,8 @@ void eventsFromTree(int argc, char* argv[])
   float met, metPhi;
   float covMet11, covMet12; 
   float covMet21, covMet22;
-  float l1M, l1Px, l1Py, l1Pz;
-  float l2M, l2Px, l2Py, l2Pz;
+  float l1Pt, l1Eta, l1Phi, l1Mass;
+  float l2Pt, l2Eta, l2Phi, l2Mass;
   float mTrue;
   // branch adresses
   tree->SetBranchAddress("met", &met);
@@ -79,21 +78,22 @@ void eventsFromTree(int argc, char* argv[])
   tree->SetBranchAddress("mcov_12", &covMet12);
   tree->SetBranchAddress("mcov_21", &covMet21);
   tree->SetBranchAddress("mcov_22", &covMet22);
-  tree->SetBranchAddress("l1_M", &l1M);
-  tree->SetBranchAddress("l1_Px", &l1Px);
-  tree->SetBranchAddress("l1_Py", &l1Py);
-  tree->SetBranchAddress("l1_Pz", &l1Pz);
-  tree->SetBranchAddress("l2_M", &l2M);
-  tree->SetBranchAddress("l2_Px", &l2Px);
-  tree->SetBranchAddress("l2_Py", &l2Py);
-  tree->SetBranchAddress("l2_Pz", &l2Pz);
+  tree->SetBranchAddress("l1_Pt", &l1Pt);
+  tree->SetBranchAddress("l1_Eta", &l1Eta);
+  tree->SetBranchAddress("l1_Phi", &l1Phi);
+  tree->SetBranchAddress("l1_M", &l1Mass);
+  tree->SetBranchAddress("l2_Pt", &l2Pt);
+  tree->SetBranchAddress("l2_Eta", &l2Eta);
+  tree->SetBranchAddress("l2_Phi", &l2Phi);
+  tree->SetBranchAddress("l2_M", &l2Mass);
   tree->SetBranchAddress("m_true", &mTrue);
   int nevent = tree->GetEntries();
   for ( int i = 0; i < nevent; ++i ) {
     tree->GetEvent(i);
     std::cout << "event " << (i + 1) << std::endl;
     // setup MET input vector
-    svFitStandalone::Vector measuredMET(met *TMath::Sin(metPhi), met *TMath::Cos(metPhi), 0); 
+    double measuredMETx = met*TMath::Cos(metPhi);
+    double measuredMETy = met*TMath::Sin(metPhi);
     // setup the MET significance
     TMatrixD covMET(2,2);
     covMET[0][0] = covMet11;
@@ -101,8 +101,6 @@ void eventsFromTree(int argc, char* argv[])
     covMET[1][0] = covMet21;
     covMET[1][1] = covMet22;
     // setup measure tau lepton vectors 
-    svFitStandalone::LorentzVector l1(l1Px, l1Py, l1Pz, TMath::Sqrt(l1M*l1M + l1Px*l1Px + l1Py*l1Py + l1Pz*l1Pz));
-    svFitStandalone::LorentzVector l2(l2Px, l2Py, l2Pz, TMath::Sqrt(l2M*l2M + l2Px*l2Px + l2Py*l2Py + l2Pz*l2Pz));
     svFitStandalone::kDecayType l1Type, l2Type;
     if ( std::string(argv[2]) == "EMu" ) {
       l1Type = svFitStandalone::kTauToElecDecay;
@@ -122,10 +120,10 @@ void eventsFromTree(int argc, char* argv[])
       assert(0);
     }
     std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
-    measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(l1Type, l1));
-    measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(l2Type, l2));
+    measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(l1Type, l1Pt, l1Eta, l1Phi, l1Mass));
+    measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(l2Type, l2Pt, l2Eta, l2Phi, l2Mass));
     // construct the class object from the minimal necesarry information
-    SVfitStandaloneAlgorithm algo(measuredTauLeptons, measuredMET, covMET, 1);
+    SVfitStandaloneAlgorithm algo(measuredTauLeptons, measuredMETx, measuredMETy, covMET, 1);
     // apply customized configurations if wanted (examples are given below)
     algo.maxObjFunctionCalls(5000);
     //algo.addLogM(false);

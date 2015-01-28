@@ -7,6 +7,17 @@ namespace svFitStandalone
 {
   //-----------------------------------------------------------------------------
   
+  double roundToNdigits(double x, int n)
+  {
+    double tmp = TMath::Power(10., n);
+    if ( x != 0. ) {
+      tmp /= TMath::Power(10., TMath::Floor(TMath::Log10(TMath::Abs(x))));
+    }
+    double x_rounded = TMath::Nint(x*tmp)/tmp;
+    //std::cout << "<roundToNdigits>: x = " << x << ", x_rounded = " << x_rounded << std::endl;
+    return x_rounded;
+  }
+
   // Adapted for our vector types from TVector3 class
   Vector rotateUz(const ROOT::Math::DisplacementVector3D<ROOT::Math::Polar3D<double> >& toRotate, const Vector& newUzVector)
   {

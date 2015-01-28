@@ -189,7 +189,7 @@ namespace svFitStandalone
   }
 }
 
-SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, const svFitStandalone::Vector& measuredMET, const TMatrixD& covMET, 
+SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, 
 						   unsigned int verbose) 
   : fitStatus_(-1), 
     verbose_(verbose), 
@@ -215,7 +215,13 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
   // instantiate minuit, the arguments might turn into configurables once
   minimizer_ = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
   // instantiate the combined likelihood
-  nll_ = new svFitStandalone::SVfitStandaloneLikelihood(measuredTauLeptons, measuredMET, covMET, (verbose_ > 2));
+  svFitStandalone::Vector measuredMET_rounded(svFitStandalone::roundToNdigits(measuredMETx), svFitStandalone::roundToNdigits(measuredMETy), 0.);
+  TMatrixD covMET_rounded(2, 2);
+  covMET_rounded[0][0] = svFitStandalone::roundToNdigits(covMET[0][0]);
+  covMET_rounded[1][0] = svFitStandalone::roundToNdigits(covMET[1][0]);
+  covMET_rounded[0][1] = svFitStandalone::roundToNdigits(covMET[0][1]);
+  covMET_rounded[1][1] = svFitStandalone::roundToNdigits(covMET[1][1]);
+  nll_ = new svFitStandalone::SVfitStandaloneLikelihood(measuredTauLeptons, measuredMET_rounded, covMET_rounded, (verbose_ > 2));
   nllStatus_ = nll_->error();
 
   standaloneObjectiveFunctionAdapterVEGAS_ = new svFitStandalone::ObjectiveFunctionAdapterVEGAS();

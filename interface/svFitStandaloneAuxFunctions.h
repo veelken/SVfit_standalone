@@ -58,6 +58,8 @@ namespace svFitStandalone
   */
   typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 
+  double roundToNdigits(double, int = 3);
+
   /// Determine Gottfried-Jackson angle from visible energy fraction X
   double gjAngleLabFrameFromX(double, double, double, double, double, double, bool&);
 

@@ -40,9 +40,9 @@ void singleEvent()
   // minuit fit method
   //algo.fit();
   // integration by VEGAS (same as function algo.integrate() that has been in use when markov chain integration had not yet been implemented)
-  algo.integrateVEGAS();
+  //algo.integrateVEGAS();
   // integration by markov chain MC
-  //algo.integrateMarkovChain();
+  algo.integrateMarkovChain();
 
   double mass = algo.getMass(); // return value is in units of GeV
   if ( algo.isValidSolution() ) {

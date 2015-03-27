@@ -46,7 +46,7 @@ void singleEvent()
 
   double mass = algo.getMass(); // return value is in units of GeV
   if ( algo.isValidSolution() ) {
-    std::cout << "found mass = " << mass << " (expected value = 123.126)" << std::endl;
+    std::cout << "found mass = " << mass << " (expected value = 124.646)" << std::endl;
   } else {
     std::cout << "sorry -- status of NLL is not valid [" << algo.isValidSolution() << "]" << std::endl;
   }

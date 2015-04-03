@@ -244,6 +244,8 @@ SVfitStandaloneAlgorithm::~SVfitStandaloneAlgorithm()
   //delete lutVisPtResDM0_;
   //delete lutVisPtResDM1_;
   //delete lutVisPtResDM10_;
+
+  delete clock_;
 }
 
 namespace
@@ -744,9 +746,9 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     delete likelihoodGraph;
   }
 
-  delete x0;
-  delete xl;
-  delete xh;
+  delete[] x0;
+  delete[] xl;
+  delete[] xh;
 
   if ( verbose_ >= 1 ) {
     clock_->Show("<SVfitStandaloneAlgorithm::integrateVEGAS>");

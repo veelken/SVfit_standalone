@@ -756,7 +756,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
 }
 
 void
-SVfitStandaloneAlgorithm::integrateMarkovChain()
+SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFileName)
 {
   using namespace svFitStandalone;
   
@@ -1028,7 +1028,27 @@ SVfitStandaloneAlgorithm::integrateMarkovChain()
   mass_ = mcPtEtaPhiMassAdapter_->getMass();
   massUncert_ = mcPtEtaPhiMassAdapter_->getMassUncert();
   massLmax_ = mcPtEtaPhiMassAdapter_->getMassLmax();
+  transverseMass_ = mcPtEtaPhiMassAdapter_->getTransverseMass();
+  transverseMassUncert_ = mcPtEtaPhiMassAdapter_->getTransverseMassUncert();
+  transverseMassLmax_ = mcPtEtaPhiMassAdapter_->getTransverseMassLmax();
   fittedDiTauSystem_ = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >(pt_, eta_, phi_, mass_);
+
+  if ( likelihoodFileName != "" ) {
+    TFile* likelihoodFile = new TFile(likelihoodFileName.data(), "RECREATE");
+    //mcPtEtaPhiMassAdapter_->histogramPt_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramPt_density_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramEta_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramEta_density_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramPhi_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramPhi_density_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramMass_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramMass_density_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramTransverseMass_->Write();
+    //mcPtEtaPhiMassAdapter_->histogramTransverseMass_density_->Write();
+    histogramMass->Write();
+    histogramMass_density->Write();
+    delete likelihoodFile;
+  }
 
   delete histogramMass;
   delete histogramMass_density;

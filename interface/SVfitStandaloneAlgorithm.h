@@ -119,6 +119,8 @@ namespace svFitStandalone
       histogramPhi_density_ = (TH1*)histogramPhi_->Clone(Form("%s_density", histogramPhi_->GetName()));
       histogramMass_ = makeHistogram("SVfitStandaloneAlgorithm_histogramMass", 1.e+1, 1.e+4, 1.025);
       histogramMass_density_ = (TH1*)histogramMass_->Clone(Form("%s_density", histogramMass_->GetName()));
+      histogramTransverseMass_ = makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", 1., 1.e+4, 1.025);
+      histogramTransverseMass_density_ = (TH1*)histogramTransverseMass_->Clone(Form("%s_density", histogramTransverseMass_->GetName()));
     }      
     ~MCPtEtaPhiMassAdapter()
     {
@@ -130,6 +132,8 @@ namespace svFitStandalone
       delete histogramPhi_density_;
       delete histogramMass_;
       delete histogramMass_density_;
+      delete histogramTransverseMass_;
+      delete histogramTransverseMass_density_;
     }
     void SetHistogramMass(TH1* histogramMass, TH1* histogramMass_density)
     {
@@ -153,6 +157,7 @@ namespace svFitStandalone
       histogramEta_->Reset();
       histogramPhi_->Reset();
       histogramMass_->Reset();
+      histogramTransverseMass_->Reset();
     }
     double getPt() const { return extractValue(histogramPt_, histogramPt_density_); }
     double getPtUncert() const { return extractUncertainty(histogramPt_, histogramPt_density_); }
@@ -166,6 +171,9 @@ namespace svFitStandalone
     double getMass() const { return extractValue(histogramMass_, histogramMass_density_); }
     double getMassUncert() const { return extractUncertainty(histogramMass_, histogramMass_density_); }
     double getMassLmax() const { return extractLmax(histogramMass_, histogramMass_density_); }
+    double getTransverseMass() const { return extractValue(histogramTransverseMass_, histogramTransverseMass_density_); }
+    double getTransverseMassUncert() const { return extractUncertainty(histogramTransverseMass_, histogramTransverseMass_density_); }
+    double getTransverseMassLmax() const { return extractLmax(histogramTransverseMass_, histogramTransverseMass_density_); }
    private:    
     virtual double DoEval(const double* x) const
     {
@@ -181,9 +189,13 @@ namespace svFitStandalone
       histogramEta_->Fill(fittedDiTauSystem_.eta());
       histogramPhi_->Fill(fittedDiTauSystem_.phi());
       histogramMass_->Fill(fittedDiTauSystem_.mass());
+      double transverseMass = TMath::Sqrt(2.*fittedTauLeptons_[0].pt()*fittedTauLeptons_[1].pt()*(1. - TMath::Cos(fittedTauLeptons_[0].phi() - fittedTauLeptons_[1].phi())));
+      //std::cout << "transverseMass = " << transverseMass << std::endl;
+      histogramTransverseMass_->Fill(transverseMass);
       return 0.;
     } 
    protected:
+ //public:
     mutable std::vector<svFitStandalone::LorentzVector> fittedTauLeptons_;
     mutable LorentzVector fittedDiTauSystem_;
     mutable TH1* histogramPt_;
@@ -194,6 +206,8 @@ namespace svFitStandalone
     mutable TH1* histogramPhi_density_;
     mutable TH1* histogramMass_;
     mutable TH1* histogramMass_density_;
+    mutable TH1* histogramTransverseMass_;
+    mutable TH1* histogramTransverseMass_density_;
     mutable double x_mapped_[10];
     int nDim_;
     bool l1isLep_;
@@ -293,7 +307,7 @@ class SVfitStandaloneAlgorithm
   /// integration by VEGAS to be called from outside
   void integrateVEGAS(const std::string& likelihoodFileName = "");
   /// integration by Markov Chain MC to be called from outside
-  void integrateMarkovChain();
+  void integrateMarkovChain(const std::string& likelihoodFileName = "");
 
   /// return status of minuit fit
   /*    
@@ -319,6 +333,11 @@ class SVfitStandaloneAlgorithm
   /// return mass of the di-tau system (kept for legacy)
   double getMass() const {return mass(); }
 
+  /// return transverse mass of the di-tau system 
+  double transverseMass() const { return transverseMass_; }
+  /// return uncertainty on the transverse mass of the fitted di-tau system
+  double transverseMassUncert() const { return transverseMassUncert_; }
+
   /// return pt, eta, phi values and their uncertainties
   /*
     NOTE: these values are computed only in case in the
@@ -340,6 +359,7 @@ class SVfitStandaloneAlgorithm
  
   /// return maxima of likelihood scan
   double massLmax() const { return massLmax_; }
+  double transverseMassLmax() const { return transverseMassLmax_; }
   double ptLmax() const { return ptLmax_; }
   double etaLmax() const { return etaLmax_; }
   double phiLmax() const { return phiLmax_; }
@@ -383,8 +403,12 @@ class SVfitStandaloneAlgorithm
   
   /// fitted di-tau mass
   double mass_;
-  /// uncertainty of the fitted di-tau mass
+  /// uncertainty on the fitted di-tau mass
   double massUncert_;
+  /// fitted transverse mass of di-tau system
+  double transverseMass_;
+  /// uncertainty on the fitted transverse mass of di-tau system
+  double transverseMassUncert_;
   /// fit result for each of the decay branches 
   std::vector<svFitStandalone::LorentzVector> fittedTauLeptons_;
   /// fitted di-tau system
@@ -412,6 +436,7 @@ class SVfitStandaloneAlgorithm
 
   /// maxima of likelihood scan
   double massLmax_;
+  double transverseMassLmax_;
   double ptLmax_;
   double etaLmax_;
   double phiLmax_;

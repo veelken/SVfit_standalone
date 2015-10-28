@@ -58,6 +58,11 @@ SVfitStandaloneMarkovChainIntegrator::SVfitStandaloneMarkovChainIntegrator(const
     numMovesTotal_accepted_(0),
     numMovesTotal_rejected_(0)
 {
+  //std::cout << "<SVfitStandaloneMarkovChainIntegrator::SVfitStandaloneMarkovChainIntegrator>:" << std::endl;
+  //std::cout << " numIterBurnin = " << numIterBurnin << std::endl;
+  //std::cout << " numIterSampling = " << numIterSampling << std::endl;
+  //std::cout << " verbose = " << verbose << std::endl;
+
   moveMode_ = kMetropolis;
 
   if      ( initMode == "uniform" ) initMode_ = kUniform;
@@ -244,6 +249,7 @@ void SVfitStandaloneMarkovChainIntegrator::integrate(const std::vector<double>& 
     bool isValidStartPos = false;
     if ( initMode_ == kNone ) {
       prob_ = evalProb(q_);
+      //std::cout << "(q = " << format_vdouble(q_) << ", prob = " << prob_ << ")" << std::endl;
       if ( prob_ > 0. ) {
 	bool isWithinBounds = true;
 	for ( unsigned iDimension = 0; iDimension < numDimensions_; ++iDimension ) {
@@ -255,13 +261,13 @@ void SVfitStandaloneMarkovChainIntegrator::integrate(const std::vector<double>& 
 	} else {
 	  if ( verbose_ >= 1 ) {
 	    std::cerr << "<SVfitStandaloneMarkovChainIntegrator>:"
-		      << "Warning: Requested start-position = " << format_vdouble(q_) << " not within interval ]0..1[ --> searching for valid alternative !!\n";
+		      << "Warning: Requested start-position = " << format_vdouble(q_) << " not within interval ]0..1[ --> searching for valid alternative !!" << std::endl;
 	  }
 	}
       } else {
 	if ( verbose_ >= 1 ) {
 	  std::cerr << "<SVfitStandaloneMarkovChainIntegrator>:"
-		    << "Warning: Requested start-position = " << format_vdouble(q_) << " returned probability zero --> searching for valid alternative !!";
+		    << "Warning: Requested start-position = " << format_vdouble(q_) << " returned probability zero --> searching for valid alternative !!" << std::endl;
 	}
       }
     }    
@@ -276,6 +282,7 @@ void SVfitStandaloneMarkovChainIntegrator::integrate(const std::vector<double>& 
       }
       if ( isWithinPhysicalRegion ) {
 	prob_ = evalProb(q_);
+	//std::cout << "(q = " << format_vdouble(q_) << ", prob = " << prob_ << ")" << std::endl;
 	if ( prob_ > 0. ) {
 	  isValidStartPos = true;
 	} else {

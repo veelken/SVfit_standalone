@@ -96,7 +96,7 @@ const double*
 SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixToMtest, double mtest) const
 {
   //if ( verbose_ ) {
-  //  std::cout << "<SVfitStandaloneLikelihood:transform(double*, const double*)>:" << std::endl;
+  //  std::cout << "<SVfitStandaloneLikelihood::transform(double*, const double*)>:" << std::endl;
   //}
   LorentzVector fittedDiTauSystem;
   for ( size_t idx = 0; idx < measuredTauLeptons_.size(); ++idx ) {
@@ -208,7 +208,7 @@ SVfitStandaloneLikelihood::prob(const double* x, bool fixToMtest, double mtest) 
     return 0.;
   }
   //if ( verbose_ ) {
-  //  std::cout << "<SVfitStandaloneLikelihood:prob(const double*)>:" << std::endl;
+  //  std::cout << "<SVfitStandaloneLikelihood::prob(const double*)>:" << std::endl;
   //}
   ++idxObjFunctionCall_;
   //if ( verbose_ && FIRST ) {
@@ -242,7 +242,7 @@ double
 SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
 {
   //if ( verbose_ && FIRST ) {
-  //  std::cout << "<SVfitStandaloneLikelihood:prob(const double*, double)>:" << std::endl;
+  //  std::cout << "<SVfitStandaloneLikelihood::prob(const double*, double)>:" << std::endl;
   //}
   if ( requirePhysicalSolution_ && (xPrime[ kMaxNLLParams + 2 ] < 0.5 || xPrime[ kMaxNLLParams + 3 ] < 0.5) ) return 0.;
   // start the combined likelihood construction from MET
@@ -333,7 +333,7 @@ void
 SVfitStandaloneLikelihood::results(std::vector<LorentzVector>& fittedTauLeptons, const double* x) const
 {
   //if ( verbose_ ) {
-  //  std::cout << "<SVfitStandaloneLikelihood:results(std::vector<LorentzVector>&, const double*)>:" << std::endl;
+  //  std::cout << "<SVfitStandaloneLikelihood::results(std::vector<LorentzVector>&, const double*)>:" << std::endl;
   //}
   for ( size_t idx = 0; idx < measuredTauLeptons_.size(); ++idx ) {
     const MeasuredTauLepton& measuredTauLepton = measuredTauLeptons_[idx];

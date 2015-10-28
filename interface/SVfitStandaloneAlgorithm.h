@@ -78,7 +78,7 @@ namespace svFitStandalone
     double mvis_;  // mass of visible tau decay products
     double mtest_; // current mass hypothesis
   };
-  // for markov chain integration
+  // for Markov Chain integration
   void map_xMarkovChain(const double*, bool, bool, bool, bool, bool, double*);
   class MCObjectiveFunctionAdapter : public ROOT::Math::Functor
   {

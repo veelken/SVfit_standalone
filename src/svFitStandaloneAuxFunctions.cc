@@ -83,8 +83,10 @@ namespace svFitStandalone
     } else if ( TMath::Abs(cosGjAngle_lab1) > 1. && TMath::Abs(cosGjAngle_lab2) <= 1. ) {
       gjAngle = TMath::ACos(cosGjAngle_lab2);
     } else if ( TMath::Abs(cosGjAngle_lab1) <= 1. && TMath::Abs(cosGjAngle_lab2) <= 1. ) {
+      //std::cout << "--> setting isValidSolution = false, because cosGjAngle_lab1 = " << cosGjAngle_lab1 << " and cosGjAngle_lab2 = " << cosGjAngle_lab2 << std::endl;
       isValidSolution = false;
     } else {
+      //std::cout << "--> setting isValidSolution = false, because cosGjAngle_lab1 = " << cosGjAngle_lab1 << " and cosGjAngle_lab2 = " << cosGjAngle_lab2 << std::endl;
       isValidSolution = false;
     }
 

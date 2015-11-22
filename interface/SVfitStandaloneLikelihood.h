@@ -216,7 +216,7 @@ namespace svFitStandalone
      \var measuredTauLeptons : the vector of the reconstructed visible decay products of the two tau leptons
      \var measuredMET        : the spatial vector of the measured MET
      \var covMET             : the covariance matrix of the MET (as determined from the MEt significance for instance)
-     \verbose                : indicating the verbosity level 
+     \verbosity              : indicating the verbosity level 
 
      In fit mode additional optional values may be set before the fit is performed. During construction the class is initialized with 
      default values as indicated in braces (below):
@@ -242,7 +242,7 @@ namespace svFitStandalone
       LeptonNumber    = 0x00000010
     };
     /// constructor with a minimla set of configurables 
-    SVfitStandaloneLikelihood(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, const svFitStandalone::Vector& measuredMET, const TMatrixD& covMET, bool verbose);
+    SVfitStandaloneLikelihood(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, const svFitStandalone::Vector& measuredMET, const TMatrixD& covMET, bool verbosity);
     /// default destructor
     ~SVfitStandaloneLikelihood() {}
     /// static pointer to this (needed for the minuit function calls)
@@ -310,7 +310,7 @@ namespace svFitStandalone
     /// add a penalty term in case phi runs outside of interval [-pi,+pi]
     bool addPhiPenalty_;
     /// verbosity level
-    bool verbose_;
+    bool verbosity_;
     /// monitor the number of function calls
     mutable unsigned int idxObjFunctionCall_;
 

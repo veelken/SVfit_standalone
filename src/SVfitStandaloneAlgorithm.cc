@@ -121,6 +121,16 @@ namespace svFitStandalone
 	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = 0.;
       }
     }
+    //-----------------------------------------------------------------------------
+    // !!! ONLY FOR TESTING
+    //x_mapped[kXFrac]                 = 0.481205;
+    //x_mapped[kMNuNu]                 = 0.644321;
+    //x_mapped[kPhi]                   = 0.651332;
+    //x_mapped[kMaxFitParams + kXFrac] = 0.512932;
+    //x_mapped[kMaxFitParams + kMNuNu] = 0.;
+    //x_mapped[kMaxFitParams + kPhi]   = 0.114703;
+    //     FOR TESTING ONLY !!!
+    //-----------------------------------------------------------------------------
     //std::cout << "<map_xVEGAS>:" << std::endl;
     //for ( int i = 0; i < 10; ++i ) {
     //  std::cout << " x_mapped[" << i << "] = " << x_mapped[i] << std::endl;
@@ -190,9 +200,9 @@ namespace svFitStandalone
 }
 
 SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, 
-						   unsigned int verbose) 
+						   unsigned int verbosity) 
   : fitStatus_(-1), 
-    verbose_(verbose), 
+    verbosity_(verbosity), 
     maxObjFunctionCalls_(10000),
     standaloneObjectiveFunctionAdapterVEGAS_(0),
     mcObjectiveFunctionAdapter_(0),
@@ -221,7 +231,7 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
   covMET_rounded[1][0] = svFitStandalone::roundToNdigits(covMET[1][0]);
   covMET_rounded[0][1] = svFitStandalone::roundToNdigits(covMET[0][1]);
   covMET_rounded[1][1] = svFitStandalone::roundToNdigits(covMET[1][1]);
-  nll_ = new svFitStandalone::SVfitStandaloneLikelihood(measuredTauLeptons, measuredMET_rounded, covMET_rounded, (verbose_ > 2));
+  nll_ = new svFitStandalone::SVfitStandaloneLikelihood(measuredTauLeptons, measuredMET_rounded, covMET_rounded, (verbosity_ >= 2));
   nllStatus_ = nll_->error();
 
   standaloneObjectiveFunctionAdapterVEGAS_ = new svFitStandalone::ObjectiveFunctionAdapterVEGAS();
@@ -315,12 +325,12 @@ SVfitStandaloneAlgorithm::setup()
 {
   using namespace svFitStandalone;
 
-  //if ( verbose_ >= 1 ) {
+  //if ( verbosity_ >= 1 ) {
   //  std::cout << "<SVfitStandaloneAlgorithm::setup()>:" << std::endl;
   //}
   for ( size_t idx = 0; idx < nll_->measuredTauLeptons().size(); ++idx ) {
     const MeasuredTauLepton& measuredTauLepton = nll_->measuredTauLeptons()[idx];
-    //if ( verbose_ >= 1 ) {
+    //if ( verbosity_ >= 1 ) {
     //  std::cout << " --> upper limit of leg1::mNuNu will be set to "; 
     //  if ( measuredTauLepton.type() == kTauToHadDecay ) { 
     //	  std::cout << "0";
@@ -380,7 +390,7 @@ SVfitStandaloneAlgorithm::setup()
 void
 SVfitStandaloneAlgorithm::fit()
 {
-  //if ( verbose_ >= 1 ) {
+  //if ( verbosity_ >= 1 ) {
   //  std::cout << "<SVfitStandaloneAlgorithm::fit()>" << std::endl
   //	        << " dimension of fit    : " << nll_->measuredTauLeptons().size()*svFitStandalone::kMaxFitParams << std::endl
   //	        << " maxObjFunctionCalls : " << maxObjFunctionCalls_ << std::endl; 
@@ -400,7 +410,7 @@ SVfitStandaloneAlgorithm::fit()
   // compute uncertainties for increase of objective function by 0.5 wrt. 
   // minimum (objective function is log-likelihood function)
   minimizer_->SetErrorDef(0.5);
-  //if ( verbose_ >= 1 ) {
+  //if ( verbosity_ >= 1 ) {
   //  std::cout << "starting ROOT::Math::Minimizer::Minimize..." << std::endl;
   //  std::cout << " #freeParameters = " << minimizer_->NFree() << ","
   //	        << " #constrainedParameters = " << (minimizer_->NDim() - minimizer_->NFree()) << std::endl;
@@ -410,7 +420,7 @@ SVfitStandaloneAlgorithm::fit()
   nll_->addSinTheta(true);
   nll_->requirePhysicalSolution(false);
   minimizer_->Minimize();
-  //if ( verbose_ >= 2 ) { 
+  //if ( verbosity_ >= 2 ) { 
   //  minimizer_->PrintResults(); 
   //};
   /* get Minimizer status code, check if solution is valid:
@@ -423,7 +433,7 @@ SVfitStandaloneAlgorithm::fit()
      5: Any other failure
   */
   fitStatus_ = minimizer_->Status();
-  //if ( verbose_ >=1 ) { 
+  //if ( verbosity_ >=1 ) { 
   //  std::cout << "--> fitStatus = " << fitStatus_ << std::endl; 
   //}
   
@@ -441,7 +451,7 @@ SVfitStandaloneAlgorithm::fit()
   fittedDiTauSystem_ = fittedTauLeptons_[0] + fittedTauLeptons_[1];
   mass_ = fittedDiTauSystem().mass();
   massUncert_ = TMath::Sqrt(0.25*x1RelErr*x1RelErr + 0.25*x2RelErr*x2RelErr)*fittedDiTauSystem().mass();
-  //if ( verbose_ >= 2 ) {
+  //if ( verbosity_ >= 2 ) {
   //  std::cout << ">> -------------------------------------------------------------" << std::endl;
   //  std::cout << ">> Resonance Record: " << std::endl;
   //  std::cout << ">> -------------------------------------------------------------" << std::endl;
@@ -473,7 +483,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
 {
   using namespace svFitStandalone;
   
-  if ( verbose_ >= 1 ) {
+  if ( verbosity_ >= 1 ) {
     std::cout << "<SVfitStandaloneAlgorithm::integrateVEGAS>:" << std::endl;
     clock_->Start("<SVfitStandaloneAlgorithm::integrateVEGAS>");
   }
@@ -651,7 +661,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
       ++offset2;
     }
   }
-  if ( verbose_ >= 1 ) {
+  if ( verbosity_ >= 1 ) {
     for ( int iDim = 0; iDim < nDim; ++iDim ) {
       std::cout << "x0[" << iDim << "] = " << x0[iDim] << " (xl = " << xl[iDim] << ", xh = " << xh[iDim] << ")" << std::endl;
     }
@@ -692,11 +702,17 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   double mtest = mvis*1.0125;
   bool skiphighmasstail = false;
   for ( int i = 0; i < 100 && (!skiphighmasstail); ++i ) {
+  //-----------------------------------------------------------------------------
+  // !!! ONLY FOR TESTING
+  //for ( int i = 0; i < 1 && (!skiphighmasstail); ++i ) {
+  //  mtest = 3200.; 
+  //     FOR TESTING ONLY !!!
+  //-----------------------------------------------------------------------------
     standaloneObjectiveFunctionAdapterVEGAS_->SetMvis(mvis);
     standaloneObjectiveFunctionAdapterVEGAS_->SetMtest(mtest);
     double p = ig2.Integral(xl, xh);
     double pErr = ig2.Error();
-    if ( verbose_ >= 2 ) {
+    if ( verbosity_ >= 2 ) {
       std::cout << "--> scan idx = " << i << ": mtest = " << mtest << ", p = " << p << " +/- " << pErr << " (pMax = " << pMax << ")" << std::endl;
     }    
     if ( p > pMax ) {
@@ -726,7 +742,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   //mass_ = extractValue(histogramMass, histogramMass_density);
   massUncert_ = extractUncertainty(histogramMass, histogramMass_density);
   massLmax_ = extractLmax(histogramMass, histogramMass_density);
-  if ( verbose_ >= 1 ) {
+  if ( verbosity_ >= 1 ) {
     std::cout << "--> mass  = " << mass_  << " +/- " << massUncert_ << std::endl;
     std::cout << "   (pMax = " << pMax << ", count = " << count << ")" << std::endl;
   }
@@ -750,7 +766,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   delete[] xl;
   delete[] xh;
 
-  if ( verbose_ >= 1 ) {
+  if ( verbosity_ >= 1 ) {
     clock_->Show("<SVfitStandaloneAlgorithm::integrateVEGAS>");
   }
 }
@@ -760,7 +776,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
 {
   using namespace svFitStandalone;
   
-  if ( verbose_ >= 1 ) {
+  if ( verbosity_ >= 1 ) {
     std::cout << "<SVfitStandaloneAlgorithm::integrateMarkovChain>:" << std::endl;
     clock_->Start("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }
@@ -780,11 +796,11 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     unsigned L = 1;
     double epsilon0 = 1.e-2;
     double nu = 0.71;
-    int verbose = -1;
+    int verbosity = -1;
     integrator2_ = new SVfitStandaloneMarkovChainIntegrator(
                          initMode, numIterBurnin, numIterSampling, numIterSimAnnealingPhase1, numIterSimAnnealingPhase2,
 			 T0, alpha, numChains, numBatches, L, epsilon0, nu,
-			 verbose);
+			 verbosity);
     mcObjectiveFunctionAdapter_ = new MCObjectiveFunctionAdapter();
     integrator2_->setIntegrand(*mcObjectiveFunctionAdapter_);
     integrator2_nDim_ = 0;
@@ -1054,7 +1070,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   delete histogramMass_density;
   mcPtEtaPhiMassAdapter_->SetHistogramMass(0, 0);
 
-  if ( verbose_ >= 1 ) {
+  if ( verbosity_ >= 1 ) {
     std::cout << "--> Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass  = " << mass_ << std::endl;
     clock_->Show("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }

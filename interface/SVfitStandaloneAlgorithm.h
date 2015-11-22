@@ -283,7 +283,7 @@ class SVfitStandaloneAlgorithm
 {
  public:
   /// constructor from a minimal set of configurables
-  SVfitStandaloneAlgorithm(const std::vector<MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, unsigned int verbose = 0);
+  SVfitStandaloneAlgorithm(const std::vector<MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, unsigned int verbosity = 0);
   /// destructor
   ~SVfitStandaloneAlgorithm();
 
@@ -387,7 +387,7 @@ class SVfitStandaloneAlgorithm
   /// return whether this is a valid solution or not
   unsigned int nllStatus_;
   /// verbosity level
-  unsigned int verbose_;
+  unsigned int verbosity_;
   /// stop minimization after a maximal number of function calls
   unsigned int maxObjFunctionCalls_;
 

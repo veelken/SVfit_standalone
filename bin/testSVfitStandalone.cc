@@ -23,16 +23,24 @@ void singleEvent()
   // define MET
   double measuredMETx =  11.7491;
   double measuredMETy = -51.9172; 
+  //double measuredMETx = -7.15013;
+  //double measuredMETy =  3.97782;
   // define MET covariance
   TMatrixD covMET(2, 2);
   covMET[0][0] =  787.352;
   covMET[1][0] = -178.63;
   covMET[0][1] = -178.63;
   covMET[1][1] =  179.545;
+  //covMET[0][0] = 518.08;
+  //covMET[1][0] = -92.3564; 
+  //covMET[0][1] = -92.3564; 
+  //covMET[1][1] = 351.665;
   // define lepton four vectors
   std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
   measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToElecDecay, 33.7393, 0.9409,  -0.541458, 0.51100e-3)); // tau -> electron decay (Pt, eta, phi, mass)
   measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay,  25.7322, 0.618228, 2.79362,  0.13957, 0)); // tau -> 1prong0pi0 hadronic decay (Pt, eta, phi, mass)
+  //measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay, 70.51, -1.123, 2.723, 0.9629)); 
+  //measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay, 30.18, 0.02215, 2.731, 1.5));  
   // define algorithm (set the debug level to 3 for testing)
   unsigned verbosity = 2;
   SVfitStandaloneAlgorithm algo(measuredTauLeptons, measuredMETx, measuredMETy, covMET, verbosity);

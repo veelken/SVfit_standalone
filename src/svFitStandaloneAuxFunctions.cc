@@ -105,7 +105,7 @@ namespace svFitStandalone
   {
     // The direction is defined using polar coordinates in a system where the visible energy
     // defines the Z axis.
-    ROOT::Math::DisplacementVector3D<ROOT::Math::Polar3D<double> > motherDirectionVisibleSystem(1.0, angleVisLabFrame, phiLab);
+    ROOT::Math::DisplacementVector3D<ROOT::Math::Polar3D<double> > motherDirectionVisibleSystem(1.0, angleVisLabFrame, phiLab + TMath::Pi());
 
     // Rotate into the LAB coordinate system
     return rotateUz(motherDirectionVisibleSystem, pVisLabFrame.Unit());

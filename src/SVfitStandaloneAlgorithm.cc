@@ -513,9 +513,9 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
 	    l1lutVisMassRes = lutVisMassResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l1lutVisMassRes = lutVisMassResDM10_;
-	  } else {
-	    std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisMass for this event !!" << std::endl;
+	  //} else {
+	  //  std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+	  //	        << " --> disabling shiftVisMass for this event !!" << std::endl;
 	  }
         }
 	if ( shiftVisPt_ ) {
@@ -525,9 +525,9 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
 	    l1lutVisPtRes = lutVisPtResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l1lutVisPtRes = lutVisPtResDM10_;
-	  } else {
-	    std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisPt for this event !!" << std::endl;
+	  //} else {
+	  //  std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+	  // 	        << " --> disabling shiftVisPt for this event !!" << std::endl;
 	  }
         }
 	nDim += 2;
@@ -555,9 +555,9 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
 	    l2lutVisMassRes = lutVisMassResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l2lutVisMassRes = lutVisMassResDM10_;
-	  } else {
-	    std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisMass for this event !!" << std::endl;
+	  //} else {
+	  //  std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+	  //            << " --> disabling shiftVisMass for this event !!" << std::endl;
 	  }
 	}
 	if ( shiftVisPt_ ) {
@@ -567,9 +567,9 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
 	    l2lutVisPtRes = lutVisPtResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l2lutVisPtRes = lutVisPtResDM10_;
-	  } else {
-	    std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisPt for this event !!" << std::endl;
+	  //} else {
+	  //  std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+	  //	        << " --> disabling shiftVisPt for this event !!" << std::endl;
 	  }
 	}
 	nDim += 2;
@@ -623,13 +623,13 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     xl[idxFitParLeg1_ + 1] = -TMath::Pi(); 
     xh[idxFitParLeg1_ + 1] = +TMath::Pi();
     int offset1 = 2;
-    if ( marginalizeVisMass_ || shiftVisMass_ ) {
+    if ( (marginalizeVisMass_ && l1lutVisMass) || (shiftVisMass_ && l1lutVisMassRes) ) {
       x0[idxFitParLeg1_ + offset1] = nll_->measuredTauLeptons()[0].mass();
       xl[idxFitParLeg1_ + offset1] = svFitStandalone::chargedPionMass; 
       xh[idxFitParLeg1_ + offset1] = svFitStandalone::tauLeptonMass; 
       ++offset1;
     }
-    if ( shiftVisPt_ ) {
+    if ( shiftVisPt_ && l1lutVisPtRes ) {
       x0[idxFitParLeg1_ + offset1] = 0.0; 
       xl[idxFitParLeg1_ + offset1] = -1.0; 
       xh[idxFitParLeg1_ + offset1] = +1.5;
@@ -648,13 +648,13 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     xl[idxFitParLeg2_ + 0] = -TMath::Pi(); 
     xh[idxFitParLeg2_ + 0] = +TMath::Pi();
     int offset2 = 1;
-    if ( marginalizeVisMass_ || shiftVisMass_ ) {
+    if ( (marginalizeVisMass_ && l2lutVisMass) || (shiftVisMass_ && l2lutVisMassRes) ) {
       x0[idxFitParLeg2_ + offset2] = nll_->measuredTauLeptons()[1].mass(); 
       xl[idxFitParLeg2_ + offset2] = svFitStandalone::chargedPionMass; 
       xh[idxFitParLeg2_ + offset2] = svFitStandalone::tauLeptonMass; 
       ++offset2;
     }
-    if ( shiftVisPt_ ) {
+    if ( shiftVisPt_ && l2lutVisPtRes ) {
       x0[idxFitParLeg2_ + offset2] = 0.0; 
       xl[idxFitParLeg2_ + offset2] = -1.0; 
       xh[idxFitParLeg2_ + offset2] = +1.5;
@@ -834,9 +834,9 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
 	    l1lutVisMassRes = lutVisMassResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l1lutVisMassRes = lutVisMassResDM10_;
-	  } else {
-	    std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisMass for this event !!" << std::endl;
+	  //} else {
+	  //  std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+	  //	        << " --> disabling shiftVisMass for this event !!" << std::endl;
 	  }
         }
 	if ( shiftVisPt_ ) {
@@ -846,9 +846,9 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
 	    l1lutVisPtRes = lutVisPtResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l1lutVisPtRes = lutVisPtResDM10_;
-	  } else {
-	    std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisPt for this event !!" << std::endl;
+	  //} else {
+	  //  std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+	  //	        << " --> disabling shiftVisPt for this event !!" << std::endl;
 	  }
         }
 	nDim += 2;
@@ -876,9 +876,9 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
 	    l2lutVisMassRes = lutVisMassResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l2lutVisMassRes = lutVisMassResDM10_;
-	  } else {
-	    std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisMass for this event !!" << std::endl;
+	  //} else {
+	  //  std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+	  //	        << " --> disabling shiftVisMass for this event !!" << std::endl;
 	  }
         }
 	if ( shiftVisPt_ ) {
@@ -888,9 +888,9 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
 	    l2lutVisPtRes = lutVisPtResDM1_;
 	  } else if ( measuredTauLepton.decayMode() == 10 ) {
 	    l2lutVisPtRes = lutVisPtResDM10_;
-	  } else {
-	    std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
-		      << " --> disabling shiftVisPt for this event !!" << std::endl;
+	  //} else {
+	  //  std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported" 
+	  //	        << " --> disabling shiftVisPt for this event !!" << std::endl;
 	  }
         }
 	nDim += 2;
@@ -969,13 +969,13 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     xl[idxFitParLeg1_ + 1] = -TMath::Pi(); 
     xh[idxFitParLeg1_ + 1] = +TMath::Pi();
     int offset1 = 2;
-    if ( marginalizeVisMass_ || shiftVisMass_ ) {
+    if ( (marginalizeVisMass_ && l1lutVisMass) || (shiftVisMass_ && l1lutVisMassRes) ) {
       x0[idxFitParLeg1_ + offset1] = 0.8; 
       xl[idxFitParLeg1_ + offset1] = svFitStandalone::chargedPionMass; 
       xh[idxFitParLeg1_ + offset1] = svFitStandalone::tauLeptonMass; 
       ++offset1;
     }
-    if ( shiftVisPt_ ) {
+    if ( shiftVisPt_ && l1lutVisPtRes ) {
       x0[idxFitParLeg1_ + offset1] = 0.0; 
       xl[idxFitParLeg1_ + offset1] = -1.0; 
       xh[idxFitParLeg1_ + offset1] = +1.5;
@@ -1000,13 +1000,13 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     xl[idxFitParLeg2_ + 1] = -TMath::Pi(); 
     xh[idxFitParLeg2_ + 1] = +TMath::Pi();
     int offset2 = 2;
-    if ( marginalizeVisMass_ || shiftVisMass_ ) {
+    if ( (marginalizeVisMass_ && l2lutVisMass) || (shiftVisMass_ && l2lutVisMassRes) ) {
       x0[idxFitParLeg2_ + offset2] = 0.8; 
       xl[idxFitParLeg2_ + offset2] = svFitStandalone::chargedPionMass; 
       xh[idxFitParLeg2_ + offset2] = svFitStandalone::tauLeptonMass; 
       ++offset2;
     }
-    if ( shiftVisPt_ ) {     
+    if ( shiftVisPt_ && l2lutVisPtRes ) {     
       x0[idxFitParLeg2_ + offset2] = 0.0; 
       xl[idxFitParLeg2_ + offset2] = -1.0; 
       xh[idxFitParLeg2_ + offset2] = +1.5;
@@ -1025,7 +1025,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   nll_->addPhiPenalty(false);
   nll_->marginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass), l1lutVisMass, l2lutVisMass);
   nll_->shiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes), l1lutVisMassRes, l2lutVisMassRes);
-  nll_->shiftVisPt(shiftVisPt_ && (l1lutVisPtRes && l2lutVisPtRes), l1lutVisPtRes, l2lutVisPtRes);
+  nll_->shiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes), l1lutVisPtRes, l2lutVisPtRes);
   nll_->requirePhysicalSolution(true);
   double integral = 0.;
   double integralErr = 0.;

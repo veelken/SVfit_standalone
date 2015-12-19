@@ -742,6 +742,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   //mass_ = extractValue(histogramMass, histogramMass_density);
   massUncert_ = extractUncertainty(histogramMass, histogramMass_density);
   massLmax_ = extractLmax(histogramMass, histogramMass_density);
+  fitStatus_ = ( massLmax_ > 0. ) ? 0 : 1;
   if ( verbosity_ >= 1 ) {
     std::cout << "--> mass  = " << mass_  << " +/- " << massUncert_ << std::endl;
     std::cout << "   (pMax = " << pMax << ", count = " << count << ")" << std::endl;
@@ -1044,6 +1045,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   mass_ = mcPtEtaPhiMassAdapter_->getMass();
   massUncert_ = mcPtEtaPhiMassAdapter_->getMassUncert();
   massLmax_ = mcPtEtaPhiMassAdapter_->getMassLmax();
+  if ( !(massLmax_ > 0.) ) fitStatus_ = 1;
   transverseMass_ = mcPtEtaPhiMassAdapter_->getTransverseMass();
   transverseMassUncert_ = mcPtEtaPhiMassAdapter_->getTransverseMassUncert();
   transverseMassLmax_ = mcPtEtaPhiMassAdapter_->getTransverseMassLmax();

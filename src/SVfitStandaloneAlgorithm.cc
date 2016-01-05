@@ -7,6 +7,10 @@
 #include "Math/PtEtaPhiM4D.h"
 
 #include <TGraphErrors.h>
+#include <TMatrixD.h>
+#include <TMatrixDSym.h>
+#include <TMatrixDSymEigen.h>
+#include <TVectorD.h>
 
 namespace svFitStandalone
 {
@@ -121,21 +125,6 @@ namespace svFitStandalone
 	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = 0.;
       }
     }
-    //-----------------------------------------------------------------------------
-    // !!! ONLY FOR TESTING
-    //x_mapped[kXFrac]                 = 0.481205;
-    //x_mapped[kMNuNu]                 = 0.644321;
-    //x_mapped[kPhi]                   = 0.651332;
-    //x_mapped[kMaxFitParams + kXFrac] = 0.512932;
-    //x_mapped[kMaxFitParams + kMNuNu] = 0.;
-    //x_mapped[kMaxFitParams + kPhi]   = 0.114703;
-    //     FOR TESTING ONLY !!!
-    //-----------------------------------------------------------------------------
-    //std::cout << "<map_xVEGAS>:" << std::endl;
-    //for ( int i = 0; i < 10; ++i ) {
-    //  std::cout << " x_mapped[" << i << "] = " << x_mapped[i] << std::endl;
-    //}
-    //assert(0);
   }
 
   void map_xMarkovChain(const double* x, bool l1isLep, bool l2isLep, bool marginalizeVisMass, bool shiftVisMass, bool shiftVisPt, double* x_mapped)
@@ -197,6 +186,18 @@ namespace svFitStandalone
     //  std::cout << " x_mapped[" << i << "] = " << x_mapped[i] << std::endl;
     //}
   }
+
+  struct sortMeasuredTauLeptons 
+  {
+    bool operator() (const svFitStandalone::MeasuredTauLepton& measuredTauLepton1, const svFitStandalone::MeasuredTauLepton& measuredTauLepton2)
+    {
+      if ( (measuredTauLepton1.type() == svFitStandalone::kTauToElecDecay || measuredTauLepton1.type() == svFitStandalone::kTauToMuDecay) && 
+	   measuredTauLepton2.type() == svFitStandalone::kTauToHadDecay  ) return true;
+      if ( (measuredTauLepton2.type() == svFitStandalone::kTauToElecDecay || measuredTauLepton2.type() == svFitStandalone::kTauToMuDecay) && 
+	   measuredTauLepton1.type() == svFitStandalone::kTauToHadDecay ) return false;
+      return ( measuredTauLepton1.pt() > measuredTauLepton2.pt() );
+    }
+  };
 }
 
 SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, 
@@ -224,14 +225,63 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
 { 
   // instantiate minuit, the arguments might turn into configurables once
   minimizer_ = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
-  // instantiate the combined likelihood
-  svFitStandalone::Vector measuredMET_rounded(svFitStandalone::roundToNdigits(measuredMETx), svFitStandalone::roundToNdigits(measuredMETy), 0.);
-  TMatrixD covMET_rounded(2, 2);
+
+  std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons_rounded;
+  for ( std::vector<svFitStandalone::MeasuredTauLepton>::const_iterator measuredTauLepton = measuredTauLeptons.begin();
+	measuredTauLepton != measuredTauLeptons.end(); ++measuredTauLepton ) {
+    svFitStandalone::MeasuredTauLepton measuredTauLepton_rounded(
+      measuredTauLepton->type(), 
+      svFitStandalone::roundToNdigits(measuredTauLepton->pt()), 
+      svFitStandalone::roundToNdigits(measuredTauLepton->eta()), 
+      svFitStandalone::roundToNdigits(measuredTauLepton->phi()), 
+      svFitStandalone::roundToNdigits(measuredTauLepton->mass()), 
+      measuredTauLepton->decayMode());
+    measuredTauLeptons_rounded.push_back(measuredTauLepton_rounded);
+  }
+  // for the VEGAS integration the order of MeasuredTauLeptons matters,
+  // due to the choice of order in which the integration boundaries are defined.
+  // The leptonic tau decay should go before the hadronic tau decays.
+  // In case both taus decay to leptons or both taus decay hadronically,
+  // the higher pT tau should go before the lower pT tau.
+  std::sort(measuredTauLeptons_rounded.begin(), measuredTauLeptons_rounded.end(), svFitStandalone::sortMeasuredTauLeptons());
+  if ( verbosity_ >= 1 ) {
+    for ( size_t idx = 0; idx < measuredTauLeptons_rounded.size(); ++idx ) {
+      const svFitStandalone::MeasuredTauLepton& measuredTauLepton = measuredTauLeptons_rounded[idx];
+      std::cout << "measuredTauLepton #" << idx << " (type = " << measuredTauLepton.type() << "): Pt = " << measuredTauLepton.pt() << "," 
+		<< " eta = " << measuredTauLepton.eta() << " (theta = " << measuredTauLepton.p4().theta() << ")" << ", phi = " << measuredTauLepton.phi() << "," 
+		<< " mass = " << measuredTauLepton.mass() << std::endl;
+    }
+  }
+  double measuredMETx_rounded = svFitStandalone::roundToNdigits(measuredMETx);
+  double measuredMETy_rounded = svFitStandalone::roundToNdigits(measuredMETy);
+  svFitStandalone::Vector measuredMET_rounded(measuredMETx_rounded, measuredMETy_rounded, 0.);
+  TMatrixD covMET_rounded(2,2);
   covMET_rounded[0][0] = svFitStandalone::roundToNdigits(covMET[0][0]);
   covMET_rounded[1][0] = svFitStandalone::roundToNdigits(covMET[1][0]);
   covMET_rounded[0][1] = svFitStandalone::roundToNdigits(covMET[0][1]);
   covMET_rounded[1][1] = svFitStandalone::roundToNdigits(covMET[1][1]);
-  nll_ = new svFitStandalone::SVfitStandaloneLikelihood(measuredTauLeptons, measuredMET_rounded, covMET_rounded, (verbosity_ >= 2));
+  if ( verbosity_ >= 1 ) {
+    std::cout << "MET: Px = " << measuredMETx_rounded << ", Py = " << measuredMETy_rounded << std::endl;
+    std::cout << "covMET:" << std::endl;
+    covMET_rounded.Print();
+    TMatrixDSym covMET_sym(2);
+    covMET_sym(0,0) = covMET_rounded[0][0];
+    covMET_sym(0,1) = covMET_rounded[0][1];
+    covMET_sym(1,0) = covMET_rounded[1][0];
+    covMET_sym(1,1) = covMET_rounded[1][1];
+    TMatrixD EigenVectors(2,2);
+    EigenVectors = TMatrixDSymEigen(covMET_sym).GetEigenVectors();
+    std::cout << "Eigenvectors =  { " << EigenVectors(0,0) << ", " << EigenVectors(1,0) << " (phi = " << TMath::ATan2(EigenVectors(1,0), EigenVectors(0,0)) << ") },"
+	      << " { " << EigenVectors(0,1) << ", " << EigenVectors(1,1) << " (phi = " << TMath::ATan2(EigenVectors(1,1), EigenVectors(0,1)) << ") }" << std::endl;
+    TVectorD EigenValues(2);  
+    EigenValues = TMatrixDSymEigen(covMET_sym).GetEigenValues();
+    EigenValues(0) = TMath::Sqrt(EigenValues(0));
+    EigenValues(1) = TMath::Sqrt(EigenValues(1));
+    std::cout << "Eigenvalues = " << EigenValues(0) << ", " << EigenValues(1) << std::endl;
+  }
+  
+  // instantiate the combined likelihood
+  nll_ = new svFitStandalone::SVfitStandaloneLikelihood(measuredTauLeptons_rounded, measuredMET_rounded, covMET_rounded, (verbosity_ >= 2));
   nllStatus_ = nll_->error();
 
   standaloneObjectiveFunctionAdapterVEGAS_ = new svFitStandalone::ObjectiveFunctionAdapterVEGAS();
@@ -390,39 +440,36 @@ SVfitStandaloneAlgorithm::setup()
 void
 SVfitStandaloneAlgorithm::fit()
 {
-  //if ( verbosity_ >= 1 ) {
-  //  std::cout << "<SVfitStandaloneAlgorithm::fit()>" << std::endl
-  //	        << " dimension of fit    : " << nll_->measuredTauLeptons().size()*svFitStandalone::kMaxFitParams << std::endl
-  //	        << " maxObjFunctionCalls : " << maxObjFunctionCalls_ << std::endl; 
-  //}
+  if ( verbosity_ >= 1 ) {
+    std::cout << "<SVfitStandaloneAlgorithm::fit>:" << std::endl;
+  }
+
   // clear minimizer
   minimizer_->Clear();
+
   // set verbosity level of minimizer
   minimizer_->SetPrintLevel(-1);
+
   // setup the function to be called and the dimension of the fit
   ROOT::Math::Functor toMinimize(standaloneObjectiveFunctionAdapterMINUIT_, nll_->measuredTauLeptons().size()*svFitStandalone::kMaxFitParams);
   minimizer_->SetFunction(toMinimize); 
   setup();
   minimizer_->SetMaxFunctionCalls(maxObjFunctionCalls_);
+
   // set Minuit strategy = 2, in order to get reliable error estimates:
   // http://www-cdf.fnal.gov/physics/statistics/recommendations/minuit.html
   minimizer_->SetStrategy(2);
+
   // compute uncertainties for increase of objective function by 0.5 wrt. 
   // minimum (objective function is log-likelihood function)
   minimizer_->SetErrorDef(0.5);
-  //if ( verbosity_ >= 1 ) {
-  //  std::cout << "starting ROOT::Math::Minimizer::Minimize..." << std::endl;
-  //  std::cout << " #freeParameters = " << minimizer_->NFree() << ","
-  //	        << " #constrainedParameters = " << (minimizer_->NDim() - minimizer_->NFree()) << std::endl;
-  //}
+
   // do the minimization
   nll_->addDelta(false);
   nll_->addSinTheta(true);
   nll_->requirePhysicalSolution(false);
   minimizer_->Minimize();
-  //if ( verbosity_ >= 2 ) { 
-  //  minimizer_->PrintResults(); 
-  //};
+
   /* get Minimizer status code, check if solution is valid:
     
      0: Valid solution
@@ -433,9 +480,6 @@ SVfitStandaloneAlgorithm::fit()
      5: Any other failure
   */
   fitStatus_ = minimizer_->Status();
-  //if ( verbosity_ >=1 ) { 
-  //  std::cout << "--> fitStatus = " << fitStatus_ << std::endl; 
-  //}
   
   // and write out the result
   using svFitStandalone::kXFrac;
@@ -451,31 +495,6 @@ SVfitStandaloneAlgorithm::fit()
   fittedDiTauSystem_ = fittedTauLeptons_[0] + fittedTauLeptons_[1];
   mass_ = fittedDiTauSystem().mass();
   massUncert_ = TMath::Sqrt(0.25*x1RelErr*x1RelErr + 0.25*x2RelErr*x2RelErr)*fittedDiTauSystem().mass();
-  //if ( verbosity_ >= 2 ) {
-  //  std::cout << ">> -------------------------------------------------------------" << std::endl;
-  //  std::cout << ">> Resonance Record: " << std::endl;
-  //  std::cout << ">> -------------------------------------------------------------" << std::endl;
-  //  std::cout << ">> pt  (di-tau)    = " << fittedDiTauSystem().pt  () << std::endl;
-  //  std::cout << ">> eta (di-tau)    = " << fittedDiTauSystem().eta () << std::endl;
-  //  std::cout << ">> phi (di-tau)    = " << fittedDiTauSystem().phi () << std::endl;
-  //  std::cout << ">> mass(di-tau)    = " << fittedDiTauSystem().mass() << std::endl;  
-  //  std::cout << ">> massUncert      = " << massUncert_ << std::endl
-  //	        << "   error[xFrac1]   = " << minimizer_->Errors()[svFitStandalone::kXFrac] << std::endl
-  //	        << "   value[xFrac1]   = " << minimizer_->X()[svFitStandalone::kXFrac]      << std::endl
-  //	        << "   error[xFrac2]   = " << minimizer_->Errors()[svFitStandalone::kMaxFitParams+kXFrac] << std::endl
-  //	        << "   value[xFrac2]   = " << minimizer_->X()[svFitStandalone::kMaxFitParams+kXFrac]      << std::endl;
-  //  for ( size_t leg = 0; leg < 2 ; ++leg ) {
-  //    std::cout << ">> -------------------------------------------------------------" << std::endl;
-  //    std::cout << ">> Leg " << leg+1 << " Record: " << std::endl;
-  //    std::cout << ">> -------------------------------------------------------------" << std::endl;
-  //    std::cout << ">> pt  (meas)      = " << nll_->measuredTauLeptons()[leg].p4().pt () << std::endl;
-  //    std::cout << ">> eta (meas)      = " << nll_->measuredTauLeptons()[leg].p4().eta() << std::endl;
-  //    std::cout << ">> phi (meas)      = " << nll_->measuredTauLeptons()[leg].p4().phi() << std::endl; 
-  //    std::cout << ">> pt  (fit )      = " << fittedTauLeptons()[leg].pt () << std::endl;
-  //    std::cout << ">> eta (fit )      = " << fittedTauLeptons()[leg].eta() << std::endl;
-  //    std::cout << ">> phi (fit )      = " << fittedTauLeptons()[leg].phi() << std::endl; 
-  //  }
-  //}
 }
 
 void
@@ -667,7 +686,9 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     }
   }
 
-  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithmVEGAS_histogramMass", measuredDiTauSystem().mass()/1.0125, 1.e+4, 1.025);
+  double minMass = measuredDiTauSystem().mass()/1.0125;
+  double maxMass = TMath::Max(1.e+4, 1.e+1*minMass);
+  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithmVEGAS_histogramMass", minMass, maxMass, 1.025);
   TH1* histogramMass_density = (TH1*)histogramMass->Clone(Form("%s_density", histogramMass->GetName()));
 
   std::vector<double> xGraph;
@@ -925,7 +946,9 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   mcObjectiveFunctionAdapter_->SetShiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes));
   // CV: use same binning for Markov Chain and VEGAS integration.
   //     The binning relative to the visible mass avoids that SVfit mass is "quantizied" at the same discrete values for all events.
-  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithmMarkovChain_histogramMass", measuredDiTauSystem().mass()/1.0125, 1.e+4, 1.025);
+  double minMass = measuredDiTauSystem().mass()/1.0125;
+  double maxMass = TMath::Max(1.e+4, 1.e+1*minMass);
+  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithmMarkovChain_histogramMass", minMass, maxMass, 1.025);
   TH1* histogramMass_density = (TH1*)histogramMass->Clone(Form("%s_density", histogramMass->GetName()));
   mcPtEtaPhiMassAdapter_->SetHistogramMass(histogramMass, histogramMass_density);
   mcPtEtaPhiMassAdapter_->SetL1isLep(l1isLep_);
@@ -1050,7 +1073,6 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   transverseMassUncert_ = mcPtEtaPhiMassAdapter_->getTransverseMassUncert();
   transverseMassLmax_ = mcPtEtaPhiMassAdapter_->getTransverseMassLmax();
   fittedDiTauSystem_ = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >(pt_, eta_, phi_, mass_);
-
   if ( likelihoodFileName != "" ) {
     TFile* likelihoodFile = new TFile(likelihoodFileName.data(), "RECREATE");
     //mcPtEtaPhiMassAdapter_->histogramPt_->Write();

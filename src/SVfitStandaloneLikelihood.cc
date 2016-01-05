@@ -40,15 +40,7 @@ SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredT
   //  std::cout << "<SVfitStandaloneLikelihood::SVfitStandaloneLikelihood>:" << std::endl;
   //}
   measuredMET_ = measuredMET;
-  // for integration mode the order of lepton or tau matters due to the choice of order in which 
-  // way the integration boundaries are defined. In this case the lepton should always go before
-  // the tau. For tau-tau or lep-lep the order is irrelevant.
-  if ( measuredTauLeptons[0].type() == svFitStandalone::kTauToHadDecay ) {
-    measuredTauLeptons_.push_back(measuredTauLeptons[1]);
-    measuredTauLeptons_.push_back(measuredTauLeptons[0]);
-  } else {
-    measuredTauLeptons_= measuredTauLeptons;
-  }
+  measuredTauLeptons_= measuredTauLeptons;
   if ( measuredTauLeptons_.size() != 2 ) {
     std::cout << " >> ERROR : the number of measured leptons must be 2 but is found to be: " << measuredTauLeptons_.size() << std::endl;
     errorCode_ |= LeptonNumber;

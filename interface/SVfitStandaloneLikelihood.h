@@ -80,10 +80,10 @@ namespace svFitStandalone
     /// constructor from the measured quantities per decay branch
     MeasuredTauLepton(kDecayType type, double pt, double eta, double phi, double mass, int decayMode = -1) 
       : type_(type), 
-        pt_(roundToNdigits(pt)),
-        eta_(roundToNdigits(eta)),
-        phi_(roundToNdigits(phi)),
-        mass_(roundToNdigits(mass)),
+        pt_(pt),
+        eta_(eta),
+        phi_(phi),
+        mass_(mass),
  	decayMode_(decayMode)
     {
       //std::cout << "<MeasuredTauLepton>: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << std::endl;
@@ -172,7 +172,7 @@ namespace svFitStandalone
     /// return azimuthal angle of the visible decay products in labframe
     double phi() const { return phi_; }
     /// return decay type of the tau lepton
-    int type() const { return type_; }
+    kDecayType type() const { return type_; }
     /// return decay mode of the reconstructed hadronic tau decay
     int decayMode() const { return decayMode_; }    
     /// return the spatial momentum vector of the visible decay products in the labframe
@@ -184,7 +184,7 @@ namespace svFitStandalone
     
    private:
     /// decay type
-    int type_;
+    kDecayType type_;
     /// visible momentum in labframe 
     double pt_;
     double eta_;

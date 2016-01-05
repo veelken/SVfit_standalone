@@ -289,7 +289,7 @@ void SVfitStandaloneMarkovChainIntegrator::integrate(const std::vector<double>& 
 	  if ( iTry > 0 && (iTry % 100000) == 0 ) {
 	    if ( iTry == 100000 ) std::cout << "<SVfitStandaloneMarkovChainIntegrator::integrate (name = " << name_ << ")>:" << std::endl;
 	    std::cout << "try #" << iTry << ": did not find valid start-position yet." << std::endl;
-	    //std::cout << "(q = " << format_vdouble(q_) << ", prob = " << prob_ << ")" << std::endl;
+	    //std::cout << " (q = " << format_vdouble(q_) << ", prob = " << prob_ << ")" << std::endl;
 	  }
 	}
       }

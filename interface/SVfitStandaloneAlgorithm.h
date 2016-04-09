@@ -5,6 +5,8 @@
 #include "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneMarkovChainIntegrator.h"
 #include "TauAnalysis/SVfitStandalone/interface/svFitStandaloneAuxFunctions.h"
 
+#include "TauAnalysis/SVfitTF/interface/HadTauTFCrystalBall2.h"
+
 #include <TMath.h>
 #include <TArrayF.h>
 #include <TString.h>
@@ -65,7 +67,7 @@ namespace svFitStandalone
     void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
     void SetMarginalizeVisMass(bool marginalizeVisMass) { marginalizeVisMass_ = marginalizeVisMass; }
     void SetShiftVisMass(bool shiftVisMass) { shiftVisMass_ = shiftVisMass; }
-    void SetShiftVisPt(bool shiftVisPt) { shiftVisPt_ = shiftVisPt; }
+    void SetShiftVisPt(bool shiftVisPt) { shiftVisPt_ = shiftVisPt; }    
     void SetMvis(double mvis) { mvis_ = mvis; }
     void SetMtest(double mtest) { mtest_ = mtest; }
   private:
@@ -303,6 +305,7 @@ class SVfitStandaloneAlgorithm
   /// take resolution on energy and mass of hadronic tau decays into account
   void shiftVisMass(bool value, TFile* inputFile);
   void shiftVisPt(bool value, TFile* inputFile);
+  void shiftVisPt2(bool value);
   /// maximum function calls after which to stop the minimization procedure (default is 5000)
   void maxObjFunctionCalls(double value) { maxObjFunctionCalls_ = value; }
 
@@ -460,6 +463,8 @@ class SVfitStandaloneAlgorithm
   const TH1* lutVisPtResDM0_;
   const TH1* lutVisPtResDM1_;
   const TH1* lutVisPtResDM10_;
+  bool shiftVisPt2_; 
+  HadTauTFCrystalBall2* visPtRes2_;
 
   bool l1isLep_;
   int idxFitParLeg1_;

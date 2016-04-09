@@ -34,7 +34,9 @@ SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredT
     l2lutVisMassRes_(0),
     shiftVisPt_(false),
     l1lutVisPtRes_(0),
-    l2lutVisPtRes_(0)
+    l2lutVisPtRes_(0),
+    shiftVisPt2_(false),
+    visPtRes2_(0)
 {
   //if ( verbosity_ ) {
   //  std::cout << "<SVfitStandaloneLikelihood::SVfitStandaloneLikelihood>:" << std::endl;
@@ -88,6 +90,16 @@ SVfitStandaloneLikelihood::shiftVisPt(bool value, const TH1* l1lutVisPtRes, cons
   }
 }
 
+void 
+SVfitStandaloneLikelihood::shiftVisPt2(bool value, const HadTauTFCrystalBall2* visPtRes)
+{
+  shiftVisPt2_ = value;
+  if ( shiftVisPt2_ ) {
+    visPtRes2_ = visPtRes;
+    assert(visPtRes2_);
+  }
+}
+
 const double*
 SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixToMtest, double mtest) const
 {
@@ -117,7 +129,7 @@ SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixTo
       if ( marginalizeVisMass_ || shiftVisMass_ ) {
 	visMass = x[idx*kMaxFitParams + kVisMassShifted];
       } 
-      if ( shiftVisPt_ ) {
+      if ( shiftVisPt_ || shiftVisPt2_ ) {
 	double shiftInv = 1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt];
 	double shift = ( shiftInv > 1.e-1 ) ?
 	  (1./shiftInv) : 1.e+1;
@@ -295,6 +307,15 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
 		  idx == 0 ? l1lutVisPtRes_ : l2lutVisPtRes_, 
 		  (verbosity_ && FIRST));
       }
+      if ( shiftVisPt2_ ) {	
+	double recTauPt = measuredTauLeptons_[idx].pt();
+	double genTauPt = recTauPt/TMath::Max(1.e-2, xPrime[idx == 0 ? kRecTauPtDivGenTauPt1 : kRecTauPtDivGenTauPt2]);
+        double genTauEta = measuredTauLeptons_[idx].eta(); // CV: assume tau direction to be reconstructed with infinite precision
+	std::cout << "pT: gen = " << genTauPt << ", rec = " << recTauPt << ", eta = " << genTauEta << std::endl;
+	visPtRes2_->setDecayMode(measuredTauLeptons_[idx].decayMode());
+	std::cout << "TF = " << (*visPtRes2_)(recTauPt, genTauPt, genTauEta) << std::endl;
+	prob_TF *= (*visPtRes2_)(recTauPt, genTauPt, genTauEta);
+      }
       break;
     case kTauToElecDecay :
     case kTauToMuDecay :
@@ -358,7 +379,7 @@ SVfitStandaloneLikelihood::results(std::vector<LorentzVector>& fittedTauLeptons,
       if ( marginalizeVisMass_ || shiftVisMass_ ) {
 	visMass = x[idx*kMaxFitParams + kVisMassShifted];
       }
-      if ( shiftVisPt_ ) {
+      if ( shiftVisPt_ || shiftVisPt2_ ) {
 	double shiftInv = 1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt];
         double shift = ( shiftInv > 1.e-1 ) ?
 	  (1./shiftInv) : 1.e+1;

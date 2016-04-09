@@ -33,15 +33,17 @@ void singleEvent()
   std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
   measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToElecDecay, 33.7393, 0.9409,  -0.541458, 0.51100e-3)); // tau -> electron decay (Pt, eta, phi, mass)
   measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay,  25.7322, 0.618228, 2.79362,  0.13957, 0)); // tau -> 1prong0pi0 hadronic decay (Pt, eta, phi, mass)
+
   // define algorithm (set the debug level to 3 for testing)
   unsigned verbosity = 2;
   SVfitStandaloneAlgorithm algo(measuredTauLeptons, measuredMETx, measuredMETy, covMET, verbosity);
   //algo.addLogM(false);  
   algo.addLogM(true, 1.);
-  edm::FileInPath inputFileName_visPtResolution("TauAnalysis/SVfitStandalone/data/svFitVisMassAndPtResolutionPDF.root");
-  TH1::AddDirectory(false);  
-  TFile* inputFile_visPtResolution = new TFile(inputFileName_visPtResolution.fullPath().data());
-  algo.shiftVisPt(true, inputFile_visPtResolution);
+  //edm::FileInPath inputFileName_visPtResolution("TauAnalysis/SVfitStandalone/data/svFitVisMassAndPtResolutionPDF.root");
+  //TH1::AddDirectory(false);  
+  //TFile* inputFile_visPtResolution = new TFile(inputFileName_visPtResolution.fullPath().data());
+  //algo.shiftVisPt(true, inputFile_visPtResolution);
+  algo.shiftVisPt2(true);
   /* 
      the following lines show how to use the different methods on a single event
   */
@@ -59,7 +61,7 @@ void singleEvent()
     std::cout << "sorry -- status of NLL is not valid [" << algo.isValidSolution() << "]" << std::endl;
   }
 
-  delete inputFile_visPtResolution;
+  //delete inputFile_visPtResolution;
 }
 
 void eventsFromTree(int argc, char* argv[]) 

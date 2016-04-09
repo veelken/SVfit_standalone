@@ -1,6 +1,7 @@
 <use   name="roothistmatrix"/>
 <use   name="rootmath"/>
 <use   name="TauAnalysis/SVfitMEM"/>
+<use   name="TauAnalysis/SVfitTF"/>
 <export>
   <lib   name="1"/>
 </export>

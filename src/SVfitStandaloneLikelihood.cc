@@ -311,9 +311,9 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
 	double recTauPt = measuredTauLeptons_[idx].pt();
 	double genTauPt = recTauPt/TMath::Max(1.e-2, xPrime[idx == 0 ? kRecTauPtDivGenTauPt1 : kRecTauPtDivGenTauPt2]);
         double genTauEta = measuredTauLeptons_[idx].eta(); // CV: assume tau direction to be reconstructed with infinite precision
-	std::cout << "pT: gen = " << genTauPt << ", rec = " << recTauPt << "; eta = " << genTauEta << std::endl;
+	//std::cout << "pT: gen = " << genTauPt << ", rec = " << recTauPt << "; eta = " << genTauEta << std::endl;
 	visPtRes2_->setDecayMode(measuredTauLeptons_[idx].decayMode());
-	std::cout << "TF = " << (*visPtRes2_)(recTauPt, genTauPt, genTauEta) << std::endl;
+	//std::cout << "TF = " << (*visPtRes2_)(recTauPt, genTauPt, genTauEta) << std::endl;
 	prob_TF *= (*visPtRes2_)(recTauPt, genTauPt, genTauEta);
       }
       break;

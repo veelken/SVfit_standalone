@@ -36,6 +36,11 @@ void singleEvent()
 
   // define algorithm (set the debug level to 3 for testing)
   unsigned verbosity = 2;
+std::cout << "break-point 1 reached" << std::endl;  
+  HadTauTFCrystalBall2* visPtRes2 = new HadTauTFCrystalBall2();
+std::cout << "break-point 2 reached" << std::endl;  
+  delete visPtRes2;
+std::cout << "break-point 3 reached" << std::endl;  
   SVfitStandaloneAlgorithm algo(measuredTauLeptons, measuredMETx, measuredMETy, covMET, verbosity);
   //algo.addLogM(false);  
   algo.addLogM(true, 1.);

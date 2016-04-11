@@ -3,10 +3,6 @@
 #include "TauAnalysis/SVfitStandalone/interface/svFitStandaloneAuxFunctions.h"
 #include "TauAnalysis/SVfitStandalone/interface/LikelihoodFunctions.h"
 
-// !!! ONLY FOR TESTING
-//#include "TauAnalysis/SVfitMEM/interface/svFitAuxFunctions.h"
-//     FOR TESTING ONLY !!!
-
 using namespace svFitStandalone;
 
 /// global function pointer for minuit or VEGAS
@@ -36,7 +32,8 @@ SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredT
     l1lutVisPtRes_(0),
     l2lutVisPtRes_(0),
     shiftVisPt2_(false),
-    visPtRes2_(0)
+    visPtRes2_leg1_(0),
+    visPtRes2_leg2_(0)
 {
   //if ( verbosity_ ) {
   //  std::cout << "<SVfitStandaloneLikelihood::SVfitStandaloneLikelihood>:" << std::endl;
@@ -91,12 +88,18 @@ SVfitStandaloneLikelihood::shiftVisPt(bool value, const TH1* l1lutVisPtRes, cons
 }
 
 void 
-SVfitStandaloneLikelihood::shiftVisPt2(bool value, const HadTauTFCrystalBall2* visPtRes)
+SVfitStandaloneLikelihood::shiftVisPt2(bool value, const HadTauTFCrystalBall2* visPtRes_leg1, const HadTauTFCrystalBall2* visPtRes_leg2)
 {
   shiftVisPt2_ = value;
   if ( shiftVisPt2_ ) {
-    visPtRes2_ = visPtRes;
-    assert(visPtRes2_);
+    visPtRes2_leg1_ = visPtRes_leg1;
+    assert(visPtRes2_leg1_);
+    if ( measuredTauLeptons_[0].type() == kTauToHadDecay ) visPtRes2_leg1_->setDecayMode(measuredTauLeptons_[0].decayMode());
+    else visPtRes2_leg1_->setDecayMode(-1);
+    visPtRes2_leg2_ = visPtRes_leg2;
+    assert(visPtRes2_leg2_);
+    if ( measuredTauLeptons_[1].type() == kTauToHadDecay ) visPtRes2_leg2_->setDecayMode(measuredTauLeptons_[1].decayMode());
+    else visPtRes2_leg2_->setDecayMode(-1);
   }
 }
 
@@ -308,13 +311,11 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
 		  (verbosity_ && FIRST));
       }
       if ( shiftVisPt2_ ) {	
+	const HadTauTFCrystalBall2* visPtRes2 = idx == 0 ? visPtRes2_leg1_ : visPtRes2_leg2_;
 	double recTauPt = measuredTauLeptons_[idx].pt();
 	double genTauPt = recTauPt/TMath::Max(1.e-2, xPrime[idx == 0 ? kRecTauPtDivGenTauPt1 : kRecTauPtDivGenTauPt2]);
         double genTauEta = measuredTauLeptons_[idx].eta(); // CV: assume tau direction to be reconstructed with infinite precision
-	//std::cout << "pT: gen = " << genTauPt << ", rec = " << recTauPt << "; eta = " << genTauEta << std::endl;
-	visPtRes2_->setDecayMode(measuredTauLeptons_[idx].decayMode());
-	//std::cout << "TF = " << (*visPtRes2_)(recTauPt, genTauPt, genTauEta) << std::endl;
-	prob_TF *= (*visPtRes2_)(recTauPt, genTauPt, genTauEta);
+	prob_TF *= (*visPtRes2)(recTauPt, genTauPt, genTauEta);
       }
       break;
     case kTauToElecDecay :

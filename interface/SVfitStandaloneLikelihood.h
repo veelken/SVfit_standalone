@@ -266,7 +266,7 @@ namespace svFitStandalone
     /// take resolution on energy and mass of hadronic tau decays into account
     void shiftVisMass(bool value, const TH1* l1lutVisMassRes, const TH1* l2lutVisMassRes);
     void shiftVisPt(bool value, const TH1* l1lutVisPtRes, const TH1* l2lutVisPtRes);
-    void shiftVisPt2(bool value, const HadTauTFCrystalBall2* visPtRes);
+    void shiftVisPt2(bool value, const HadTauTFCrystalBall2* visPtRes_leg1, const HadTauTFCrystalBall2* visPtRes_leg2);
     /// add a penalty term in case phi runs outside of interval 
     /// modify the MET term in the nll by an additional power (default is 1.)
     void metPower(double value) { metPower_=value; };    
@@ -343,7 +343,8 @@ namespace svFitStandalone
     const TH1* l1lutVisPtRes_;
     const TH1* l2lutVisPtRes_;
     bool shiftVisPt2_; 
-    const HadTauTFCrystalBall2* visPtRes2_;
+    const HadTauTFCrystalBall2* visPtRes2_leg1_;
+    const HadTauTFCrystalBall2* visPtRes2_leg2_;
   };
 }
 

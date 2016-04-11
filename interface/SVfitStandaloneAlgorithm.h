@@ -464,7 +464,8 @@ class SVfitStandaloneAlgorithm
   const TH1* lutVisPtResDM1_;
   const TH1* lutVisPtResDM10_;
   bool shiftVisPt2_; 
-  HadTauTFCrystalBall2* visPtRes2_;
+  HadTauTFCrystalBall2* visPtRes2_leg1_;
+  HadTauTFCrystalBall2* visPtRes2_leg2_;
 
   bool l1isLep_;
   int idxFitParLeg1_;

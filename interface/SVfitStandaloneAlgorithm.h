@@ -143,12 +143,15 @@ namespace svFitStandalone
       histogramMass_ = histogramMass;
       if ( histogramMass_density != 0 ) delete histogramMass_density_;
       histogramMass_density_ = histogramMass_density;
-      if ( histogramMass_ && histogramMass_->GetXaxis()->GetXmax() > histogramTransverseMass_->GetXaxis()->GetXmax() ) {
-	if ( histogramTransverseMass_ != 0 ) delete histogramTransverseMass_;
-	histogramTransverseMass_ = makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", 1., histogramMass_->GetXaxis()->GetXmax(), 1.025);
-	if ( histogramTransverseMass_density_ != 0 ) delete histogramTransverseMass_density_;
-	histogramTransverseMass_density_ = (TH1*)histogramTransverseMass_->Clone(Form("%s_density", histogramTransverseMass_->GetName()));	
-      }
+    }
+    void SetHistogramTransverseMass(TH1* histogramTransverseMass, TH1* histogramTransverseMass_density)
+    {
+      // CV: passing null pointers to the SetHistogramTransverseMass function
+      //     indicates that the histograms have been deleted by the calling code
+      if ( histogramTransverseMass != 0 ) delete histogramTransverseMass_;
+      histogramTransverseMass_ = histogramTransverseMass;
+      if ( histogramTransverseMass_density != 0 ) delete histogramTransverseMass_density_;
+      histogramTransverseMass_density_ = histogramTransverseMass_density;
     }
     void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
     void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }

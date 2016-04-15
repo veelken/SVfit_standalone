@@ -87,6 +87,7 @@ SVfitStandaloneLikelihood::shiftVisPt(bool value, const TH1* l1lutVisPtRes, cons
   }
 }
 
+#ifdef USE_SVFITTF
 void 
 SVfitStandaloneLikelihood::shiftVisPt2(bool value, const HadTauTFCrystalBall2* visPtRes_leg1, const HadTauTFCrystalBall2* visPtRes_leg2)
 {
@@ -102,6 +103,7 @@ SVfitStandaloneLikelihood::shiftVisPt2(bool value, const HadTauTFCrystalBall2* v
     else visPtRes2_leg2_->setDecayMode(-1);
   }
 }
+#endif
 
 const double*
 SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixToMtest, double mtest) const
@@ -310,12 +312,14 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
 		  idx == 0 ? l1lutVisPtRes_ : l2lutVisPtRes_, 
 		  (verbosity_ && FIRST));
       }
-      if ( shiftVisPt2_ ) {	
+      if ( shiftVisPt2_ ) {
+#ifdef USE_SVFITTF	
 	const HadTauTFCrystalBall2* visPtRes2 = idx == 0 ? visPtRes2_leg1_ : visPtRes2_leg2_;
 	double recTauPt = measuredTauLeptons_[idx].pt();
 	double genTauPt = recTauPt/TMath::Max(1.e-2, xPrime[idx == 0 ? kRecTauPtDivGenTauPt1 : kRecTauPtDivGenTauPt2]);
         double genTauEta = measuredTauLeptons_[idx].eta(); // CV: assume tau direction to be reconstructed with infinite precision
 	prob_TF *= (*visPtRes2)(recTauPt, genTauPt, genTauEta);
+#endif
       }
       break;
     case kTauToElecDecay :

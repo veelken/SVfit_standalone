@@ -5,7 +5,9 @@
 #include "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneMarkovChainIntegrator.h"
 #include "TauAnalysis/SVfitStandalone/interface/svFitStandaloneAuxFunctions.h"
 
+#ifdef USE_SVFITTF
 #include "TauAnalysis/SVfitTF/interface/HadTauTFCrystalBall2.h"
+#endif
 
 #include <TMath.h>
 #include <TArrayF.h>
@@ -467,9 +469,10 @@ class SVfitStandaloneAlgorithm
   const TH1* lutVisPtResDM1_;
   const TH1* lutVisPtResDM10_;
   bool shiftVisPt2_; 
+#ifdef USE_SVFITTF
   HadTauTFCrystalBall2* visPtRes2_leg1_;
   HadTauTFCrystalBall2* visPtRes2_leg2_;
-
+#endif
   bool l1isLep_;
   int idxFitParLeg1_;
   bool l2isLep_;

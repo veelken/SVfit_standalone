@@ -3,7 +3,9 @@
 
 #include "TauAnalysis/SVfitStandalone/interface/svFitStandaloneAuxFunctions.h"
 
+#ifdef USE_SVFITTF
 #include "TauAnalysis/SVfitTF/interface/HadTauTFCrystalBall2.h"
+#endif
 
 #include "TMath.h"
 #include "TMatrixD.h"
@@ -266,7 +268,9 @@ namespace svFitStandalone
     /// take resolution on energy and mass of hadronic tau decays into account
     void shiftVisMass(bool value, const TH1* l1lutVisMassRes, const TH1* l2lutVisMassRes);
     void shiftVisPt(bool value, const TH1* l1lutVisPtRes, const TH1* l2lutVisPtRes);
+#ifdef USE_SVFITTF
     void shiftVisPt2(bool value, const HadTauTFCrystalBall2* visPtRes_leg1, const HadTauTFCrystalBall2* visPtRes_leg2);
+#endif
     /// add a penalty term in case phi runs outside of interval 
     /// modify the MET term in the nll by an additional power (default is 1.)
     void metPower(double value) { metPower_=value; };    
@@ -343,8 +347,10 @@ namespace svFitStandalone
     const TH1* l1lutVisPtRes_;
     const TH1* l2lutVisPtRes_;
     bool shiftVisPt2_; 
+#ifdef USE_SVFITTF
     const HadTauTFCrystalBall2* visPtRes2_leg1_;
     const HadTauTFCrystalBall2* visPtRes2_leg2_;
+#endif
   };
 }
 

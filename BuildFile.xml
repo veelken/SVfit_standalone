@@ -2,6 +2,7 @@
 <use   name="rootmath"/>
 <use   name="TauAnalysis/SVfitMEM"/>
 <use   name="TauAnalysis/SVfitTF"/>
+<Flags CPPDEFINES="USE_SVFITTF"/>
 <export>
   <lib   name="1"/>
 </export>

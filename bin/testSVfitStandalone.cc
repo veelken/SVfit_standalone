@@ -43,7 +43,9 @@ void singleEvent()
   //TH1::AddDirectory(false);  
   //TFile* inputFile_visPtResolution = new TFile(inputFileName_visPtResolution.fullPath().data());
   //algo.shiftVisPt(true, inputFile_visPtResolution);
-  //algo.shiftVisPt2(true);
+#ifdef USE_SVFITTF
+  algo.shiftVisPt2(true);
+#endif
   /* 
      the following lines show how to use the different methods on a single event
   */

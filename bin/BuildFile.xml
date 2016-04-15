@@ -1,4 +1,7 @@
 <bin   file="testSVfitStandalone.cc" name="testSVfitStandalone">
   <use name="FWCore/ParameterSet"/>
   <use name="TauAnalysis/SVfitStandalone"/>
+  <!--
+  <Flags CPPDEFINES="USE_SVFITTF"/>
+  -->
 </bin>

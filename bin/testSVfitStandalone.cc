@@ -36,11 +36,6 @@ void singleEvent()
 
   // define algorithm (set the debug level to 3 for testing)
   unsigned verbosity = 2;
-std::cout << "break-point 1 reached" << std::endl;  
-  HadTauTFCrystalBall2* visPtRes2 = new HadTauTFCrystalBall2();
-std::cout << "break-point 2 reached" << std::endl;  
-  delete visPtRes2;
-std::cout << "break-point 3 reached" << std::endl;  
   SVfitStandaloneAlgorithm algo(measuredTauLeptons, measuredMETx, measuredMETy, covMET, verbosity);
   //algo.addLogM(false);  
   algo.addLogM(true, 1.);
@@ -48,7 +43,7 @@ std::cout << "break-point 3 reached" << std::endl;
   //TH1::AddDirectory(false);  
   //TFile* inputFile_visPtResolution = new TFile(inputFileName_visPtResolution.fullPath().data());
   //algo.shiftVisPt(true, inputFile_visPtResolution);
-  algo.shiftVisPt2(true);
+  //algo.shiftVisPt2(true);
   /* 
      the following lines show how to use the different methods on a single event
   */
@@ -59,11 +54,12 @@ std::cout << "break-point 3 reached" << std::endl;
   // integration by markov chain MC
   algo.integrateMarkovChain();
 
-  double mass = algo.getMass(); // return value is in units of GeV
+  double mass = algo.mass(); // full mass of tau lepton pair in units of GeV
+  double transverseMass = algo.transverseMass(); // transverse mass of tau lepton pair in units of GeV
   if ( algo.isValidSolution() ) {
-    std::cout << "found mass = " << mass << " (expected value = 124.646)" << std::endl;
+    std::cout << "found valid solution: mass = " << mass << " (expected value = 121.606), transverse mass = " << transverseMass << " (expected value = 120.025)" << std::endl;
   } else {
-    std::cout << "sorry -- status of NLL is not valid [" << algo.isValidSolution() << "]" << std::endl;
+    std::cout << "sorry, failed to find valid solution !!" << std::endl;
   }
 
   //delete inputFile_visPtResolution;

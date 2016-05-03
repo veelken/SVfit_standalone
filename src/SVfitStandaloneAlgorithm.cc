@@ -465,6 +465,8 @@ SVfitStandaloneAlgorithm::fit()
   if ( verbosity_ >= 1 ) {
     std::cout << "<SVfitStandaloneAlgorithm::fit>:" << std::endl;
   }
+  clock_->Reset();
+  clock_->Start("<SVfitStandaloneAlgorithm::fit>");
 
   // clear minimizer
   minimizer_->Clear();
@@ -517,6 +519,15 @@ SVfitStandaloneAlgorithm::fit()
   fittedDiTauSystem_ = fittedTauLeptons_[0] + fittedTauLeptons_[1];
   mass_ = fittedDiTauSystem().mass();
   massUncert_ = TMath::Sqrt(0.25*x1RelErr*x1RelErr + 0.25*x2RelErr*x2RelErr)*fittedDiTauSystem().mass();
+
+  clock_->Stop("<SVfitStandaloneAlgorithm::fit>");
+  numSeconds_cpu_ = clock_->GetCpuTime("<SVfitStandaloneAlgorithm::fit>");
+  numSeconds_real_ = clock_->GetRealTime("<SVfitStandaloneAlgorithm::fit>");
+
+  if ( verbosity_ >= 1 ) {
+    std::cout << "--> Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass  = " << mass_ << std::endl;
+    clock_->Show("<SVfitStandaloneAlgorithm::fit>");
+  }
 }
 
 void
@@ -526,8 +537,9 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   
   if ( verbosity_ >= 1 ) {
     std::cout << "<SVfitStandaloneAlgorithm::integrateVEGAS>:" << std::endl;
-    clock_->Start("<SVfitStandaloneAlgorithm::integrateVEGAS>");
   }
+  clock_->Reset();
+  clock_->Start("<SVfitStandaloneAlgorithm::integrateVEGAS>");
 
   // number of parameters for fit
   int nDim = 0;
@@ -812,6 +824,10 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
   delete[] x0;
   delete[] xl;
   delete[] xh;
+  
+  clock_->Stop("<SVfitStandaloneAlgorithm::integrateVEGAS>");
+  numSeconds_cpu_ = clock_->GetCpuTime("<SVfitStandaloneAlgorithm::integrateVEGAS>");
+  numSeconds_real_ = clock_->GetRealTime("<SVfitStandaloneAlgorithm::integrateVEGAS>");
 
   if ( verbosity_ >= 1 ) {
     clock_->Show("<SVfitStandaloneAlgorithm::integrateVEGAS>");
@@ -825,8 +841,10 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   
   if ( verbosity_ >= 1 ) {
     std::cout << "<SVfitStandaloneAlgorithm::integrateMarkovChain>:" << std::endl;
-    clock_->Start("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }
+  clock_->Reset();
+  clock_->Start("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
+
   if ( isInitialized2_ ) {
     mcPtEtaPhiMassAdapter_->Reset();
   } else {
@@ -1129,6 +1147,10 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   delete histogramMass;
   delete histogramMass_density;
   mcPtEtaPhiMassAdapter_->SetHistogramMass(0, 0);
+
+  clock_->Stop("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
+  numSeconds_cpu_ = clock_->GetCpuTime("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
+  numSeconds_real_ = clock_->GetRealTime("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
 
   if ( verbosity_ >= 1 ) {
     std::cout << "--> Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass  = " << mass_ << std::endl;

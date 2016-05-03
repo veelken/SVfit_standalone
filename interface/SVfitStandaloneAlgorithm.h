@@ -311,8 +311,8 @@ class SVfitStandaloneAlgorithm
   void shiftVisMass(bool value, TFile* inputFile);
   void shiftVisPt(bool value, TFile* inputFile);
   void shiftVisPt2(bool value);
-  /// maximum function calls after which to stop the minimization procedure (default is 5000)
-  void maxObjFunctionCalls(double value) { maxObjFunctionCalls_ = value; }
+  /// maximum function calls after which to stop the minimization procedure (default is 10000, used for VEGAS integration)
+  void maxObjFunctionCalls(unsigned value) { maxObjFunctionCalls_ = value; }
 
   /// fit to be called from outside
   void fit();
@@ -391,6 +391,10 @@ class SVfitStandaloneAlgorithm
   // return spacial vector of the measured MET
   Vector measuredMET() const { return nll_->measuredMET(); }
 
+  /// return computing time (in seconds) spent on last call to integrate method
+  double getComputingTime_cpu() const { return numSeconds_cpu_; }
+  double getComputingTime_real() const { return numSeconds_real_; }
+
  protected:
   /// setup the starting values for the minimization (default values for the fit parameters are taken from src/SVFitParameters.cc in the same package)
   void setup();
@@ -456,6 +460,8 @@ class SVfitStandaloneAlgorithm
   double phiLmax_;
 
   TBenchmark* clock_;
+  double numSeconds_cpu_;
+  double numSeconds_real_;
 
   /// resolution on Pt and mass of hadronic taus
   bool marginalizeVisMass_;

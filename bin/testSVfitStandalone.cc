@@ -7,7 +7,9 @@
    from a flat n-tuple or single event.
 */
 
+#ifdef USE_SVFITTF
 #include "FWCore/ParameterSet/interface/FileInPath.h"
+#endif
 
 #include "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneAlgorithm.h"
 
@@ -39,10 +41,12 @@ void singleEvent()
   SVfitStandaloneAlgorithm algo(measuredTauLeptons, measuredMETx, measuredMETy, covMET, verbosity);
   //algo.addLogM(false);  
   algo.addLogM(true, 1.);
+#ifdef USE_SVFITTF
   //edm::FileInPath inputFileName_visPtResolution("TauAnalysis/SVfitStandalone/data/svFitVisMassAndPtResolutionPDF.root");
   //TH1::AddDirectory(false);  
   //TFile* inputFile_visPtResolution = new TFile(inputFileName_visPtResolution.fullPath().data());
   //algo.shiftVisPt(true, inputFile_visPtResolution);
+#endif
 #ifdef USE_SVFITTF
   algo.shiftVisPt2(true);
 #endif

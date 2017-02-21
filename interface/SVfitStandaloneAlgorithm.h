@@ -126,10 +126,10 @@ namespace svFitStandalone
     std::function<double(std::vector<svFitStandalone::LorentzVector> const&) > function_;
   };
   
-  class MCQuantitiesAdapter : public ROOT::Math::Functor
+  class SVfitMCQuantitiesAdapter : public ROOT::Math::Functor
   {
    public:
-    MCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities);
+    SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities);
     
     inline void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
     inline void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }

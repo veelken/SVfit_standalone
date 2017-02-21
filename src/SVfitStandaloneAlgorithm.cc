@@ -215,7 +215,6 @@ namespace svFitStandalone
     return function_(fittedTauLeptons);
   }
   
-    
   double SVfitQuantity::ExtractValue() const
   {
     return extractValue(histogram_, histogram_density_);
@@ -229,11 +228,11 @@ namespace svFitStandalone
     return extractLmax(histogram_, histogram_density_);
   }
   
-  MCQuantitiesAdapter::MCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities) :
+  SVfitMCQuantitiesAdapter::SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities) :
     quantities_(quantities)
   {
   }
-  double MCQuantitiesAdapter::DoEval(const double* x) const
+  double SVfitMCQuantitiesAdapter::DoEval(const double* x) const
   {
     map_xMarkovChain(x, l1isLep_, l2isLep_, marginalizeVisMass_, shiftVisMass_, shiftVisPt_, x_mapped_);
     SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->results(fittedTauLeptons_, x_mapped_);
@@ -243,33 +242,33 @@ namespace svFitStandalone
     }
     return 0.0;
   }
-  double MCQuantitiesAdapter::ExtractValue(size_t index) const
+  double SVfitMCQuantitiesAdapter::ExtractValue(size_t index) const
   {
     return quantities_.at(index).ExtractValue();
   }
-  double MCQuantitiesAdapter::ExtractUncertainty(size_t index) const
+  double SVfitMCQuantitiesAdapter::ExtractUncertainty(size_t index) const
   {
     return quantities_.at(index).ExtractUncertainty();
   }
-  double MCQuantitiesAdapter::ExtractLmax(size_t index) const
+  double SVfitMCQuantitiesAdapter::ExtractLmax(size_t index) const
   {
     return quantities_.at(index).ExtractLmax();
   }
-  std::vector<double> MCQuantitiesAdapter::ExtractValues() const
+  std::vector<double> SVfitMCQuantitiesAdapter::ExtractValues() const
   {
   	std::vector<double> results;
   	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
                    [](SVfitQuantity const& quantity) { return quantity.ExtractValue(); });
     return results;
   }
-  std::vector<double> MCQuantitiesAdapter::ExtractUncertainties() const
+  std::vector<double> SVfitMCQuantitiesAdapter::ExtractUncertainties() const
   {
   	std::vector<double> results;
   	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
                    [](SVfitQuantity const& quantity) { return quantity.ExtractUncertainty(); });
     return results;
   }
-  std::vector<double> MCQuantitiesAdapter::ExtractLmaxima() const
+  std::vector<double> SVfitMCQuantitiesAdapter::ExtractLmaxima() const
   {
   	std::vector<double> results;
   	std::transform(quantities_.begin(), quantities_.end(), results.begin(),

@@ -198,6 +198,84 @@ namespace svFitStandalone
       return ( measuredTauLepton1.pt() > measuredTauLepton2.pt() );
     }
   };
+  
+  SVfitQuantity::SVfitQuantity(TH1* histogram, TH1* histogram_density, std::function<double(std::vector<svFitStandalone::LorentzVector> const&) > function) :
+    histogram_(histogram),
+    histogram_density_(histogram_density),
+    function_(function)
+  {
+  }
+  SVfitQuantity::~SVfitQuantity()
+  {
+    delete histogram_;
+    delete histogram_density_;
+  }
+  double SVfitQuantity::Eval(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) const
+  {
+    return function_(fittedTauLeptons);
+  }
+  
+    
+  double SVfitQuantity::ExtractValue() const
+  {
+    return extractValue(histogram_, histogram_density_);
+  }
+  double SVfitQuantity::ExtractUncertainty() const
+  {
+    return extractUncertainty(histogram_, histogram_density_);
+  }
+  double SVfitQuantity::ExtractLmax() const
+  {
+    return extractLmax(histogram_, histogram_density_);
+  }
+  
+  MCQuantitiesAdapter::MCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities) :
+    quantities_(quantities)
+  {
+  }
+  double MCQuantitiesAdapter::DoEval(const double* x) const
+  {
+    map_xMarkovChain(x, l1isLep_, l2isLep_, marginalizeVisMass_, shiftVisMass_, shiftVisPt_, x_mapped_);
+    SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->results(fittedTauLeptons_, x_mapped_);
+    for (std::vector<SVfitQuantity>::const_iterator quantity = quantities_.begin(); quantity != quantities_.end(); ++quantity)
+    {
+    	quantity->histogram_->Fill(quantity->Eval(fittedTauLeptons_));
+    }
+    return 0.0;
+  }
+  double MCQuantitiesAdapter::ExtractValue(size_t index) const
+  {
+    return quantities_.at(index).ExtractValue();
+  }
+  double MCQuantitiesAdapter::ExtractUncertainty(size_t index) const
+  {
+    return quantities_.at(index).ExtractUncertainty();
+  }
+  double MCQuantitiesAdapter::ExtractLmax(size_t index) const
+  {
+    return quantities_.at(index).ExtractLmax();
+  }
+  std::vector<double> MCQuantitiesAdapter::ExtractValues() const
+  {
+  	std::vector<double> results;
+  	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
+                   [](SVfitQuantity const& quantity) { return quantity.ExtractValue(); });
+    return results;
+  }
+  std::vector<double> MCQuantitiesAdapter::ExtractUncertainties() const
+  {
+  	std::vector<double> results;
+  	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
+                   [](SVfitQuantity const& quantity) { return quantity.ExtractUncertainty(); });
+    return results;
+  }
+  std::vector<double> MCQuantitiesAdapter::ExtractLmaxima() const
+  {
+  	std::vector<double> results;
+  	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
+                   [](SVfitQuantity const& quantity) { return quantity.ExtractLmax(); });
+    return results;
+  }
 }
 
 SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, 

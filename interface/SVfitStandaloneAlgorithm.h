@@ -106,6 +106,60 @@ namespace svFitStandalone
     bool shiftVisMass_;
     bool shiftVisPt_;
   };
+  
+  class SVfitQuantity
+  {
+   public:
+    SVfitQuantity(TH1* histogram, TH1* histogram_density, std::function<double(std::vector<svFitStandalone::LorentzVector> const&) > function);
+    ~SVfitQuantity();
+    
+    double Eval(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) const;
+    
+    double ExtractValue() const;
+    double ExtractUncertainty() const;
+    double ExtractLmax() const;
+    
+    mutable TH1* histogram_ = nullptr;
+   
+   protected:
+    TH1* histogram_density_ = nullptr;
+    std::function<double(std::vector<svFitStandalone::LorentzVector> const&) > function_;
+  };
+  
+  class MCQuantitiesAdapter : public ROOT::Math::Functor
+  {
+   public:
+    MCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities);
+    
+    inline void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
+    inline void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
+    inline void SetMarginalizeVisMass(bool marginalizeVisMass) { marginalizeVisMass_ = marginalizeVisMass; }
+    inline void SetShiftVisMass(bool shiftVisMass) { shiftVisMass_ = shiftVisMass; }
+    inline void SetShiftVisPt(bool shiftVisPt) { shiftVisPt_ = shiftVisPt; }
+    
+    double ExtractValue(size_t index) const;
+    double ExtractUncertainty(size_t index) const;
+    double ExtractLmax(size_t index) const;
+    
+    std::vector<double> ExtractValues() const;
+    std::vector<double> ExtractUncertainties() const;
+    std::vector<double> ExtractLmaxima() const;
+    
+   protected:
+    std::vector<SVfitQuantity> quantities_;
+    
+    mutable std::vector<svFitStandalone::LorentzVector> fittedTauLeptons_;
+    mutable double x_mapped_[10];
+    bool l1isLep_;
+    bool l2isLep_;
+    bool marginalizeVisMass_;
+    bool shiftVisMass_;
+    bool shiftVisPt_;
+   
+   private:
+    virtual double DoEval(const double* x) const;
+  };
+  
   class MCPtEtaPhiMassAdapter : public ROOT::Math::Functor
   {
    public:

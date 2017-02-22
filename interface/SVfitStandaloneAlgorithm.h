@@ -136,6 +136,8 @@ namespace svFitStandalone
     
     void SetHistograms(size_t index, TH1* histogram, TH1* histogram_density);
     void SetHistograms(std::vector<TH1*> histograms, std::vector<TH1*> histogram_densities);
+    virtual void SetHistogramMass(TH1* histogram, TH1* histogram_density) = 0;
+    virtual void SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density) = 0;
     void Reset();
     
     inline void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
@@ -166,7 +168,7 @@ namespace svFitStandalone
     bool shiftVisMass_;
     bool shiftVisPt_;
     unsigned int nDim_;
-   
+    
    private:
     virtual double DoEval(const double* x) const;
   };

@@ -307,6 +307,59 @@ namespace svFitStandalone
                    [](SVfitQuantity const& quantity) { return quantity.ExtractLmax(); });
     return results;
   }
+
+  MCPtEtaPhiMassAdapterNew::MCPtEtaPhiMassAdapterNew() :
+    SVfitMCQuantitiesAdapter({
+      SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramPt", 1., 1.e+3, 1.025),
+                    makeHistogram("SVfitStandaloneAlgorithm_histogramPt_density", 1., 1.e+3, 1.025),
+                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                    {
+                      return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).pt();
+                    }),
+      SVfitQuantity(new TH1D("SVfitStandaloneAlgorithm_histogramEta", "SVfitStandaloneAlgorithm_histogramEta", 198, -9.9, +9.9),
+                    new TH1D("SVfitStandaloneAlgorithm_histogramEta_density", "SVfitStandaloneAlgorithm_histogramEta_density", 198, -9.9, +9.9),
+                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                    {
+                      return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).eta();
+                    }),
+      SVfitQuantity(new TH1D("SVfitStandaloneAlgorithm_histogramPhi", "SVfitStandaloneAlgorithm_histogramPhi", 180, -TMath::Pi(), +TMath::Pi()),
+                    new TH1D("SVfitStandaloneAlgorithm_histogramPhi_density", "SVfitStandaloneAlgorithm_histogramPhi_density", 180, -TMath::Pi(), +TMath::Pi()),
+                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                    {
+                      return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).phi();
+                    }),
+      SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramMass", 1.e+1, 1.e+4, 1.025),
+                    makeHistogram("SVfitStandaloneAlgorithm_histogramMass_density", 1.e+1, 1.e+4, 1.025),
+                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                    {
+                      return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).mass();
+                    }),
+      SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", 1., 1.e+4, 1.025),
+                    makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass_density", 1., 1.e+4, 1.025),
+                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                    {
+                      return TMath::Sqrt(2.0*fittedTauLeptons.at(0).pt()*fittedTauLeptons.at(1).pt()*(1.0 - TMath::Cos(fittedTauLeptons.at(0).phi() - fittedTauLeptons.at(1).phi())));
+                    })
+    })
+  {
+  }
+  void MCPtEtaPhiMassAdapterNew::SetHistogramMass(TH1* histogram, TH1* histogram_density) { SetHistograms(3, histogram, histogram_density); }
+  void MCPtEtaPhiMassAdapterNew::SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density) { SetHistograms(4, histogram, histogram_density); }
+  double MCPtEtaPhiMassAdapterNew::getPt() const { return ExtractValue(0); }
+  double MCPtEtaPhiMassAdapterNew::getPtUncert() const { return ExtractUncertainty(0); }
+  double MCPtEtaPhiMassAdapterNew::getPtLmax() const { return ExtractLmax(0); }
+  double MCPtEtaPhiMassAdapterNew::getEta() const { return ExtractValue(1); }
+  double MCPtEtaPhiMassAdapterNew::getEtaUncert() const { return ExtractUncertainty(1); }
+  double MCPtEtaPhiMassAdapterNew::getEtaLmax() const { return ExtractLmax(1); }
+  double MCPtEtaPhiMassAdapterNew::getPhi() const { return ExtractValue(2); }
+  double MCPtEtaPhiMassAdapterNew::getPhiUncert() const { return ExtractUncertainty(2); }
+  double MCPtEtaPhiMassAdapterNew::getPhiLmax() const { return ExtractLmax(2); }
+  double MCPtEtaPhiMassAdapterNew::getMass() const { return ExtractValue(3); }
+  double MCPtEtaPhiMassAdapterNew::getMassUncert() const { return ExtractUncertainty(3); }
+  double MCPtEtaPhiMassAdapterNew::getMassLmax() const { return ExtractLmax(3); }
+  double MCPtEtaPhiMassAdapterNew::getTransverseMass() const { return ExtractValue(4); }
+  double MCPtEtaPhiMassAdapterNew::getTransverseMassUncert() const { return ExtractUncertainty(4); }
+  double MCPtEtaPhiMassAdapterNew::getTransverseMassLmax() const { return ExtractLmax(4); }
 }
 
 SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, 

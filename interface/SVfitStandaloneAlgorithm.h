@@ -171,6 +171,31 @@ namespace svFitStandalone
     virtual double DoEval(const double* x) const;
   };
   
+  class MCPtEtaPhiMassAdapterNew : public SVfitMCQuantitiesAdapter
+  {
+   public:
+    MCPtEtaPhiMassAdapterNew();
+    
+    void SetHistogramMass(TH1* histogram, TH1* histogram_density);
+    void SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density);
+    
+    double getPt() const;
+    double getPtUncert() const;
+    double getPtLmax() const;
+    double getEta() const;
+    double getEtaUncert() const;
+    double getEtaLmax() const;
+    double getPhi() const;
+    double getPhiUncert() const;
+    double getPhiLmax() const;
+    double getMass() const;
+    double getMassUncert() const;
+    double getMassLmax() const;
+    double getTransverseMass() const;
+    double getTransverseMassUncert() const;
+    double getTransverseMassLmax() const;
+  };
+  
   class MCPtEtaPhiMassAdapter : public ROOT::Math::Functor
   {
    public:

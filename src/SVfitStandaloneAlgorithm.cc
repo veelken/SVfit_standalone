@@ -308,7 +308,7 @@ namespace svFitStandalone
     return results;
   }
 
-  MCPtEtaPhiMassAdapterNew::MCPtEtaPhiMassAdapterNew() :
+  MCPtEtaPhiMassAdapter::MCPtEtaPhiMassAdapter() :
     SVfitMCQuantitiesAdapter({
       SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramPt", 1., 1.e+3, 1.025),
                     makeHistogram("SVfitStandaloneAlgorithm_histogramPt_density", 1., 1.e+3, 1.025),
@@ -343,23 +343,23 @@ namespace svFitStandalone
     })
   {
   }
-  void MCPtEtaPhiMassAdapterNew::SetHistogramMass(TH1* histogram, TH1* histogram_density) { SetHistograms(3, histogram, histogram_density); }
-  void MCPtEtaPhiMassAdapterNew::SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density) { SetHistograms(4, histogram, histogram_density); }
-  double MCPtEtaPhiMassAdapterNew::getPt() const { return ExtractValue(0); }
-  double MCPtEtaPhiMassAdapterNew::getPtUncert() const { return ExtractUncertainty(0); }
-  double MCPtEtaPhiMassAdapterNew::getPtLmax() const { return ExtractLmax(0); }
-  double MCPtEtaPhiMassAdapterNew::getEta() const { return ExtractValue(1); }
-  double MCPtEtaPhiMassAdapterNew::getEtaUncert() const { return ExtractUncertainty(1); }
-  double MCPtEtaPhiMassAdapterNew::getEtaLmax() const { return ExtractLmax(1); }
-  double MCPtEtaPhiMassAdapterNew::getPhi() const { return ExtractValue(2); }
-  double MCPtEtaPhiMassAdapterNew::getPhiUncert() const { return ExtractUncertainty(2); }
-  double MCPtEtaPhiMassAdapterNew::getPhiLmax() const { return ExtractLmax(2); }
-  double MCPtEtaPhiMassAdapterNew::getMass() const { return ExtractValue(3); }
-  double MCPtEtaPhiMassAdapterNew::getMassUncert() const { return ExtractUncertainty(3); }
-  double MCPtEtaPhiMassAdapterNew::getMassLmax() const { return ExtractLmax(3); }
-  double MCPtEtaPhiMassAdapterNew::getTransverseMass() const { return ExtractValue(4); }
-  double MCPtEtaPhiMassAdapterNew::getTransverseMassUncert() const { return ExtractUncertainty(4); }
-  double MCPtEtaPhiMassAdapterNew::getTransverseMassLmax() const { return ExtractLmax(4); }
+  void MCPtEtaPhiMassAdapter::SetHistogramMass(TH1* histogram, TH1* histogram_density) { SetHistograms(3, histogram, histogram_density); }
+  void MCPtEtaPhiMassAdapter::SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density) { SetHistograms(4, histogram, histogram_density); }
+  double MCPtEtaPhiMassAdapter::getPt() const { return ExtractValue(0); }
+  double MCPtEtaPhiMassAdapter::getPtUncert() const { return ExtractUncertainty(0); }
+  double MCPtEtaPhiMassAdapter::getPtLmax() const { return ExtractLmax(0); }
+  double MCPtEtaPhiMassAdapter::getEta() const { return ExtractValue(1); }
+  double MCPtEtaPhiMassAdapter::getEtaUncert() const { return ExtractUncertainty(1); }
+  double MCPtEtaPhiMassAdapter::getEtaLmax() const { return ExtractLmax(1); }
+  double MCPtEtaPhiMassAdapter::getPhi() const { return ExtractValue(2); }
+  double MCPtEtaPhiMassAdapter::getPhiUncert() const { return ExtractUncertainty(2); }
+  double MCPtEtaPhiMassAdapter::getPhiLmax() const { return ExtractLmax(2); }
+  double MCPtEtaPhiMassAdapter::getMass() const { return ExtractValue(3); }
+  double MCPtEtaPhiMassAdapter::getMassUncert() const { return ExtractUncertainty(3); }
+  double MCPtEtaPhiMassAdapter::getMassLmax() const { return ExtractLmax(3); }
+  double MCPtEtaPhiMassAdapter::getTransverseMass() const { return ExtractValue(4); }
+  double MCPtEtaPhiMassAdapter::getTransverseMassUncert() const { return ExtractUncertainty(4); }
+  double MCPtEtaPhiMassAdapter::getTransverseMassLmax() const { return ExtractLmax(4); }
 }
 
 SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET, 

@@ -173,13 +173,13 @@ namespace svFitStandalone
     virtual double DoEval(const double* x) const;
   };
   
-  class MCPtEtaPhiMassAdapterNew : public SVfitMCQuantitiesAdapter
+  class MCPtEtaPhiMassAdapter : public SVfitMCQuantitiesAdapter
   {
    public:
-    MCPtEtaPhiMassAdapterNew();
+    MCPtEtaPhiMassAdapter();
     
-    void SetHistogramMass(TH1* histogram, TH1* histogram_density);
-    void SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density);
+    virtual void SetHistogramMass(TH1* histogram, TH1* histogram_density);
+    virtual void SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density);
     
     double getPt() const;
     double getPtUncert() const;
@@ -196,126 +196,6 @@ namespace svFitStandalone
     double getTransverseMass() const;
     double getTransverseMassUncert() const;
     double getTransverseMassLmax() const;
-  };
-  
-  class MCPtEtaPhiMassAdapter : public ROOT::Math::Functor
-  {
-   public:
-    MCPtEtaPhiMassAdapter() 
-    {
-      histogramPt_ = makeHistogram("SVfitStandaloneAlgorithm_histogramPt", 1., 1.e+3, 1.025);
-      histogramPt_density_ = (TH1*)histogramPt_->Clone(Form("%s_density", histogramPt_->GetName()));
-      histogramEta_ = new TH1D("SVfitStandaloneAlgorithm_histogramEta", "SVfitStandaloneAlgorithm_histogramEta", 198, -9.9, +9.9);
-      histogramEta_density_ = (TH1*)histogramEta_->Clone(Form("%s_density", histogramEta_->GetName()));
-      histogramPhi_ = new TH1D("SVfitStandaloneAlgorithm_histogramPhi", "SVfitStandaloneAlgorithm_histogramPhi", 180, -TMath::Pi(), +TMath::Pi());
-      histogramPhi_density_ = (TH1*)histogramPhi_->Clone(Form("%s_density", histogramPhi_->GetName()));
-      histogramMass_ = makeHistogram("SVfitStandaloneAlgorithm_histogramMass", 1.e+1, 1.e+4, 1.025);
-      histogramMass_density_ = (TH1*)histogramMass_->Clone(Form("%s_density", histogramMass_->GetName()));
-      histogramTransverseMass_ = makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", 1., 1.e+4, 1.025);
-      histogramTransverseMass_density_ = (TH1*)histogramTransverseMass_->Clone(Form("%s_density", histogramTransverseMass_->GetName()));
-    }      
-    ~MCPtEtaPhiMassAdapter()
-    {
-      delete histogramPt_;
-      delete histogramPt_density_;
-      delete histogramEta_;
-      delete histogramEta_density_;
-      delete histogramPhi_;
-      delete histogramPhi_density_;
-      delete histogramMass_;
-      delete histogramMass_density_;
-      delete histogramTransverseMass_;
-      delete histogramTransverseMass_density_;
-    }
-    void SetHistogramMass(TH1* histogramMass, TH1* histogramMass_density)
-    {
-      // CV: passing null pointers to the SetHistogramMass function
-      //     indicates that the histograms have been deleted by the calling code
-      if ( histogramMass != 0 ) delete histogramMass_;
-      histogramMass_ = histogramMass;
-      if ( histogramMass_density != 0 ) delete histogramMass_density_;
-      histogramMass_density_ = histogramMass_density;
-    }
-    void SetHistogramTransverseMass(TH1* histogramTransverseMass, TH1* histogramTransverseMass_density)
-    {
-      // CV: passing null pointers to the SetHistogramTransverseMass function
-      //     indicates that the histograms have been deleted by the calling code
-      if ( histogramTransverseMass != 0 ) delete histogramTransverseMass_;
-      histogramTransverseMass_ = histogramTransverseMass;
-      if ( histogramTransverseMass_density != 0 ) delete histogramTransverseMass_density_;
-      histogramTransverseMass_density_ = histogramTransverseMass_density;
-    }
-    void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
-    void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
-    void SetMarginalizeVisMass(bool marginalizeVisMass) { marginalizeVisMass_ = marginalizeVisMass; }
-    void SetShiftVisMass(bool shiftVisMass) { shiftVisMass_ = shiftVisMass; }
-    void SetShiftVisPt(bool shiftVisPt) { shiftVisPt_ = shiftVisPt; }
-    void SetNDim(int nDim) { nDim_ = nDim; }
-    unsigned int NDim() const { return nDim_; }
-    void Reset()
-    {
-      histogramPt_->Reset();
-      histogramEta_->Reset();
-      histogramPhi_->Reset();
-      histogramMass_->Reset();
-      histogramTransverseMass_->Reset();
-    }
-    double getPt() const { return extractValue(histogramPt_, histogramPt_density_); }
-    double getPtUncert() const { return extractUncertainty(histogramPt_, histogramPt_density_); }
-    double getPtLmax() const { return extractLmax(histogramPt_, histogramPt_density_); }
-    double getEta() const { return extractValue(histogramEta_, histogramEta_density_); }
-    double getEtaUncert() const { return extractUncertainty(histogramEta_, histogramEta_density_); }
-    double getEtaLmax() const { return extractLmax(histogramEta_, histogramEta_density_); }
-    double getPhi() const { return extractValue(histogramPhi_, histogramPhi_density_); }
-    double getPhiUncert() const { return extractUncertainty(histogramPhi_, histogramPhi_density_); }
-    double getPhiLmax() const { return extractLmax(histogramPhi_, histogramPhi_density_); }
-    double getMass() const { return extractValue(histogramMass_, histogramMass_density_); }
-    double getMassUncert() const { return extractUncertainty(histogramMass_, histogramMass_density_); }
-    double getMassLmax() const { return extractLmax(histogramMass_, histogramMass_density_); }
-    double getTransverseMass() const { return extractValue(histogramTransverseMass_, histogramTransverseMass_density_); }
-    double getTransverseMassUncert() const { return extractUncertainty(histogramTransverseMass_, histogramTransverseMass_density_); }
-    double getTransverseMassLmax() const { return extractLmax(histogramTransverseMass_, histogramTransverseMass_density_); }
-   private:    
-    virtual double DoEval(const double* x) const
-    {
-      map_xMarkovChain(x, l1isLep_, l2isLep_, marginalizeVisMass_, shiftVisMass_, shiftVisPt_, x_mapped_);
-      SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->results(fittedTauLeptons_, x_mapped_);
-      fittedDiTauSystem_ = fittedTauLeptons_[0] + fittedTauLeptons_[1];
-      //std::cout << "<MCPtEtaPhiMassAdapter::DoEval>" << std::endl;
-      //std::cout << " Pt = " << fittedDiTauSystem_.pt() << "," 
-      //	  << " eta = " << fittedDiTauSystem_.eta() << "," 
-      //	  << " phi = " << fittedDiTauSystem_.phi() << ","
-      //	  << " mass = " << fittedDiTauSystem_.mass() << std::endl;
-      histogramPt_->Fill(fittedDiTauSystem_.pt());
-      histogramEta_->Fill(fittedDiTauSystem_.eta());
-      histogramPhi_->Fill(fittedDiTauSystem_.phi());
-      histogramMass_->Fill(fittedDiTauSystem_.mass());
-      double transverseMass = TMath::Sqrt(2.*fittedTauLeptons_[0].pt()*fittedTauLeptons_[1].pt()*(1. - TMath::Cos(fittedTauLeptons_[0].phi() - fittedTauLeptons_[1].phi())));
-      //std::cout << "transverseMass = " << transverseMass << std::endl;
-      histogramTransverseMass_->Fill(transverseMass);
-      return 0.;
-    } 
-   protected:
- //public:
-    mutable std::vector<svFitStandalone::LorentzVector> fittedTauLeptons_;
-    mutable LorentzVector fittedDiTauSystem_;
-    mutable TH1* histogramPt_;
-    mutable TH1* histogramPt_density_;
-    mutable TH1* histogramEta_;
-    mutable TH1* histogramEta_density_;
-    mutable TH1* histogramPhi_;
-    mutable TH1* histogramPhi_density_;
-    mutable TH1* histogramMass_;
-    mutable TH1* histogramMass_density_;
-    mutable TH1* histogramTransverseMass_;
-    mutable TH1* histogramTransverseMass_density_;
-    mutable double x_mapped_[10];
-    int nDim_;
-    bool l1isLep_;
-    bool l2isLep_;
-    bool marginalizeVisMass_;
-    bool shiftVisMass_;
-    bool shiftVisPt_;
   };
 }
 

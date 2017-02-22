@@ -207,8 +207,8 @@ namespace svFitStandalone
   }
   SVfitQuantity::~SVfitQuantity()
   {
-    delete histogram_;
-    delete histogram_density_;
+    //if (histogram_ != nullptr) delete histogram_;
+    //if (histogram_density_ != nullptr) delete histogram_density_;
   }
   void SVfitQuantity::SetHistograms(TH1* histogram, TH1* histogram_density)
   {
@@ -1262,8 +1262,8 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     delete likelihoodFile;
   }
 
-  delete histogramMass;
-  delete histogramMass_density;
+  //delete histogramMass;
+  //delete histogramMass_density;
   mcPtEtaPhiMassAdapter_->SetHistogramMass(0, 0);
 
   if ( verbosity_ >= 1 ) {

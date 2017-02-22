@@ -113,6 +113,9 @@ namespace svFitStandalone
     SVfitQuantity(TH1* histogram, TH1* histogram_density, std::function<double(std::vector<svFitStandalone::LorentzVector> const&) > function);
     ~SVfitQuantity();
     
+    void SetHistograms(TH1* histogram, TH1* histogram_density);
+    void Reset();
+    
     double Eval(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) const;
     
     double ExtractValue() const;
@@ -129,13 +132,20 @@ namespace svFitStandalone
   class SVfitMCQuantitiesAdapter : public ROOT::Math::Functor
   {
    public:
-    SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities);
+    SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities = std::vector<SVfitQuantity>());
+    
+    void SetHistograms(size_t index, TH1* histogram, TH1* histogram_density);
+    void SetHistograms(std::vector<TH1*> histograms, std::vector<TH1*> histogram_densities);
+    void Reset();
     
     inline void SetL1isLep(bool l1isLep) { l1isLep_ = l1isLep; }
     inline void SetL2isLep(bool l2isLep) { l2isLep_ = l2isLep; }
     inline void SetMarginalizeVisMass(bool marginalizeVisMass) { marginalizeVisMass_ = marginalizeVisMass; }
     inline void SetShiftVisMass(bool shiftVisMass) { shiftVisMass_ = shiftVisMass; }
     inline void SetShiftVisPt(bool shiftVisPt) { shiftVisPt_ = shiftVisPt; }
+    void SetNDim(unsigned int nDim) { nDim_ = nDim; }
+    
+    unsigned int NDim() const { return nDim_; }
     
     double ExtractValue(size_t index) const;
     double ExtractUncertainty(size_t index) const;
@@ -155,6 +165,7 @@ namespace svFitStandalone
     bool marginalizeVisMass_;
     bool shiftVisMass_;
     bool shiftVisPt_;
+    unsigned int nDim_;
    
    private:
     virtual double DoEval(const double* x) const;

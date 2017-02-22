@@ -210,6 +210,20 @@ namespace svFitStandalone
     delete histogram_;
     delete histogram_density_;
   }
+  void SVfitQuantity::SetHistograms(TH1* histogram, TH1* histogram_density)
+  {
+    // CV: passing null pointers to the SetHistogramMass function
+    //     indicates that the histograms have been deleted by the calling code
+    if (histogram_ != nullptr) delete histogram_;
+    histogram_ = histogram;
+    if (histogram_density_ != nullptr) delete histogram_density_;
+    histogram_density_ = histogram_density;
+  }
+  void SVfitQuantity::Reset()
+  {
+    histogram_->Reset();
+    histogram_density_->Reset();
+  }
   double SVfitQuantity::Eval(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) const
   {
     return function_(fittedTauLeptons);
@@ -231,6 +245,24 @@ namespace svFitStandalone
   SVfitMCQuantitiesAdapter::SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities) :
     quantities_(quantities)
   {
+  }
+  void SVfitMCQuantitiesAdapter::SetHistograms(size_t index, TH1* histogram, TH1* histogram_density)
+  {
+    quantities_.at(index).SetHistograms(histogram, histogram_density);
+  }
+  void SVfitMCQuantitiesAdapter::SetHistograms(std::vector<TH1*> histograms, std::vector<TH1*> histogram_densities)
+  {
+    for (size_t index = 0; index != quantities_.size(); ++index)
+    {
+      quantities_.at(index).SetHistograms(histograms.at(index), histogram_densities.at(index));
+    }
+  }
+  void SVfitMCQuantitiesAdapter::Reset()
+  {
+    for (std::vector<SVfitQuantity>::iterator quantity = quantities_.begin(); quantity != quantities_.end(); ++quantity)
+    {
+      quantity->Reset();
+    }
   }
   double SVfitMCQuantitiesAdapter::DoEval(const double* x) const
   {

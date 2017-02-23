@@ -132,7 +132,8 @@ namespace svFitStandalone
   class SVfitMCQuantitiesAdapter : public ROOT::Math::Functor
   {
    public:
-    SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities = std::vector<SVfitQuantity>());
+    SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity*> const& quantities);
+    ~SVfitMCQuantitiesAdapter();
     
     void SetHistograms(size_t index, TH1* histogram, TH1* histogram_density);
     void SetHistograms(std::vector<TH1*> histograms, std::vector<TH1*> histogram_densities);
@@ -158,7 +159,7 @@ namespace svFitStandalone
     std::vector<double> ExtractLmaxima() const;
     
    protected:
-    std::vector<SVfitQuantity> quantities_;
+    std::vector<SVfitQuantity*> quantities_;
     
     mutable std::vector<svFitStandalone::LorentzVector> fittedTauLeptons_;
     mutable double x_mapped_[10];

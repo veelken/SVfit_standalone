@@ -207,8 +207,8 @@ namespace svFitStandalone
   }
   SVfitQuantity::~SVfitQuantity()
   {
-    //if (histogram_ != nullptr) delete histogram_;
-    //if (histogram_density_ != nullptr) delete histogram_density_;
+    if (histogram_ != nullptr) delete histogram_;
+    if (histogram_density_ != nullptr) delete histogram_density_;
   }
   void SVfitQuantity::SetHistograms(TH1* histogram, TH1* histogram_density)
   {
@@ -242,104 +242,111 @@ namespace svFitStandalone
     return extractLmax(histogram_, histogram_density_);
   }
   
-  SVfitMCQuantitiesAdapter::SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity> const& quantities) :
+  SVfitMCQuantitiesAdapter::SVfitMCQuantitiesAdapter(std::vector<SVfitQuantity*> const& quantities) :
     quantities_(quantities)
   {
   }
+  SVfitMCQuantitiesAdapter::~SVfitMCQuantitiesAdapter()
+  {
+    for (std::vector<SVfitQuantity*>::iterator quantity = quantities_.begin(); quantity != quantities_.end(); ++quantity)
+    {
+      delete *quantity;
+    }
+  }
   void SVfitMCQuantitiesAdapter::SetHistograms(size_t index, TH1* histogram, TH1* histogram_density)
   {
-    quantities_.at(index).SetHistograms(histogram, histogram_density);
+    quantities_.at(index)->SetHistograms(histogram, histogram_density);
   }
   void SVfitMCQuantitiesAdapter::SetHistograms(std::vector<TH1*> histograms, std::vector<TH1*> histogram_densities)
   {
     for (size_t index = 0; index != quantities_.size(); ++index)
     {
-      quantities_.at(index).SetHistograms(histograms.at(index), histogram_densities.at(index));
+      quantities_.at(index)->SetHistograms(histograms.at(index), histogram_densities.at(index));
     }
   }
   void SVfitMCQuantitiesAdapter::Reset()
   {
-    for (std::vector<SVfitQuantity>::iterator quantity = quantities_.begin(); quantity != quantities_.end(); ++quantity)
+    for (std::vector<SVfitQuantity*>::iterator quantity = quantities_.begin(); quantity != quantities_.end(); ++quantity)
     {
-      quantity->Reset();
+      (*quantity)->Reset();
     }
   }
   double SVfitMCQuantitiesAdapter::DoEval(const double* x) const
   {
     map_xMarkovChain(x, l1isLep_, l2isLep_, marginalizeVisMass_, shiftVisMass_, shiftVisPt_, x_mapped_);
     SVfitStandaloneLikelihood::gSVfitStandaloneLikelihood->results(fittedTauLeptons_, x_mapped_);
-    for (std::vector<SVfitQuantity>::const_iterator quantity = quantities_.begin(); quantity != quantities_.end(); ++quantity)
+    for (std::vector<SVfitQuantity*>::const_iterator quantity = quantities_.begin(); quantity != quantities_.end(); ++quantity)
     {
-    	quantity->histogram_->Fill(quantity->Eval(fittedTauLeptons_));
+      (*quantity)->histogram_->Fill((*quantity)->Eval(fittedTauLeptons_));
     }
     return 0.0;
   }
   double SVfitMCQuantitiesAdapter::ExtractValue(size_t index) const
   {
-    return quantities_.at(index).ExtractValue();
+    return quantities_.at(index)->ExtractValue();
   }
   double SVfitMCQuantitiesAdapter::ExtractUncertainty(size_t index) const
   {
-    return quantities_.at(index).ExtractUncertainty();
+    return quantities_.at(index)->ExtractUncertainty();
   }
   double SVfitMCQuantitiesAdapter::ExtractLmax(size_t index) const
   {
-    return quantities_.at(index).ExtractLmax();
+    return quantities_.at(index)->ExtractLmax();
   }
   std::vector<double> SVfitMCQuantitiesAdapter::ExtractValues() const
   {
   	std::vector<double> results;
   	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
-                   [](SVfitQuantity const& quantity) { return quantity.ExtractValue(); });
+                   [](SVfitQuantity* quantity) { return quantity->ExtractValue(); });
     return results;
   }
   std::vector<double> SVfitMCQuantitiesAdapter::ExtractUncertainties() const
   {
   	std::vector<double> results;
   	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
-                   [](SVfitQuantity const& quantity) { return quantity.ExtractUncertainty(); });
+                   [](SVfitQuantity* quantity) { return quantity->ExtractUncertainty(); });
     return results;
   }
   std::vector<double> SVfitMCQuantitiesAdapter::ExtractLmaxima() const
   {
   	std::vector<double> results;
   	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
-                   [](SVfitQuantity const& quantity) { return quantity.ExtractLmax(); });
+                   [](SVfitQuantity* quantity) { return quantity->ExtractLmax(); });
     return results;
   }
 
   MCPtEtaPhiMassAdapter::MCPtEtaPhiMassAdapter() :
     SVfitMCQuantitiesAdapter({
-      SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramPt", 1., 1.e+3, 1.025),
-                    makeHistogram("SVfitStandaloneAlgorithm_histogramPt_density", 1., 1.e+3, 1.025),
-                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
-                    {
-                      return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).pt();
-                    }),
-      SVfitQuantity(new TH1D("SVfitStandaloneAlgorithm_histogramEta", "SVfitStandaloneAlgorithm_histogramEta", 198, -9.9, +9.9),
-                    new TH1D("SVfitStandaloneAlgorithm_histogramEta_density", "SVfitStandaloneAlgorithm_histogramEta_density", 198, -9.9, +9.9),
-                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
-                    {
-                      return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).eta();
-                    }),
-      SVfitQuantity(new TH1D("SVfitStandaloneAlgorithm_histogramPhi", "SVfitStandaloneAlgorithm_histogramPhi", 180, -TMath::Pi(), +TMath::Pi()),
-                    new TH1D("SVfitStandaloneAlgorithm_histogramPhi_density", "SVfitStandaloneAlgorithm_histogramPhi_density", 180, -TMath::Pi(), +TMath::Pi()),
-                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
-                    {
-                      return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).phi();
-                    }),
-      SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramMass", 1.e+1, 1.e+4, 1.025),
-                    makeHistogram("SVfitStandaloneAlgorithm_histogramMass_density", 1.e+1, 1.e+4, 1.025),
-                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
-                    {
-                      return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).mass();
-                    }),
-      SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", 1., 1.e+4, 1.025),
-                    makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass_density", 1., 1.e+4, 1.025),
-                    [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
-                    {
-                      return TMath::Sqrt(2.0*fittedTauLeptons.at(0).pt()*fittedTauLeptons.at(1).pt()*(1.0 - TMath::Cos(fittedTauLeptons.at(0).phi() - fittedTauLeptons.at(1).phi())));
-                    })
+      new SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramPt", 1., 1.e+3, 1.025),
+                        makeHistogram("SVfitStandaloneAlgorithm_histogramPt_density", 1., 1.e+3, 1.025),
+                        [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                        {
+                          return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).pt();
+                        }),
+      new SVfitQuantity(new TH1D("SVfitStandaloneAlgorithm_histogramEta", "SVfitStandaloneAlgorithm_histogramEta", 198, -9.9, +9.9),
+                        new TH1D("SVfitStandaloneAlgorithm_histogramEta_density", "SVfitStandaloneAlgorithm_histogramEta_density", 198, -9.9, +9.9),
+                        [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                        {
+                          return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).eta();
+                        }),
+      new SVfitQuantity(new TH1D("SVfitStandaloneAlgorithm_histogramPhi", "SVfitStandaloneAlgorithm_histogramPhi", 180, -TMath::Pi(), +TMath::Pi()),
+                        new TH1D("SVfitStandaloneAlgorithm_histogramPhi_density", "SVfitStandaloneAlgorithm_histogramPhi_density", 180, -TMath::Pi(), +TMath::Pi()),
+                        [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                        {
+                          return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).phi();
+                        }),
+      new SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramMass", 1.e+1, 1.e+4, 1.025),
+                        makeHistogram("SVfitStandaloneAlgorithm_histogramMass_density", 1.e+1, 1.e+4, 1.025),
+                        [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                        {
+                          return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).mass();
+                        }),
+      new SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", 1., 1.e+4, 1.025),
+                        makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass_density", 1., 1.e+4, 1.025),
+                        [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
+                        {
+                          return TMath::Sqrt(2.0*fittedTauLeptons.at(0).pt()*fittedTauLeptons.at(1).pt()*(1.0 - TMath::Cos(fittedTauLeptons.at(0).phi() - fittedTauLeptons.at(1).phi())));
+                        })
     })
   {
   }

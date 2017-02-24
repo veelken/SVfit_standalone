@@ -372,18 +372,6 @@ namespace svFitStandalone
                         [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
                         {
                           return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).phi();
-                        }),
-      new SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramMass", 1.e+1, 1.e+4, 1.025),
-                        makeHistogram("SVfitStandaloneAlgorithm_histogramMass_density", 1.e+1, 1.e+4, 1.025),
-                        [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
-                        {
-                          return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).mass();
-                        }),
-      new SVfitQuantity(makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", 1., 1.e+4, 1.025),
-                        makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass_density", 1., 1.e+4, 1.025),
-                        [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) -> double
-                        {
-                          return TMath::Sqrt(2.0*fittedTauLeptons.at(0).pt()*fittedTauLeptons.at(1).pt()*(1.0 - TMath::Cos(fittedTauLeptons.at(0).phi() - fittedTauLeptons.at(1).phi())));
                         })
     })
   {

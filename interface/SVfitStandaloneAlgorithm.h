@@ -133,7 +133,7 @@ namespace svFitStandalone
   class MCQuantitiesAdapter : public ROOT::Math::Functor
   {
    public:
-    MCQuantitiesAdapter(std::vector<SVfitQuantity*> const& quantities);
+    MCQuantitiesAdapter(std::vector<SVfitQuantity*> const& quantities = std::vector<SVfitQuantity*>());
     ~MCQuantitiesAdapter();
     
     void SetHistograms(size_t index, TH1* histogram, TH1* histogram_density);
@@ -322,7 +322,7 @@ class SVfitStandaloneAlgorithm
   /// return mass of the di-tau system (kept for legacy)
   double getMass() const {return mass(); }
   
-  void setMCQuantitiesAdapter(svFitStandalone::MCQuantitiesAdapter* sVfitMCQuantitiesAdapter);
+  void setMCQuantitiesAdapter(svFitStandalone::MCQuantitiesAdapter* mvQuantitiesAdapter);
   svFitStandalone::MCQuantitiesAdapter* getMCQuantitiesAdapter() const;
 
   /// return 4-vectors of measured tau leptons
@@ -375,7 +375,7 @@ class SVfitStandaloneAlgorithm
 
   /// needed for markov chain integration
   svFitStandalone::MCObjectiveFunctionAdapter* mcObjectiveFunctionAdapter_ = nullptr;
-  svFitStandalone::MCQuantitiesAdapter* svfitMCQuantitiesAdapter_ = nullptr;
+  svFitStandalone::MCQuantitiesAdapter* mcQuantitiesAdapter_ = nullptr;
   SVfitStandaloneMarkovChainIntegrator* integrator2_ = nullptr;
   int integrator2_nDim_;
   bool isInitialized2_;

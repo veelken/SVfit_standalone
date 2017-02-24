@@ -406,7 +406,7 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
     maxObjFunctionCalls_(10000),
     standaloneObjectiveFunctionAdapterVEGAS_(0),
     mcObjectiveFunctionAdapter_(0),
-    svfitMCQuantitiesAdapter_(0),
+    mcQuantitiesAdapter_(0),
     integrator2_(0),
     integrator2_nDim_(0),
     isInitialized2_(false),
@@ -494,7 +494,7 @@ SVfitStandaloneAlgorithm::~SVfitStandaloneAlgorithm()
   delete minimizer_;
   delete standaloneObjectiveFunctionAdapterVEGAS_;
   delete mcObjectiveFunctionAdapter_;
-  delete svfitMCQuantitiesAdapter_;
+  delete mcQuantitiesAdapter_;
   delete integrator2_;
   //delete lutVisMassAllDMs_;
   //delete lutVisMassResDM0_;
@@ -1002,7 +1002,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     clock_->Start("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }
   if ( isInitialized2_ ) {
-    svfitMCQuantitiesAdapter_->Reset();
+    mcQuantitiesAdapter_->Reset();
   } else {
     // initialize    
     std::string initMode = "none";
@@ -1025,8 +1025,8 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     mcObjectiveFunctionAdapter_ = new MCObjectiveFunctionAdapter();
     integrator2_->setIntegrand(*mcObjectiveFunctionAdapter_);
     integrator2_nDim_ = 0;
-    if (svfitMCQuantitiesAdapter_ == nullptr) svfitMCQuantitiesAdapter_ = new MCPtEtaPhiMassAdapter();
-    integrator2_->registerCallBackFunction(*svfitMCQuantitiesAdapter_);
+    if (mcQuantitiesAdapter_ == nullptr) mcQuantitiesAdapter_ = new MCPtEtaPhiMassAdapter();
+    integrator2_->registerCallBackFunction(*mcQuantitiesAdapter_);
     isInitialized2_ = true;    
   }
 
@@ -1131,7 +1131,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   if ( nDim != integrator2_nDim_ ) {
     mcObjectiveFunctionAdapter_->SetNDim(nDim);    
     integrator2_->setIntegrand(*mcObjectiveFunctionAdapter_);
-    svfitMCQuantitiesAdapter_->SetNDim(nDim);
+    mcQuantitiesAdapter_->SetNDim(nDim);
     integrator2_nDim_ = nDim;
   }
   mcObjectiveFunctionAdapter_->SetL1isLep(l1isLep_);
@@ -1150,7 +1150,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   double maxMass = TMath::Max(1.e+4, 1.e+1*minMass);
   TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithmMarkovChain_histogramMass", minMass, maxMass, 1.025);
   TH1* histogramMass_density = (TH1*)histogramMass->Clone(Form("%s_density", histogramMass->GetName()));
-  svfitMCQuantitiesAdapter_->SetHistogramMass(histogramMass, histogramMass_density);
+  mcQuantitiesAdapter_->SetHistogramMass(histogramMass, histogramMass_density);
   double visTransverseMass2 = square(measuredTauLeptons()[0].Et() + measuredTauLeptons()[1].Et()) - (square(measuredDiTauSystem().px()) + square(measuredDiTauSystem().py()));
   double visTransverseMass = TMath::Sqrt(TMath::Max(1., visTransverseMass2));  
   //std::cout << "visMass = " << visMass << ", visTransverseMass = " << visTransverseMass << std::endl;
@@ -1158,13 +1158,13 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   double maxTransverseMass = TMath::Max(1.e+4, 1.e+1*minTransverseMass);
   TH1* histogramTransverseMass = makeHistogram("SVfitStandaloneAlgorithmMarkovChain_histogramTransverseMass", minTransverseMass, maxTransverseMass, 1.025);
   TH1* histogramTransverseMass_density = (TH1*)histogramTransverseMass->Clone(Form("%s_density", histogramTransverseMass->GetName()));
-  svfitMCQuantitiesAdapter_->SetHistogramTransverseMass(histogramTransverseMass, histogramTransverseMass_density);
+  mcQuantitiesAdapter_->SetHistogramTransverseMass(histogramTransverseMass, histogramTransverseMass_density);
 
-  svfitMCQuantitiesAdapter_->SetL1isLep(l1isLep_);
-  svfitMCQuantitiesAdapter_->SetL2isLep(l2isLep_);
-  svfitMCQuantitiesAdapter_->SetMarginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass));
-  svfitMCQuantitiesAdapter_->SetShiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes));
-  svfitMCQuantitiesAdapter_->SetShiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes));
+  mcQuantitiesAdapter_->SetL1isLep(l1isLep_);
+  mcQuantitiesAdapter_->SetL2isLep(l2isLep_);
+  mcQuantitiesAdapter_->SetMarginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass));
+  mcQuantitiesAdapter_->SetShiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes));
+  mcQuantitiesAdapter_->SetShiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes));
   
   /* --------------------------------------------------------------------------------------
      lower and upper bounds for integration. Boundaries are defined for each decay channel
@@ -1265,32 +1265,31 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   int errorFlag = 0;
   integrator2_->integrate(xl, xh, integral, integralErr, errorFlag);
   fitStatus_ = errorFlag;
-  mass_ = svfitMCQuantitiesAdapter_->getMass();
-  massUncert_ = svfitMCQuantitiesAdapter_->getMassUncert();
-  massLmax_ = svfitMCQuantitiesAdapter_->getMassLmax();
-  transverseMass_ = svfitMCQuantitiesAdapter_->getTransverseMass();
-  transverseMassUncert_ = svfitMCQuantitiesAdapter_->getTransverseMassUncert();
-  transverseMassLmax_ = svfitMCQuantitiesAdapter_->getTransverseMassLmax();
+  mass_ = mcQuantitiesAdapter_->getMass();
+  massUncert_ = mcQuantitiesAdapter_->getMassUncert();
+  massLmax_ = mcQuantitiesAdapter_->getMassLmax();
+  transverseMass_ = mcQuantitiesAdapter_->getTransverseMass();
+  transverseMassUncert_ = mcQuantitiesAdapter_->getTransverseMassUncert();
+  transverseMassLmax_ = mcQuantitiesAdapter_->getTransverseMassLmax();
   if ( !(massLmax_ > 0.) ) fitStatus_ = 1;
   if ( likelihoodFileName != "" ) {
     TFile* likelihoodFile = new TFile(likelihoodFileName.data(), "RECREATE");
-    svfitMCQuantitiesAdapter_->WriteHistograms();
+    mcQuantitiesAdapter_->WriteHistograms();
     delete likelihoodFile;
   }
 
-  svfitMCQuantitiesAdapter_->SetHistogramMass(0, 0);
+  mcQuantitiesAdapter_->SetHistogramMass(0, 0);
 
   if ( verbosity_ >= 1 ) {
     clock_->Show("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }
 }
-void SVfitStandaloneAlgorithm::setMCQuantitiesAdapter(svFitStandalone::MCQuantitiesAdapter* sVfitMCQuantitiesAdapter)
+void SVfitStandaloneAlgorithm::setMCQuantitiesAdapter(svFitStandalone::MCQuantitiesAdapter* mvQuantitiesAdapter)
 {
-  if (svfitMCQuantitiesAdapter_ != nullptr) delete svfitMCQuantitiesAdapter_;
-  svfitMCQuantitiesAdapter_ = sVfitMCQuantitiesAdapter;
-  integrator2_->registerCallBackFunction(*svfitMCQuantitiesAdapter_);
+  if (mcQuantitiesAdapter_ != nullptr) delete mcQuantitiesAdapter_;
+  mcQuantitiesAdapter_ = mvQuantitiesAdapter;
 }
 svFitStandalone::MCQuantitiesAdapter* SVfitStandaloneAlgorithm::getMCQuantitiesAdapter() const
 {
-  return svfitMCQuantitiesAdapter_;
+  return mcQuantitiesAdapter_;
 }

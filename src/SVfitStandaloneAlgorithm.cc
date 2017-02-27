@@ -283,11 +283,11 @@ namespace svFitStandalone
   }
   void MCQuantitiesAdapter::SetHistogramMass(TH1* histogram, TH1* histogram_density)
   {
-    SetHistograms(quantities_.size()-2, histogram, histogram_density);
+    SetHistograms(GetNQuantities()-2, histogram, histogram_density);
   }
   void MCQuantitiesAdapter::SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density)
   {
-    SetHistograms(quantities_.size()-1, histogram, histogram_density);
+    SetHistograms(GetNQuantities()-1, histogram, histogram_density);
   }
   void MCQuantitiesAdapter::Reset()
   {

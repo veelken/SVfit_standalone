@@ -152,6 +152,7 @@ namespace svFitStandalone
     
     unsigned int NDim() const { return nDim_; }
     
+    unsigned int GetNQuantities() const { return quantities_.size(); }
     double ExtractValue(size_t index) const;
     double ExtractUncertainty(size_t index) const;
     double ExtractLmax(size_t index) const;

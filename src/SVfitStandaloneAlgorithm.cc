@@ -1266,8 +1266,6 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     delete likelihoodFile;
   }
 
-  mcQuantitiesAdapter_->SetHistogramMass(0, 0);
-
   if ( verbosity_ >= 1 ) {
     clock_->Show("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }

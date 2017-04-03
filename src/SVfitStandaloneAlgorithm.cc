@@ -660,6 +660,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   }
   
   mcQuantitiesAdapter_->SetMeasurements(measuredTauLeptons(), measuredMET());
+  mcQuantitiesAdapter_->SetHistograms(measuredTauLeptons(), measuredMET());
 
   // number of parameters for fit
   int nDim = 0;
@@ -774,22 +775,6 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   mcObjectiveFunctionAdapter_->SetMarginalizeVisMass(marginalizeVisMass_ && (l1lutVisMass || l2lutVisMass));
   mcObjectiveFunctionAdapter_->SetShiftVisMass(shiftVisMass_ && (l1lutVisMassRes || l2lutVisMassRes));
   mcObjectiveFunctionAdapter_->SetShiftVisPt(shiftVisPt_ && (l1lutVisPtRes || l2lutVisPtRes));
-  // CV: use same binning for Markov Chain and VEGAS integration.
-  //     The binning relative to the visible mass avoids that SVfit mass is "quantizied" at the same discrete values for all events.
-  double visMass = measuredDiTauSystem().mass();
-  double minMass = visMass/1.0125;
-  double maxMass = TMath::Max(1.e+4, 1.e+1*minMass);
-  TH1* histogramMass = makeHistogram("SVfitStandaloneAlgorithmMarkovChain_histogramMass", minMass, maxMass, 1.025);
-  TH1* histogramMass_density = (TH1*)histogramMass->Clone(Form("%s_density", histogramMass->GetName()));
-  mcQuantitiesAdapter_->SetHistogramMass(histogramMass, histogramMass_density);
-  double visTransverseMass2 = square(measuredTauLeptons()[0].Et() + measuredTauLeptons()[1].Et()) - (square(measuredDiTauSystem().px()) + square(measuredDiTauSystem().py()));
-  double visTransverseMass = TMath::Sqrt(TMath::Max(1., visTransverseMass2));  
-  //std::cout << "visMass = " << visMass << ", visTransverseMass = " << visTransverseMass << std::endl;
-  double minTransverseMass = visTransverseMass/1.0125;
-  double maxTransverseMass = TMath::Max(1.e+4, 1.e+1*minTransverseMass);
-  TH1* histogramTransverseMass = makeHistogram("SVfitStandaloneAlgorithmMarkovChain_histogramTransverseMass", minTransverseMass, maxTransverseMass, 1.025);
-  TH1* histogramTransverseMass_density = (TH1*)histogramTransverseMass->Clone(Form("%s_density", histogramTransverseMass->GetName()));
-  mcQuantitiesAdapter_->SetHistogramTransverseMass(histogramTransverseMass, histogramTransverseMass_density);
 
   mcQuantitiesAdapter_->SetL1isLep(l1isLep_);
   mcQuantitiesAdapter_->SetL2isLep(l2isLep_);

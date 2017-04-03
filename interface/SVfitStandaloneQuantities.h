@@ -111,13 +111,13 @@ namespace svFitStandalone
   {
    public:
     SVfitQuantity(
-        TH1* histogram,
-        TH1* histogram_density,
+        std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram,
+        std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram_density,
         std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function
     );
     ~SVfitQuantity();
     
-    void SetHistograms(TH1* histogram, TH1* histogram_density);
+    void SetHistograms(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET);
     void Reset();
     void WriteHistograms() const;
     
@@ -130,12 +130,17 @@ namespace svFitStandalone
     double ExtractValue() const;
     double ExtractUncertainty() const;
     double ExtractLmax() const;
-    
+   
     mutable TH1* histogram_ = nullptr;
    
+   private:
+    std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram_;
+    std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram_density_;
+   
    protected:
-    TH1* histogram_density_ = nullptr;
     std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function_;
+    
+    TH1* histogram_density_ = nullptr;
   };
   
   class MCQuantitiesAdapter : public ROOT::Math::Functor
@@ -145,10 +150,7 @@ namespace svFitStandalone
     ~MCQuantitiesAdapter();
     
     void SetMeasurements(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET);
-    void SetHistograms(size_t index, TH1* histogram, TH1* histogram_density);
-    void SetHistograms(std::vector<TH1*> histograms, std::vector<TH1*> histogram_densities);
-    void SetHistogramMass(TH1* histogram, TH1* histogram_density);
-    void SetHistogramTransverseMass(TH1* histogram, TH1* histogram_density);
+    void SetHistograms(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET);
     void Reset();
     void WriteHistograms() const;
     

@@ -658,6 +658,8 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     integrator2_->registerCallBackFunction(*mcQuantitiesAdapter_);
     isInitialized2_ = true;    
   }
+  
+  mcQuantitiesAdapter_->SetMeasurements(measuredTauLeptons(), measuredMET());
 
   // number of parameters for fit
   int nDim = 0;

@@ -113,7 +113,7 @@ namespace svFitStandalone
     SVfitQuantity(
         TH1* histogram,
         TH1* histogram_density,
-        std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<MeasuredTauLepton> const&, double, double, TMatrixD const&) > function
+        std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function
     );
     ~SVfitQuantity();
     
@@ -123,10 +123,8 @@ namespace svFitStandalone
     
     double Eval(
         std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons,
-        std::vector<MeasuredTauLepton> const& measuredTauLeptons,
-        double measuredMETx,
-        double measuredMETy,
-        TMatrixD const& covME
+        std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons,
+        svFitStandalone::Vector const& measuredMET
     ) const;
     
     double ExtractValue() const;
@@ -137,7 +135,7 @@ namespace svFitStandalone
    
    protected:
     TH1* histogram_density_ = nullptr;
-    std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<MeasuredTauLepton> const&, double, double, TMatrixD const&) > function_;
+    std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function_;
   };
   
   class MCQuantitiesAdapter : public ROOT::Math::Functor
@@ -146,6 +144,7 @@ namespace svFitStandalone
     MCQuantitiesAdapter(std::vector<SVfitQuantity*> const& quantities = std::vector<SVfitQuantity*>());
     ~MCQuantitiesAdapter();
     
+    void SetMeasurements(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET);
     void SetHistograms(size_t index, TH1* histogram, TH1* histogram_density);
     void SetHistograms(std::vector<TH1*> histograms, std::vector<TH1*> histogram_densities);
     void SetHistogramMass(TH1* histogram, TH1* histogram_density);
@@ -189,6 +188,9 @@ namespace svFitStandalone
     bool shiftVisMass_;
     bool shiftVisPt_;
     unsigned int nDim_;
+    
+    std::vector<svFitStandalone::LorentzVector> measuredTauLeptons_;
+    svFitStandalone::Vector measuredMET_;
     
    private:
     virtual double DoEval(const double* x) const;

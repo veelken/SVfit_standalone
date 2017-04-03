@@ -911,10 +911,10 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     clock_->Show("<SVfitStandaloneAlgorithm::integrateMarkovChain>");
   }
 }
-void SVfitStandaloneAlgorithm::setMCQuantitiesAdapter(svFitStandalone::MCQuantitiesAdapter* mvQuantitiesAdapter)
+void SVfitStandaloneAlgorithm::setMCQuantitiesAdapter(svFitStandalone::MCQuantitiesAdapter* mcQuantitiesAdapter)
 {
   if (mcQuantitiesAdapter_ != nullptr) delete mcQuantitiesAdapter_;
-  mcQuantitiesAdapter_ = mvQuantitiesAdapter;
+  mcQuantitiesAdapter_ = mcQuantitiesAdapter;
 }
 svFitStandalone::MCQuantitiesAdapter* SVfitStandaloneAlgorithm::getMCQuantitiesAdapter() const
 {

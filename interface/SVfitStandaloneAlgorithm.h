@@ -139,7 +139,7 @@ class SVfitStandaloneAlgorithm
   /// return mass of the di-tau system (kept for legacy)
   double getMass() const {return mass(); }
   
-  void setMCQuantitiesAdapter(svFitStandalone::MCQuantitiesAdapter* mvQuantitiesAdapter);
+  void setMCQuantitiesAdapter(svFitStandalone::MCQuantitiesAdapter* mcQuantitiesAdapter);
   svFitStandalone::MCQuantitiesAdapter* getMCQuantitiesAdapter() const;
 
   /// return 4-vectors of measured tau leptons

@@ -110,14 +110,24 @@ namespace svFitStandalone
   class SVfitQuantity
   {
    public:
-    SVfitQuantity(TH1* histogram, TH1* histogram_density, std::function<double(std::vector<svFitStandalone::LorentzVector> const&) > function);
+    SVfitQuantity(
+        TH1* histogram,
+        TH1* histogram_density,
+        std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<MeasuredTauLepton> const&, double, double, TMatrixD const&) > function
+    );
     ~SVfitQuantity();
     
     void SetHistograms(TH1* histogram, TH1* histogram_density);
     void Reset();
     void WriteHistograms() const;
     
-    double Eval(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons) const;
+    double Eval(
+        std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons,
+        std::vector<MeasuredTauLepton> const& measuredTauLeptons,
+        double measuredMETx,
+        double measuredMETy,
+        TMatrixD const& covME
+    ) const;
     
     double ExtractValue() const;
     double ExtractUncertainty() const;
@@ -127,7 +137,7 @@ namespace svFitStandalone
    
    protected:
     TH1* histogram_density_ = nullptr;
-    std::function<double(std::vector<svFitStandalone::LorentzVector> const&) > function_;
+    std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<MeasuredTauLepton> const&, double, double, TMatrixD const&) > function_;
   };
   
   class MCQuantitiesAdapter : public ROOT::Math::Functor

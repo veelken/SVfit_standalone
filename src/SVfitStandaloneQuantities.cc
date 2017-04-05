@@ -29,44 +29,37 @@ namespace svFitStandalone
     TH1* histogram = new TH1D(histogramName.data(), histogramName.data(), numBins, binning.GetArray());
     return histogram;
   }
-  void compHistogramDensity(const TH1* histogram, TH1* histogram_density) 
+  TH1* compHistogramDensity(const TH1* histogram)
   {
-    for ( int iBin = 1; iBin <= histogram->GetNbinsX(); ++iBin ) {
-      double binContent = histogram->GetBinContent(iBin);
-      double binError = histogram->GetBinError(iBin);
-      double binWidth = histogram->GetBinWidth(iBin);
-      //if ( histogram == histogramMass_ ) {
-      //  TAxis* xAxis = histogram->GetXaxis();
-      //  std::cout << "bin #" << iBin << " (x = " << xAxis->GetBinLowEdge(iBin) << ".." << xAxis->GetBinUpEdge(iBin) << ", width = " << binWidth << "):"
-      //	      << " " << binContent << " +/- " << binError << std::endl;
-      //}
-      assert(binWidth > 0.);
-      histogram_density->SetBinContent(iBin, binContent/binWidth);
-      histogram_density->SetBinError(iBin, binError/binWidth);
-    }
+    TH1* histogram_density = static_cast<TH1*>(histogram->Clone((std::string(histogram->GetName())+"_density").c_str()));
+    histogram_density->Scale(1.0, "width");
+    return histogram_density;
   }
-  double extractValue(const TH1* histogram, TH1* histogram_density) 
+  double extractValue(const TH1* histogram) 
   {
     double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
-    compHistogramDensity(histogram, histogram_density);
+    TH1* histogram_density = compHistogramDensity(histogram);
     svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
+    delete histogram_density;
     //double value = maximum_interpol;
     double value = maximum;
     return value;
   }
-  double extractUncertainty(const TH1* histogram, TH1* histogram_density)
+  double extractUncertainty(const TH1* histogram)
   {
     double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
-    compHistogramDensity(histogram, histogram_density);
+    TH1* histogram_density = compHistogramDensity(histogram);
     svFitStandalone::extractHistogramProperties(histogram, histogram_density, maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax);
+    delete histogram_density;
     //double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum_interpol, 2.) + TMath::Power(maximum_interpol - quantile016, 2.)));
     double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum, 2.) + TMath::Power(maximum - quantile016, 2.)));
     return uncertainty;  
   }
-  double extractLmax(const TH1* histogram, TH1* histogram_density)
+  double extractLmax(const TH1* histogram)
   {
-    compHistogramDensity(histogram, histogram_density);
+    TH1* histogram_density = compHistogramDensity(histogram);
     double Lmax = histogram_density->GetMaximum();
+    delete histogram_density;
     return Lmax;
   }
 
@@ -232,15 +225,15 @@ namespace svFitStandalone
   
   double SVfitQuantity::ExtractValue() const
   {
-    return extractValue(histogram_, histogram_density_);
+    return extractValue(histogram_);
   }
   double SVfitQuantity::ExtractUncertainty() const
   {
-    return extractUncertainty(histogram_, histogram_density_);
+    return extractUncertainty(histogram_);
   }
   double SVfitQuantity::ExtractLmax() const
   {
-    return extractLmax(histogram_, histogram_density_);
+    return extractLmax(histogram_);
   }
   
   MCQuantitiesAdapter::MCQuantitiesAdapter(std::vector<SVfitQuantity*> const& quantities) :

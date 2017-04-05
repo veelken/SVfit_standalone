@@ -588,9 +588,9 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     yErrGraph.push_back(pErr);
     mtest += mtest_step;
   }
-  //mass_ = extractValue(histogramMass, histogramMass_density);
-  massUncert_ = extractUncertainty(histogramMass, histogramMass_density);
-  massLmax_ = extractLmax(histogramMass, histogramMass_density);
+  //mass_ = extractValue(histogramMass);
+  massUncert_ = extractUncertainty(histogramMass);
+  massLmax_ = extractLmax(histogramMass);
   fitStatus_ = ( massLmax_ > 0. ) ? 0 : 1;
   if ( verbosity_ >= 1 ) {
     std::cout << "--> mass  = " << mass_  << " +/- " << massUncert_ << std::endl;

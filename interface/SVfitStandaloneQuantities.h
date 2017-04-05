@@ -31,10 +31,10 @@ using svFitStandalone::MeasuredTauLepton;
 namespace svFitStandalone
 {
   TH1* makeHistogram(const std::string&, double, double, double);
-  void compHistogramDensity(const TH1*, TH1*);
-  double extractValue(const TH1*, TH1*);
-  double extractUncertainty(const TH1*, TH1*);
-  double extractLmax(const TH1*, TH1*);
+  TH1* compHistogramDensity(const TH1*);
+  double extractValue(const TH1*);
+  double extractUncertainty(const TH1*);
+  double extractLmax(const TH1*);
 
   // for "fit" (MINUIT) mode
   class ObjectiveFunctionAdapterMINUIT

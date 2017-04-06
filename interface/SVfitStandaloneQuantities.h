@@ -112,7 +112,6 @@ namespace svFitStandalone
    public:
     SVfitQuantity(
         std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram,
-        std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram_density,
         std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function
     );
     ~SVfitQuantity();
@@ -135,12 +134,9 @@ namespace svFitStandalone
    
    private:
     std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram_;
-    std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram_density_;
    
    protected:
     std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function_;
-    
-    TH1* histogram_density_ = nullptr;
   };
   
   class MCQuantitiesAdapter : public ROOT::Math::Functor

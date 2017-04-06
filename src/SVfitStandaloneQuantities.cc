@@ -182,18 +182,15 @@ namespace svFitStandalone
   
   SVfitQuantity::SVfitQuantity(
       std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram,
-      std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram_density,
       std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function
   ) :
     getHistogram_(getHistogram),
-    getHistogram_density_(getHistogram_density),
     function_(function)
   {
   }
   SVfitQuantity::~SVfitQuantity()
   {
     if (histogram_ != nullptr) delete histogram_;
-    if (histogram_density_ != nullptr) delete histogram_density_;
   }
   void SVfitQuantity::SetHistograms(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET)
   {
@@ -201,18 +198,14 @@ namespace svFitStandalone
     //     indicates that the histograms have been deleted by the calling code
     if (histogram_ != nullptr) delete histogram_;
     histogram_ = getHistogram_(measuredTauLeptons, measuredMET);
-    if (histogram_density_ != nullptr) delete histogram_density_;
-    histogram_density_ = getHistogram_density_(measuredTauLeptons, measuredMET);
   }
   void SVfitQuantity::Reset()
   {
     histogram_->Reset();
-    histogram_density_->Reset();
   }
   void SVfitQuantity::WriteHistograms() const
   {
     if (histogram_ != nullptr) histogram_->Write();
-    if (histogram_density_ != nullptr) histogram_density_->Write();
   }
   double SVfitQuantity::Eval(
       std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons,
@@ -325,10 +318,6 @@ namespace svFitStandalone
           {
             return makeHistogram("SVfitStandaloneAlgorithm_histogramPt", 1., 1.e+3, 1.025);
           },
-          [](std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> TH1*
-          {
-            return makeHistogram("SVfitStandaloneAlgorithm_histogramPt_density", 1., 1.e+3, 1.025);
-          },
           [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> double
           {
             return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).pt();
@@ -339,10 +328,6 @@ namespace svFitStandalone
           {
             return new TH1D("SVfitStandaloneAlgorithm_histogramEta", "SVfitStandaloneAlgorithm_histogramEta", 198, -9.9, +9.9);
           },
-          [](std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> TH1*
-          {
-            return new TH1D("SVfitStandaloneAlgorithm_histogramEta_density", "SVfitStandaloneAlgorithm_histogramEta_density", 198, -9.9, +9.9);
-          },
           [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> double
           {
             return (fittedTauLeptons.at(0) + fittedTauLeptons.at(1)).eta();
@@ -352,10 +337,6 @@ namespace svFitStandalone
           [](std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> TH1*
           {
             return new TH1D("SVfitStandaloneAlgorithm_histogramPhi", "SVfitStandaloneAlgorithm_histogramPhi", 180, -TMath::Pi(), +TMath::Pi());
-          },
-          [](std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> TH1*
-          {
-            return new TH1D("SVfitStandaloneAlgorithm_histogramPhi_density", "SVfitStandaloneAlgorithm_histogramPhi_density", 180, -TMath::Pi(), +TMath::Pi());
           },
           [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> double
           {
@@ -369,13 +350,6 @@ namespace svFitStandalone
             double minMass = visMass/1.0125;
             double maxMass = TMath::Max(1.e+4, 1.e+1*minMass);
             return makeHistogram("SVfitStandaloneAlgorithm_histogramMass", minMass, maxMass, 1.025);
-          },
-          [](std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> TH1*
-          {
-            double visMass = (measuredTauLeptons.at(0)+measuredTauLeptons.at(1)).mass();
-            double minMass = visMass/1.0125;
-            double maxMass = TMath::Max(1.e+4, 1.e+1*minMass);
-            return makeHistogram("SVfitStandaloneAlgorithm_histogramMass_density", minMass, maxMass, 1.025);
           },
           [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> double
           {
@@ -391,15 +365,6 @@ namespace svFitStandalone
             double minTransverseMass = visTransverseMass/1.0125;
             double maxTransverseMass = TMath::Max(1.e+4, 1.e+1*minTransverseMass);
             return makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", minTransverseMass, maxTransverseMass, 1.025);
-          },
-          [](std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> TH1*
-          {
-            svFitStandalone::LorentzVector measuredDiTauSystem = measuredTauLeptons.at(0) + measuredTauLeptons.at(1);
-            double visTransverseMass2 = square(measuredTauLeptons.at(0).Et() + measuredTauLeptons.at(1).Et()) - (square(measuredDiTauSystem.px()) + square(measuredDiTauSystem.py()));
-            double visTransverseMass = TMath::Sqrt(TMath::Max(1., visTransverseMass2));  
-            double minTransverseMass = visTransverseMass/1.0125;
-            double maxTransverseMass = TMath::Max(1.e+4, 1.e+1*minTransverseMass);
-            return makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass_density", minTransverseMass, maxTransverseMass, 1.025);
           },
           [](std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) -> double
           {

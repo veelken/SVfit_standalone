@@ -172,13 +172,6 @@ namespace svFitStandalone
     std::vector<double> ExtractUncertainties() const;
     std::vector<double> ExtractLmaxima() const;
     
-    double getMass() const;
-    double getMassUncert() const;
-    double getMassLmax() const;
-    double getTransverseMass() const;
-    double getTransverseMassUncert() const;
-    double getTransverseMassLmax() const;
-    
    protected:
     std::vector<SVfitQuantity*> quantities_;
     
@@ -212,6 +205,12 @@ namespace svFitStandalone
     double getPhi() const;
     double getPhiUncert() const;
     double getPhiLmax() const;
+    double getMass() const;
+    double getMassUncert() const;
+    double getMassLmax() const;
+    double getTransverseMass() const;
+    double getTransverseMassUncert() const;
+    double getTransverseMassLmax() const;
   };
 }
 

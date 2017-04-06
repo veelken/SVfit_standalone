@@ -881,12 +881,14 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
   int errorFlag = 0;
   integrator2_->integrate(xl, xh, integral, integralErr, errorFlag);
   fitStatus_ = errorFlag;
+  /* Not any longer defined in this general way; access your fit results directly from the mcQuantitiesAdapter_
   mass_ = mcQuantitiesAdapter_->getMass();
   massUncert_ = mcQuantitiesAdapter_->getMassUncert();
   massLmax_ = mcQuantitiesAdapter_->getMassLmax();
   transverseMass_ = mcQuantitiesAdapter_->getTransverseMass();
   transverseMassUncert_ = mcQuantitiesAdapter_->getTransverseMassUncert();
   transverseMassLmax_ = mcQuantitiesAdapter_->getTransverseMassLmax();
+  */
   if ( !(massLmax_ > 0.) ) fitStatus_ = 1;
   if ( likelihoodFileName != "" ) {
     TFile* likelihoodFile = new TFile(likelihoodFileName.data(), "RECREATE");

@@ -110,13 +110,13 @@ namespace svFitStandalone
   class SVfitQuantity
   {
    public:
-    SVfitQuantity(
-        std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram,
-        std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function
-    );
-    ~SVfitQuantity();
+    SVfitQuantity();
+    virtual ~SVfitQuantity();
     
-    void SetHistograms(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET);
+    virtual TH1* CreateHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const = 0;
+    virtual double FitFunction(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const = 0;
+    
+    void SetHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET);
     void Reset();
     void WriteHistograms() const;
     
@@ -131,12 +131,37 @@ namespace svFitStandalone
     double ExtractLmax() const;
    
     mutable TH1* histogram_ = nullptr;
-   
-   private:
-    std::function<TH1*(std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > getHistogram_;
-   
-   protected:
-    std::function<double(std::vector<svFitStandalone::LorentzVector> const&, std::vector<svFitStandalone::LorentzVector> const&, svFitStandalone::Vector const&) > function_;
+  };
+  
+  class HiggsPtSVfitQuantity : public SVfitQuantity
+  {
+   public:
+    virtual TH1* CreateHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+    virtual double FitFunction(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+  };
+  class HiggsEtaSVfitQuantity : public SVfitQuantity
+  {
+   public:
+    virtual TH1* CreateHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+    virtual double FitFunction(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+  };
+  class HiggsPhiSVfitQuantity : public SVfitQuantity
+  {
+   public:
+    virtual TH1* CreateHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+    virtual double FitFunction(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+  };
+  class HiggsMassSVfitQuantity : public SVfitQuantity
+  {
+   public:
+    virtual TH1* CreateHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+    virtual double FitFunction(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+  };
+  class TransverseMassSVfitQuantity : public SVfitQuantity
+  {
+   public:
+    virtual TH1* CreateHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
+    virtual double FitFunction(std::vector<svFitStandalone::LorentzVector> const& fittedTauLeptons, std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const;
   };
   
   class MCQuantitiesAdapter : public ROOT::Math::Functor

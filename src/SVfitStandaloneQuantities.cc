@@ -21,11 +21,11 @@ namespace svFitStandalone
     int numBins = 1 + TMath::Log(xMax/xMin)/TMath::Log(logBinWidth);
     TArrayF binning(numBins + 1);
     binning[0] = 0.;
-    double x = xMin;  
+    double x = xMin;
     for ( int iBin = 1; iBin <= numBins; ++iBin ) {
       binning[iBin] = x;
       x *= logBinWidth;
-    }  
+    }
     TH1* histogram = new TH1D(histogramName.data(), histogramName.data(), numBins, binning.GetArray());
     return histogram;
   }
@@ -35,7 +35,7 @@ namespace svFitStandalone
     histogram_density->Scale(1.0, "width");
     return histogram_density;
   }
-  double extractValue(const TH1* histogram) 
+  double extractValue(const TH1* histogram)
   {
     double maximum, maximum_interpol, mean, quantile016, quantile050, quantile084, mean3sigmaWithinMax, mean5sigmaWithinMax;
     TH1* histogram_density = compHistogramDensity(histogram);
@@ -53,7 +53,7 @@ namespace svFitStandalone
     delete histogram_density;
     //double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum_interpol, 2.) + TMath::Power(maximum_interpol - quantile016, 2.)));
     double uncertainty = TMath::Sqrt(0.5*(TMath::Power(quantile084 - maximum, 2.) + TMath::Power(maximum - quantile016, 2.)));
-    return uncertainty;  
+    return uncertainty;
   }
   double extractLmax(const TH1* histogram)
   {
@@ -90,7 +90,7 @@ namespace svFitStandalone
       } else {
 	x_mapped[kRecTauPtDivGenTauPt] = 0.;
       }
-    }    
+    }
     double x2 = ( x[0] > 0. ) ? TMath::Power(mvis/mtest, 2.)/x[0] : 1.e+3;
     int offset2 = 0;
     if ( l2isLep ) {
@@ -167,7 +167,7 @@ namespace svFitStandalone
       } else {
 	x_mapped[kMaxFitParams + kVisMassShifted]      = 0.;
       }
-      if ( shiftVisPt ) {	
+      if ( shiftVisPt ) {
 	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[offset1 + offset2];
 	++offset2;
       } else {
@@ -179,7 +179,7 @@ namespace svFitStandalone
     //  std::cout << " x_mapped[" << i << "] = " << x_mapped[i] << std::endl;
     //}
   }
-  
+
   SVfitQuantity::SVfitQuantity()
   {
   }
@@ -208,7 +208,7 @@ namespace svFitStandalone
   {
     return FitFunction(fittedTauLeptons, measuredTauLeptons, measuredMET);
   }
-  
+
   double SVfitQuantity::ExtractValue() const
   {
     return extractValue(histogram_);
@@ -221,7 +221,7 @@ namespace svFitStandalone
   {
     return extractLmax(histogram_);
   }
-  
+
   TH1* HiggsPtSVfitQuantity::CreateHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const
   {
     return makeHistogram("SVfitStandaloneAlgorithm_histogramPt", 1., 1.e+3, 1.025);
@@ -261,7 +261,7 @@ namespace svFitStandalone
   {
     svFitStandalone::LorentzVector measuredDiTauSystem = measuredTauLeptons.at(0) + measuredTauLeptons.at(1);
     double visTransverseMass2 = square(measuredTauLeptons.at(0).Et() + measuredTauLeptons.at(1).Et()) - (square(measuredDiTauSystem.px()) + square(measuredDiTauSystem.py()));
-    double visTransverseMass = TMath::Sqrt(TMath::Max(1., visTransverseMass2));  
+    double visTransverseMass = TMath::Sqrt(TMath::Max(1., visTransverseMass2));
     double minTransverseMass = visTransverseMass/1.0125;
     double maxTransverseMass = TMath::Max(1.e+4, 1.e+1*minTransverseMass);
     return makeHistogram("SVfitStandaloneAlgorithm_histogramTransverseMass", minTransverseMass, maxTransverseMass, 1.025);
@@ -270,7 +270,7 @@ namespace svFitStandalone
   {
     return TMath::Sqrt(2.0*fittedTauLeptons.at(0).pt()*fittedTauLeptons.at(1).pt()*(1.0 - TMath::Cos(fittedTauLeptons.at(0).phi() - fittedTauLeptons.at(1).phi())));
   }
-  
+
   MCQuantitiesAdapter::MCQuantitiesAdapter(std::vector<SVfitQuantity*> const& quantities) :
     quantities_(quantities)
   {

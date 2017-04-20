@@ -354,12 +354,14 @@ namespace svFitStandalone
 
   MCPtEtaPhiMassAdapter::MCPtEtaPhiMassAdapter() :
     MCQuantitiesAdapter()
-    {
-      quantities_.push_back(new HiggsPtSVfitQuantity());
-      quantities_.push_back(new HiggsEtaSVfitQuantity());
-      quantities_.push_back(new HiggsPhiSVfitQuantity());
-      quantities_.push_back(new HiggsMassSVfitQuantity());
-      quantities_.push_back(new TransverseMassSVfitQuantity());
+  {
+    quantities_.clear();
+    
+    quantities_.push_back(new HiggsPtSVfitQuantity());
+    quantities_.push_back(new HiggsEtaSVfitQuantity());
+    quantities_.push_back(new HiggsPhiSVfitQuantity());
+    quantities_.push_back(new HiggsMassSVfitQuantity());
+    quantities_.push_back(new TransverseMassSVfitQuantity());
   }
   double MCPtEtaPhiMassAdapter::getPt() const { return ExtractValue(0); }
   double MCPtEtaPhiMassAdapter::getPtUncert() const { return ExtractUncertainty(0); }

@@ -43,13 +43,13 @@ class SVfitStandaloneMarkovChainIntegrator
 //   (eq. (11) in [2])
   void setIntegrand(const ROOT::Math::Functor&);
 
-//--- set function to evaluate "valid" (physically allowed) start-position 
+//--- set function to evaluate "valid" (physically allowed) start-position
   void setStartPosition_and_MomentumFinder(const ROOT::Math::Functor&);
 
 //--- register "call-back" functions:
 //    A user may register any number of "call-back" functions,
 //    which are evaluated in every iteration of the Markov Chain.
-//    The mechanism allows to compute expectation values 
+//    The mechanism allows to compute expectation values
 //    of any number of observables, according to eq. (12) in [2].
 //    The evaluation of "call-back" functions proceeds
 //    by calling ROOT::Math::Functor::operator(x).
@@ -68,7 +68,7 @@ class SVfitStandaloneMarkovChainIntegrator
 
   void makeStochasticMove(unsigned, bool&, bool&);
   void makeDynamicMoves(const std::vector<double>&);
-  
+
   void sampleSphericallyRandom();
 
   void updateX(const std::vector<double>&);
@@ -76,7 +76,7 @@ class SVfitStandaloneMarkovChainIntegrator
   double evalProb(const std::vector<double>&);
   double evalE(const std::vector<double>&);
   double evalK(const std::vector<double>&, unsigned, unsigned);
-  
+
   void updateGradE(std::vector<double>&);
 
   std::string name_;
@@ -86,13 +86,13 @@ class SVfitStandaloneMarkovChainIntegrator
   const ROOT::Math::Functor* startPosition_and_MomentumFinder_;
 
   std::vector<const ROOT::Math::Functor*> callBackFunctions_;
-    
+
   // parameter defining whether to run integration in "Metropolis" or "Hybrid" mode
   int moveMode_;
 
   // parameters defining integration region
   //  numDimensions: dimensionality of integration region (Hypercube)
-  //  xMin:          lower boundaries of integration region 
+  //  xMin:          lower boundaries of integration region
   //  xMax:          upper boundaries of integration region
   //  initMode:      flag indicating how initial position of Markov Chain is chosen (uniform/Gaus distribution)
   unsigned numDimensions_;
@@ -104,7 +104,7 @@ class SVfitStandaloneMarkovChainIntegrator
   // parameters defining number of "stochastic moves" performed per integration
   //  numIterBurnin:   number of "stochastic moves" performed to reach "ergodic" state of Markov Chain
   //                  ("burnin" iterations do not enter the integral computation;
-  //                   their purpose is to make the computed integral value ~independent 
+  //                   their purpose is to make the computed integral value ~independent
   //                   of the initial position at which the Markov Chain is started)
   //  numIterSampling: number of "stochastic moves" used to compute integral
   unsigned numIterBurnin_;
@@ -134,7 +134,7 @@ class SVfitStandaloneMarkovChainIntegrator
   //  according to eqs. (6.39) and (6.40) in [1])
   unsigned numBatches_;
 
-  // parameters specific to "dynamic moves" 
+  // parameters specific to "dynamic moves"
   //  dxDerr:   step-sizes used for the purpose of computing derrivative of integrand
   //  L:        number of "dynamical moves" performed per "stochastic move"
   //  epsilon0: average step-size used for "dynamical moves"
@@ -161,7 +161,7 @@ class SVfitStandaloneMarkovChainIntegrator
   vdouble pProposal_;
   vdouble qProposal_;
 
-  vdouble probSum_; // index = chain*numBatches + batch 
+  vdouble probSum_; // index = chain*numBatches + batch
   vdouble integral_;
 
   long numMoves_accepted_;

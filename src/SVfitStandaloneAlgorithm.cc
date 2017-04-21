@@ -20,16 +20,20 @@ namespace svFitStandalone
     bool operator() (const svFitStandalone::MeasuredTauLepton& measuredTauLepton1, const svFitStandalone::MeasuredTauLepton& measuredTauLepton2)
     {
       if ( (measuredTauLepton1.type() == svFitStandalone::kTauToElecDecay || measuredTauLepton1.type() == svFitStandalone::kTauToMuDecay) &&
-	   measuredTauLepton2.type() == svFitStandalone::kTauToHadDecay  ) return true;
+           (measuredTauLepton2.type() == svFitStandalone::kTauToHadDecay) ) {
+        return true;
+      }
       if ( (measuredTauLepton2.type() == svFitStandalone::kTauToElecDecay || measuredTauLepton2.type() == svFitStandalone::kTauToMuDecay) &&
-	   measuredTauLepton1.type() == svFitStandalone::kTauToHadDecay ) return false;
+           (measuredTauLepton1.type() == svFitStandalone::kTauToHadDecay) ) {
+        return false;
+      }
       return ( measuredTauLepton1.pt() > measuredTauLepton2.pt() );
     }
   };
 }
 
 SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, double measuredMETx, double measuredMETy, const TMatrixD& covMET,
-						   unsigned int verbosity)
+               unsigned int verbosity)
   : fitStatus_(-1),
     verbosity_(verbosity),
     maxObjFunctionCalls_(10000),
@@ -56,7 +60,7 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
 
   std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons_rounded;
   for ( std::vector<svFitStandalone::MeasuredTauLepton>::const_iterator measuredTauLepton = measuredTauLeptons.begin();
-	measuredTauLepton != measuredTauLeptons.end(); ++measuredTauLepton ) {
+        measuredTauLepton != measuredTauLeptons.end(); ++measuredTauLepton ) {
     svFitStandalone::MeasuredTauLepton measuredTauLepton_rounded(
       measuredTauLepton->type(),
       svFitStandalone::roundToNdigits(measuredTauLepton->pt()),
@@ -76,8 +80,8 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
     for ( size_t idx = 0; idx < measuredTauLeptons_rounded.size(); ++idx ) {
       const svFitStandalone::MeasuredTauLepton& measuredTauLepton = measuredTauLeptons_rounded[idx];
       std::cout << "measuredTauLepton #" << idx << " (type = " << measuredTauLepton.type() << "): Pt = " << measuredTauLepton.pt() << ","
-		<< " eta = " << measuredTauLepton.eta() << " (theta = " << measuredTauLepton.p4().theta() << ")" << ", phi = " << measuredTauLepton.phi() << ","
-		<< " mass = " << measuredTauLepton.mass() << std::endl;
+                << " eta = " << measuredTauLepton.eta() << " (theta = " << measuredTauLepton.p4().theta() << ")" << ", phi = " << measuredTauLepton.phi() << ","
+                << " mass = " << measuredTauLepton.mass() << std::endl;
     }
   }
   double measuredMETx_rounded = svFitStandalone::roundToNdigits(measuredMETx);
@@ -100,7 +104,7 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
     TMatrixD EigenVectors(2,2);
     EigenVectors = TMatrixDSymEigen(covMET_sym).GetEigenVectors();
     std::cout << "Eigenvectors =  { " << EigenVectors(0,0) << ", " << EigenVectors(1,0) << " (phi = " << TMath::ATan2(EigenVectors(1,0), EigenVectors(0,0)) << ") },"
-	      << " { " << EigenVectors(0,1) << ", " << EigenVectors(1,1) << " (phi = " << TMath::ATan2(EigenVectors(1,1), EigenVectors(0,1)) << ") }" << std::endl;
+              << " { " << EigenVectors(0,1) << ", " << EigenVectors(1,1) << " (phi = " << TMath::ATan2(EigenVectors(1,1), EigenVectors(0,1)) << ") }" << std::endl;
     TVectorD EigenValues(2);
     EigenValues = TMatrixDSymEigen(covMET_sym).GetEigenValues();
     EigenValues(0) = TMath::Sqrt(EigenValues(0));
@@ -211,9 +215,9 @@ SVfitStandaloneAlgorithm::setup()
     //if ( verbosity_ >= 1 ) {
     //  std::cout << " --> upper limit of leg1::mNuNu will be set to ";
     //  if ( measuredTauLepton.type() == kTauToHadDecay ) {
-    //	  std::cout << "0";
+    //    std::cout << "0";
     //  } else {
-    //	  std::cout << (svFitStandalone::tauLeptonMass - TMath::Min(measuredTauLepton.mass(), 1.5));
+    //    std::cout << (svFitStandalone::tauLeptonMass - TMath::Min(measuredTauLepton.mass(), 1.5));
     //  }
     //  std::cout << std::endl;
     //}
@@ -226,13 +230,13 @@ SVfitStandaloneAlgorithm::setup()
     if ( measuredTauLepton.type() == kTauToHadDecay ) {
       minimizer_->SetFixedVariable(
         idx*kMaxFitParams + kMNuNu,
-	std::string(TString::Format("leg%i::mNuNu", (int)idx + 1)).c_str(),
-	0.);
+        std::string(TString::Format("leg%i::mNuNu", (int)idx + 1)).c_str(),
+        0.);
     } else {
       minimizer_->SetLimitedVariable(
         idx*kMaxFitParams + kMNuNu,
-	std::string(TString::Format("leg%i::mNuNu", (int)idx + 1)).c_str(),
-	0.8, 0.10, 0., svFitStandalone::tauLeptonMass - TMath::Min(measuredTauLepton.mass(), 1.5));
+        std::string(TString::Format("leg%i::mNuNu", (int)idx + 1)).c_str(),
+        0.8, 0.10, 0., svFitStandalone::tauLeptonMass - TMath::Min(measuredTauLepton.mass(), 1.5));
     }
     // start values for phi
     minimizer_->SetVariable(
@@ -350,85 +354,86 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
     if ( idx == 0 ) {
       idxFitParLeg1_ = 0;
       if ( measuredTauLepton.type() == kTauToHadDecay ) {
-	if ( marginalizeVisMass_ ) {
-	  l1lutVisMass = lutVisMassAllDMs_;
-	}
-	if ( shiftVisMass_ ) {
-	  if ( measuredTauLepton.decayMode() == 0 ) {
-	    l1lutVisMassRes = lutVisMassResDM0_;
-	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
-	    l1lutVisMassRes = lutVisMassResDM1_;
-	  } else if ( measuredTauLepton.decayMode() == 10 ) {
-	    l1lutVisMassRes = lutVisMassResDM10_;
-	  //} else {
-	  //  std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
-	  //	        << " --> disabling shiftVisMass for this event !!" << std::endl;
-	  }
+        if ( marginalizeVisMass_ ) {
+          l1lutVisMass = lutVisMassAllDMs_;
         }
-	if ( shiftVisPt_ ) {
-	  if ( measuredTauLepton.decayMode() == 0 ) {
-	    l1lutVisPtRes = lutVisPtResDM0_;
-	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
-	    l1lutVisPtRes = lutVisPtResDM1_;
-	  } else if ( measuredTauLepton.decayMode() == 10 ) {
-	    l1lutVisPtRes = lutVisPtResDM10_;
-	  //} else {
-	  //  std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
-	  // 	        << " --> disabling shiftVisPt for this event !!" << std::endl;
-	  }
+        if ( shiftVisMass_ ) {
+          if ( measuredTauLepton.decayMode() == 0 ) {
+            l1lutVisMassRes = lutVisMassResDM0_;
+          } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+            l1lutVisMassRes = lutVisMassResDM1_;
+          } else if ( measuredTauLepton.decayMode() == 10 ) {
+            l1lutVisMassRes = lutVisMassResDM10_;
+          //} else {
+          //  std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
+          //            << " --> disabling shiftVisMass for this event !!" << std::endl;
+          }
         }
-	nDim += 2;
-	if ( l1lutVisMass || l1lutVisMassRes ) {
-	  ++nDim;
-	}
-	if ( l1lutVisPtRes ) {
-	  ++nDim;
-	}
+        if ( shiftVisPt_ ) {
+          if ( measuredTauLepton.decayMode() == 0 ) {
+            l1lutVisPtRes = lutVisPtResDM0_;
+          } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+            l1lutVisPtRes = lutVisPtResDM1_;
+          } else if ( measuredTauLepton.decayMode() == 10 ) {
+            l1lutVisPtRes = lutVisPtResDM10_;
+          //} else {
+          //  std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
+          //            << " --> disabling shiftVisPt for this event !!" << std::endl;
+          }
+        }
+        nDim += 2;
+        if ( l1lutVisMass || l1lutVisMassRes ) {
+          ++nDim;
+        }
+        if ( l1lutVisPtRes ) {
+          ++nDim;
+        }
       } else {
-	l1isLep_ = true;
-	nDim += 3;
+      l1isLep_ = true;
+      nDim += 3;
       }
     }
+
     if ( idx == 1 ) {
       idxFitParLeg2_ = nDim;
       if ( measuredTauLepton.type() == kTauToHadDecay ) {
-	if ( marginalizeVisMass_ ) {
-	  l2lutVisMass = lutVisMassAllDMs_;
-	}
-	if ( shiftVisMass_ ) {
-	  if ( measuredTauLepton.decayMode() == 0 ) {
-	    l2lutVisMassRes = lutVisMassResDM0_;
-	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
-	    l2lutVisMassRes = lutVisMassResDM1_;
-	  } else if ( measuredTauLepton.decayMode() == 10 ) {
-	    l2lutVisMassRes = lutVisMassResDM10_;
-	  //} else {
-	  //  std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
-	  //            << " --> disabling shiftVisMass for this event !!" << std::endl;
-	  }
-	}
-	if ( shiftVisPt_ ) {
-	  if ( measuredTauLepton.decayMode() == 0 ) {
-	    l2lutVisPtRes = lutVisPtResDM0_;
-	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
-	    l2lutVisPtRes = lutVisPtResDM1_;
-	  } else if ( measuredTauLepton.decayMode() == 10 ) {
-	    l2lutVisPtRes = lutVisPtResDM10_;
-	  //} else {
-	  //  std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
-	  //	        << " --> disabling shiftVisPt for this event !!" << std::endl;
-	  }
-	}
-	nDim += 2;
-	if ( l2lutVisMass || l2lutVisMassRes ) {
-	  ++nDim;
-	}
-	if ( l2lutVisPtRes ) {
-	  ++nDim;
-	}
+        if ( marginalizeVisMass_ ) {
+          l2lutVisMass = lutVisMassAllDMs_;
+        }
+        if ( shiftVisMass_ ) {
+          if ( measuredTauLepton.decayMode() == 0 ) {
+            l2lutVisMassRes = lutVisMassResDM0_;
+          } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+            l2lutVisMassRes = lutVisMassResDM1_;
+          } else if ( measuredTauLepton.decayMode() == 10 ) {
+            l2lutVisMassRes = lutVisMassResDM10_;
+          //} else {
+          //  std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
+          //            << " --> disabling shiftVisMass for this event !!" << std::endl;
+          }
+        }
+        if ( shiftVisPt_ ) {
+          if ( measuredTauLepton.decayMode() == 0 ) {
+            l2lutVisPtRes = lutVisPtResDM0_;
+          } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+            l2lutVisPtRes = lutVisPtResDM1_;
+          } else if ( measuredTauLepton.decayMode() == 10 ) {
+            l2lutVisPtRes = lutVisPtResDM10_;
+          //} else {
+          //  std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
+          //            << " --> disabling shiftVisPt for this event !!" << std::endl;
+          }
+        }
+        nDim += 2;
+        if ( l2lutVisMass || l2lutVisMassRes ) {
+          ++nDim;
+        }
+        if ( l2lutVisPtRes ) {
+          ++nDim;
+        }
       } else {
-	l2isLep_ = true;
-	nDim += 3;
+        l2isLep_ = true;
+        nDim += 3;
       }
     }
   }
@@ -570,12 +575,12 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
       count = 0;
     } else {
       if ( p < (1.e-3*pMax) ) {
-	++count;
-	if ( count>= 5 ) {
-	  skiphighmasstail = true;
-	}
+        ++count;
+        if ( count>= 5 ) {
+          skiphighmasstail = true;
+        }
       } else {
-	count = 0;
+        count = 0;
       }
     }
     double mtest_step = 0.025*mtest;
@@ -648,13 +653,15 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     double nu = 0.71;
     int verbosity = -1;
     integrator2_ = new SVfitStandaloneMarkovChainIntegrator(
-                         initMode, numIterBurnin, numIterSampling, numIterSimAnnealingPhase1, numIterSimAnnealingPhase2,
-			 T0, alpha, numChains, numBatches, L, epsilon0, nu,
-			 verbosity);
+      initMode, numIterBurnin, numIterSampling, numIterSimAnnealingPhase1, numIterSimAnnealingPhase2,
+      T0, alpha, numChains, numBatches, L, epsilon0, nu,
+      verbosity);
     mcObjectiveFunctionAdapter_ = new MCObjectiveFunctionAdapter();
     integrator2_->setIntegrand(*mcObjectiveFunctionAdapter_);
     integrator2_nDim_ = 0;
-    if (mcQuantitiesAdapter_ == nullptr) mcQuantitiesAdapter_ = new MCPtEtaPhiMassAdapter();
+    if (mcQuantitiesAdapter_ == nullptr) {
+      mcQuantitiesAdapter_ = new MCPtEtaPhiMassAdapter();
+    }
     integrator2_->registerCallBackFunction(*mcQuantitiesAdapter_);
     isInitialized2_ = true;
   }
@@ -677,85 +684,86 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
     if ( idx == 0 ) {
       idxFitParLeg1_ = 0;
       if ( measuredTauLepton.type() == kTauToHadDecay ) {
-	if ( marginalizeVisMass_ ) {
-	  l1lutVisMass = lutVisMassAllDMs_;
-	}
-	if ( shiftVisMass_ ) {
-	  if ( measuredTauLepton.decayMode() == 0 ) {
-	    l1lutVisMassRes = lutVisMassResDM0_;
-	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
-	    l1lutVisMassRes = lutVisMassResDM1_;
-	  } else if ( measuredTauLepton.decayMode() == 10 ) {
-	    l1lutVisMassRes = lutVisMassResDM10_;
-	  //} else {
-	  //  std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
-	  //	        << " --> disabling shiftVisMass for this event !!" << std::endl;
-	  }
+        if ( marginalizeVisMass_ ) {
+          l1lutVisMass = lutVisMassAllDMs_;
         }
-	if ( shiftVisPt_ ) {
-	  if ( measuredTauLepton.decayMode() == 0 ) {
-	    l1lutVisPtRes = lutVisPtResDM0_;
-	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
-	    l1lutVisPtRes = lutVisPtResDM1_;
-	  } else if ( measuredTauLepton.decayMode() == 10 ) {
-	    l1lutVisPtRes = lutVisPtResDM10_;
-	  //} else {
-	  //  std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
-	  //	        << " --> disabling shiftVisPt for this event !!" << std::endl;
-	  }
+        if ( shiftVisMass_ ) {
+          if ( measuredTauLepton.decayMode() == 0 ) {
+            l1lutVisMassRes = lutVisMassResDM0_;
+          } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+            l1lutVisMassRes = lutVisMassResDM1_;
+          } else if ( measuredTauLepton.decayMode() == 10 ) {
+            l1lutVisMassRes = lutVisMassResDM10_;
+          //} else {
+          //  std::cerr << "Warning: shiftVisMass is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
+          //            << " --> disabling shiftVisMass for this event !!" << std::endl;
+          }
         }
-	nDim += 2;
-	if ( l1lutVisMass || l1lutVisMassRes ) {
-	  ++nDim;
-	}
-	if ( l1lutVisPtRes ) {
-	  ++nDim;
-	}
+        if ( shiftVisPt_ ) {
+          if ( measuredTauLepton.decayMode() == 0 ) {
+            l1lutVisPtRes = lutVisPtResDM0_;
+          } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+            l1lutVisPtRes = lutVisPtResDM1_;
+          } else if ( measuredTauLepton.decayMode() == 10 ) {
+            l1lutVisPtRes = lutVisPtResDM10_;
+          //} else {
+          //  std::cerr << "Warning: shiftVisPt is enabled, but leg1 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
+          //            << " --> disabling shiftVisPt for this event !!" << std::endl;
+          }
+        }
+        nDim += 2;
+        if ( l1lutVisMass || l1lutVisMassRes ) {
+          ++nDim;
+        }
+        if ( l1lutVisPtRes ) {
+          ++nDim;
+        }
       } else {
-	l1isLep_ = true;
-	nDim += 3;
+        l1isLep_ = true;
+        nDim += 3;
       }
     }
+
     if ( idx == 1 ) {
       idxFitParLeg2_ = nDim;
       if ( measuredTauLepton.type() == kTauToHadDecay ) {
-	if ( marginalizeVisMass_ ) {
-	  l2lutVisMass = lutVisMassAllDMs_;
-	}
-	if ( shiftVisMass_ ) {
-	  if ( measuredTauLepton.decayMode() == 0 ) {
-	    l2lutVisMassRes = lutVisMassResDM0_;
-	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
-	    l2lutVisMassRes = lutVisMassResDM1_;
-	  } else if ( measuredTauLepton.decayMode() == 10 ) {
-	    l2lutVisMassRes = lutVisMassResDM10_;
-	  //} else {
-	  //  std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
-	  //	        << " --> disabling shiftVisMass for this event !!" << std::endl;
-	  }
+        if ( marginalizeVisMass_ ) {
+          l2lutVisMass = lutVisMassAllDMs_;
         }
-	if ( shiftVisPt_ ) {
-	  if ( measuredTauLepton.decayMode() == 0 ) {
-	    l2lutVisPtRes = lutVisPtResDM0_;
-	  } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
-	    l2lutVisPtRes = lutVisPtResDM1_;
-	  } else if ( measuredTauLepton.decayMode() == 10 ) {
-	    l2lutVisPtRes = lutVisPtResDM10_;
-	  //} else {
-	  //  std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
-	  //	        << " --> disabling shiftVisPt for this event !!" << std::endl;
-	  }
+        if ( shiftVisMass_ ) {
+          if ( measuredTauLepton.decayMode() == 0 ) {
+            l2lutVisMassRes = lutVisMassResDM0_;
+          } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+            l2lutVisMassRes = lutVisMassResDM1_;
+          } else if ( measuredTauLepton.decayMode() == 10 ) {
+            l2lutVisMassRes = lutVisMassResDM10_;
+          //} else {
+          //  std::cerr << "Warning: shiftVisMass is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
+          //            << " --> disabling shiftVisMass for this event !!" << std::endl;
+          }
         }
-	nDim += 2;
-	if ( l2lutVisMass || l2lutVisMassRes ) {
-	  ++nDim;
-	}
-	if ( l2lutVisPtRes ) {
-	  ++nDim;
-	}
+        if ( shiftVisPt_ ) {
+          if ( measuredTauLepton.decayMode() == 0 ) {
+            l2lutVisPtRes = lutVisPtResDM0_;
+          } else if ( measuredTauLepton.decayMode() == 1 || measuredTauLepton.decayMode() == 2 ) {
+            l2lutVisPtRes = lutVisPtResDM1_;
+          } else if ( measuredTauLepton.decayMode() == 10 ) {
+            l2lutVisPtRes = lutVisPtResDM10_;
+          //} else {
+          //  std::cerr << "Warning: shiftVisPt is enabled, but leg2 decay mode = " << measuredTauLepton.decayMode() << " is not supported"
+          //            << " --> disabling shiftVisPt for this event !!" << std::endl;
+          }
+        }
+        nDim += 2;
+        if ( l2lutVisMass || l2lutVisMassRes ) {
+          ++nDim;
+        }
+        if ( l2lutVisPtRes ) {
+          ++nDim;
+        }
       } else {
-	l2isLep_ = true;
-	nDim += 3;
+        l2isLep_ = true;
+        nDim += 3;
       }
     }
   }

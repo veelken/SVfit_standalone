@@ -79,16 +79,16 @@ namespace svFitStandalone
       x_mapped[kPhi]                   = x[1];
       offset1 = 2;
       if ( marginalizeVisMass || shiftVisMass ) {
-	x_mapped[kVisMassShifted]      = x[offset1];
-	++offset1;
+        x_mapped[kVisMassShifted]      = x[offset1];
+        ++offset1;
       } else {
-	x_mapped[kVisMassShifted]      = 0.;
+        x_mapped[kVisMassShifted]      = 0.;
       }
       if ( shiftVisPt ) {
-	x_mapped[kRecTauPtDivGenTauPt] = x[offset1];
-	++offset1;
+        x_mapped[kRecTauPtDivGenTauPt] = x[offset1];
+        ++offset1;
       } else {
-	x_mapped[kRecTauPtDivGenTauPt] = 0.;
+        x_mapped[kRecTauPtDivGenTauPt] = 0.;
       }
     }
     double x2 = ( x[0] > 0. ) ? TMath::Power(mvis/mtest, 2.)/x[0] : 1.e+3;
@@ -106,16 +106,16 @@ namespace svFitStandalone
       x_mapped[kMaxFitParams + kPhi]                   = x[offset1 + 0];
       offset2 = 1;
       if ( marginalizeVisMass || shiftVisMass ) {
-	x_mapped[kMaxFitParams + kVisMassShifted]      = x[offset1 + offset2];
-	++offset2;
+        x_mapped[kMaxFitParams + kVisMassShifted]      = x[offset1 + offset2];
+        ++offset2;
       } else {
-	x_mapped[kMaxFitParams + kVisMassShifted]      = 0.;
+        x_mapped[kMaxFitParams + kVisMassShifted]      = 0.;
       }
       if ( shiftVisPt ) {
-	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[offset1 + offset2];
-	++offset2;
+        x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[offset1 + offset2];
+        ++offset2;
       } else {
-	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = 0.;
+        x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = 0.;
       }
     }
   }
@@ -136,16 +136,16 @@ namespace svFitStandalone
       x_mapped[kPhi]                   = x[1];
       offset1 = 2;
       if ( marginalizeVisMass || shiftVisMass ) {
-	x_mapped[kVisMassShifted]      = x[offset1];
-	++offset1;
+        x_mapped[kVisMassShifted]      = x[offset1];
+        ++offset1;
       } else {
-	x_mapped[kVisMassShifted]      = 0.;
+        x_mapped[kVisMassShifted]      = 0.;
       }
       if ( shiftVisPt ) {
-	x_mapped[kRecTauPtDivGenTauPt] = x[offset1];
-	++offset1;
+        x_mapped[kRecTauPtDivGenTauPt] = x[offset1];
+        ++offset1;
       } else {
-	x_mapped[kRecTauPtDivGenTauPt] = 0.;
+        x_mapped[kRecTauPtDivGenTauPt] = 0.;
       }
     }
     int offset2 = 0;
@@ -162,16 +162,16 @@ namespace svFitStandalone
       x_mapped[kMaxFitParams + kPhi]                   = x[offset1 + 1];
       offset2 = 2;
       if ( marginalizeVisMass || shiftVisMass ) {
-	x_mapped[kMaxFitParams + kVisMassShifted]      = x[offset1 + offset2];
-	++offset2;
+        x_mapped[kMaxFitParams + kVisMassShifted]      = x[offset1 + offset2];
+        ++offset2;
       } else {
-	x_mapped[kMaxFitParams + kVisMassShifted]      = 0.;
+        x_mapped[kMaxFitParams + kVisMassShifted]      = 0.;
       }
       if ( shiftVisPt ) {
-	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[offset1 + offset2];
-	++offset2;
+        x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = x[offset1 + offset2];
+        ++offset2;
       } else {
-	x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = 0.;
+        x_mapped[kMaxFitParams + kRecTauPtDivGenTauPt] = 0.;
       }
     }
     //std::cout << "<map_xMarkovChain>:" << std::endl;
@@ -332,22 +332,22 @@ namespace svFitStandalone
   }
   std::vector<double> MCQuantitiesAdapter::ExtractValues() const
   {
-  	std::vector<double> results;
-  	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
+    std::vector<double> results;
+    std::transform(quantities_.begin(), quantities_.end(), results.begin(),
                    [](SVfitQuantity* quantity) { return quantity->ExtractValue(); });
     return results;
   }
   std::vector<double> MCQuantitiesAdapter::ExtractUncertainties() const
   {
-  	std::vector<double> results;
-  	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
+    std::vector<double> results;
+    std::transform(quantities_.begin(), quantities_.end(), results.begin(),
                    [](SVfitQuantity* quantity) { return quantity->ExtractUncertainty(); });
     return results;
   }
   std::vector<double> MCQuantitiesAdapter::ExtractLmaxima() const
   {
-  	std::vector<double> results;
-  	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
+    std::vector<double> results;
+    std::transform(quantities_.begin(), quantities_.end(), results.begin(),
                    [](SVfitQuantity* quantity) { return quantity->ExtractLmax(); });
     return results;
   }
@@ -356,7 +356,7 @@ namespace svFitStandalone
     MCQuantitiesAdapter()
   {
     quantities_.clear();
-    
+
     quantities_.push_back(new HiggsPtSVfitQuantity());
     quantities_.push_back(new HiggsEtaSVfitQuantity());
     quantities_.push_back(new HiggsPhiSVfitQuantity());

@@ -104,7 +104,7 @@ SVfitStandaloneAlgorithm::SVfitStandaloneAlgorithm(const std::vector<svFitStanda
     TMatrixD EigenVectors(2,2);
     EigenVectors = TMatrixDSymEigen(covMET_sym).GetEigenVectors();
     std::cout << "Eigenvectors =  { " << EigenVectors(0,0) << ", " << EigenVectors(1,0) << " (phi = " << TMath::ATan2(EigenVectors(1,0), EigenVectors(0,0)) << ") },"
-        << " { " << EigenVectors(0,1) << ", " << EigenVectors(1,1) << " (phi = " << TMath::ATan2(EigenVectors(1,1), EigenVectors(0,1)) << ") }" << std::endl;
+              << " { " << EigenVectors(0,1) << ", " << EigenVectors(1,1) << " (phi = " << TMath::ATan2(EigenVectors(1,1), EigenVectors(0,1)) << ") }" << std::endl;
     TVectorD EigenValues(2);
     EigenValues = TMatrixDSymEigen(covMET_sym).GetEigenValues();
     EigenValues(0) = TMath::Sqrt(EigenValues(0));
@@ -393,7 +393,7 @@ SVfitStandaloneAlgorithm::integrateVEGAS(const std::string& likelihoodFileName)
       nDim += 3;
       }
     }
-    
+
     if ( idx == 1 ) {
       idxFitParLeg2_ = nDim;
       if ( measuredTauLepton.type() == kTauToHadDecay ) {
@@ -723,7 +723,7 @@ SVfitStandaloneAlgorithm::integrateMarkovChain(const std::string& likelihoodFile
         nDim += 3;
       }
     }
-    
+
     if ( idx == 1 ) {
       idxFitParLeg2_ = nDim;
       if ( measuredTauLepton.type() == kTauToHadDecay ) {

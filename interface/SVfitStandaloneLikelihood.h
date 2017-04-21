@@ -17,7 +17,7 @@ namespace svFitStandalone
   */
   enum kDecayType {
     kUndefinedDecayType,
-    kTauToHadDecay,  /* < hadronic tau lepton decay                                                        */ 
+    kTauToHadDecay,  /* < hadronic tau lepton decay                                                        */
     kTauToElecDecay, /* < tau lepton decay to electron                                                     */
     kTauToMuDecay,   /* < tau lepton decay to muon                                                         */
     kPrompt          /* < prompt electron or muon not originating from tau decay (for LFV analysis)        */
@@ -30,8 +30,8 @@ namespace svFitStandalone
     kXFrac,               /* < relative fraction of the visible energy on the total energy of the tau lepton    */
     kMNuNu,               /* < invariant mass of the neutrino system                                            */
     kPhi,                 /* < phi angle of the tau lepton (this is parameter is not constraint by measurement) */
-    kVisMassShifted,      /* < mass resolution of the visible parts of the first tau decay branch               */    
-    kRecTauPtDivGenTauPt, /* < Pt resolution of the visible parts of the first tau decay branch                 */       
+    kVisMassShifted,      /* < mass resolution of the visible parts of the first tau decay branch               */
+    kRecTauPtDivGenTauPt, /* < Pt resolution of the visible parts of the first tau decay branch                 */
     kMaxFitParams         /* < maximum number of fit parameters per resonance decay branch                      */
   };
   /**
@@ -42,31 +42,31 @@ namespace svFitStandalone
     kNuNuMass1,            /* < mass of the neutrino system for the first decay branch                           */
     kVisMass1,             /* < mass of the visible parts of the first tau decay branch                          */
     kDecayAngle1,          /* < decay angle for the first decay branch (in restframe of the tau lepton decay)    */
-    kDeltaVisMass1,        /* < mass resolution of the visible parts of the first tau decay branch               */    
-    kRecTauPtDivGenTauPt1, /* < Pt resolution of the visible parts of the first tau decay branch                 */       
+    kDeltaVisMass1,        /* < mass resolution of the visible parts of the first tau decay branch               */
+    kRecTauPtDivGenTauPt1, /* < Pt resolution of the visible parts of the first tau decay branch                 */
     kNuNuMass2,            /* < mass of the neutrino system for the second decay branch                          */
     kVisMass2,             /* < mass of the visible parts of the second tau decay branch                         */
-    kDecayAngle2,          /* < decay angle for the second decay branch (in restframe of the tau lepton decay)   */  
-    kDeltaVisMass2,        /* < mass resolution of the visible parts of the first tau decay branch               */    
-    kRecTauPtDivGenTauPt2, /* < Pt resolution of the visible parts of the first tau decay branch                 */ 
-    kDMETx,                /* < difference between the sum of the fitted neutrino px and px of the MET           */ 
+    kDecayAngle2,          /* < decay angle for the second decay branch (in restframe of the tau lepton decay)   */
+    kDeltaVisMass2,        /* < mass resolution of the visible parts of the first tau decay branch               */
+    kRecTauPtDivGenTauPt2, /* < Pt resolution of the visible parts of the first tau decay branch                 */
+    kDMETx,                /* < difference between the sum of the fitted neutrino px and px of the MET           */
     kDMETy,                /* < difference between the sum of the fitted neutrino py and py of the MET           */
     kMTauTau,              /* < invariant mass of the fitted di-tau system (used for the logM penalty term)      */
     kMaxNLLParams          /* < max number of parameters used for for the combined likelihood                    */
   };
   /**
      \class   MeasuredTauLepton SVfitStandaloneLikelihood.h "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneLikelihood.h"
-     
-     \brief   Helper class to simplify the configuration of the SVfitStandaloneLikelihood class. 
-     
+
+     \brief   Helper class to simplify the configuration of the SVfitStandaloneLikelihood class.
+
      This is a helper class to facilitate the configuration of the SVfitStandaloneLikelihood class. It keeps the spatial momentum
-     energy and information about the type of tau lepton decay. All information is stored in the lab-frame. A few getter functions 
+     energy and information about the type of tau lepton decay. All information is stored in the lab-frame. A few getter functions
      facilitate access to the information.
   */
   class MeasuredTauLepton
   {
    public:
-    /// default constructor 
+    /// default constructor
     MeasuredTauLepton()
       : type_(kUndefinedDecayType),
         pt_(0.),
@@ -78,49 +78,49 @@ namespace svFitStandalone
       initialize();
     }
     /// constructor from the measured quantities per decay branch
-    MeasuredTauLepton(kDecayType type, double pt, double eta, double phi, double mass, int decayMode = -1) 
-      : type_(type), 
+    MeasuredTauLepton(kDecayType type, double pt, double eta, double phi, double mass, int decayMode = -1)
+      : type_(type),
         pt_(pt),
         eta_(eta),
         phi_(phi),
         mass_(mass),
- 	decayMode_(decayMode)
+        decayMode_(decayMode)
     {
       //std::cout << "<MeasuredTauLepton>: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << std::endl;
       double minVisMass = electronMass;
       double maxVisMass = tauLeptonMass;
       std::string type_string;
       if ( type_ == kTauToElecDecay ) {
-	minVisMass = electronMass;
-	maxVisMass = minVisMass;
+        minVisMass = electronMass;
+        maxVisMass = minVisMass;
       } else if ( type_ == kTauToMuDecay ) {
-	minVisMass = muonMass;
-	maxVisMass = minVisMass;
+        minVisMass = muonMass;
+        maxVisMass = minVisMass;
       } else if ( type_ == kTauToHadDecay ) {
-	if ( decayMode_ == -1 ) {
-	  minVisMass = chargedPionMass;
-	  maxVisMass = 1.5;
-	} else if ( decayMode_ == 0 ) {
-	  minVisMass = chargedPionMass;
-	  maxVisMass = minVisMass;
-	} else {
-	  minVisMass = 0.3;
-	  maxVisMass = 1.5;
-	}
-      } 
+        if ( decayMode_ == -1 ) {
+          minVisMass = chargedPionMass;
+          maxVisMass = 1.5;
+        } else if ( decayMode_ == 0 ) {
+          minVisMass = chargedPionMass;
+          maxVisMass = minVisMass;
+        } else {
+          minVisMass = 0.3;
+          maxVisMass = 1.5;
+        }
+      }
       preciseVisMass_ = mass_;
       if ( preciseVisMass_ < (0.9*minVisMass) || preciseVisMass_ > (1.1*maxVisMass) ) {
-	std::string type_string;
-	if      ( type_ == kTauToElecDecay ) type_string = "tau -> electron decay";
-	else if ( type_ == kTauToMuDecay   ) type_string = "tau -> muon decay";
-	else if ( type_ == kTauToHadDecay  ) type_string = "tau -> had decay";
-	else if ( type_ == kPrompt         ) type_string = "prompt lepton"; 
-	else {
-	  std::cerr << "Error: Invalid type " << type_ << " declared for leg: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << " !!" << std::endl;
-	  assert(0);
-	}
-	std::cerr << "Warning: " << type_string << " declared for leg: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << " !!" << std::endl;
-	std::cerr << " (mass expected in the range = " << minVisMass << ".." << maxVisMass << ")" << std::endl;
+        std::string type_string;
+        if      ( type_ == kTauToElecDecay ) type_string = "tau -> electron decay";
+        else if ( type_ == kTauToMuDecay   ) type_string = "tau -> muon decay";
+        else if ( type_ == kTauToHadDecay  ) type_string = "tau -> had decay";
+        else if ( type_ == kPrompt         ) type_string = "prompt lepton";
+        else {
+          std::cerr << "Error: Invalid type " << type_ << " declared for leg: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << " !!" << std::endl;
+          assert(0);
+        }
+        std::cerr << "Warning: " << type_string << " declared for leg: Pt = " << pt_ << ", eta = " << eta_ << ", phi = " << phi_ << ", mass = " << mass_ << " !!" << std::endl;
+        std::cerr << " (mass expected in the range = " << minVisMass << ".." << maxVisMass << ")" << std::endl;
       }
       if ( preciseVisMass_ < minVisMass ) preciseVisMass_ = minVisMass;
       if ( preciseVisMass_ > maxVisMass ) preciseVisMass_ = maxVisMass;
@@ -128,12 +128,12 @@ namespace svFitStandalone
     }
     /// copy constructor
     MeasuredTauLepton(const MeasuredTauLepton& measuredTauLepton)
-      : type_(measuredTauLepton.type()), 
+      : type_(measuredTauLepton.type()),
         pt_(measuredTauLepton.pt()),
         eta_(measuredTauLepton.eta()),
         phi_(measuredTauLepton.phi()),
-        mass_(measuredTauLepton.mass()), 
-        decayMode_(measuredTauLepton.decayMode())     
+        mass_(measuredTauLepton.mass()),
+        decayMode_(measuredTauLepton.decayMode())
     {
       preciseVisMass_ = measuredTauLepton.mass();
       initialize();
@@ -162,7 +162,7 @@ namespace svFitStandalone
     /// return pz of the visible decay products in labframe
     double pz() const { return pz_; }
     /// return visible mass in labframe
-    double mass() const { return preciseVisMass_; }    
+    double mass() const { return preciseVisMass_; }
     /// return visible energy in labframe
     double energy() const { return energy_; }
     /// return visible momentum in labframe
@@ -174,18 +174,18 @@ namespace svFitStandalone
     /// return decay type of the tau lepton
     kDecayType type() const { return type_; }
     /// return decay mode of the reconstructed hadronic tau decay
-    int decayMode() const { return decayMode_; }    
+    int decayMode() const { return decayMode_; }
     /// return the spatial momentum vector of the visible decay products in the labframe
     Vector p() const { return p_; }
     /// return the lorentz vector of the visible decay products in the labframe
     LorentzVector p4() const { return p4_; }
     /// return the direction of the visible decay products in the labframe
     Vector direction() const { return direction_; }
-    
+
    private:
     /// decay type
     kDecayType type_;
-    /// visible momentum in labframe 
+    /// visible momentum in labframe
     double pt_;
     double eta_;
     double phi_;
@@ -206,33 +206,33 @@ namespace svFitStandalone
 
   /**
    \class   SVfitStandaloneLikelihood SVfitStandaloneLikelihood.h "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneLikelihood.h"
-       
+
      \brief   Negative log likelihood for a resonance decay into two tau leptons that may themselves decay hadronically or leptonically
-     
-     Negative log likelihood for a resonance decay into two tau leptons that may themselves decay hadronically or leptonically 
+
+     Negative log likelihood for a resonance decay into two tau leptons that may themselves decay hadronically or leptonically
      Depending on the configuration during object creation it will be a combination of MET, TauToHad, TauToLep and additional
      penalty terms, e.g. to suppress tails in m(tau,tau) (logM). Configurables during creation time are:
-     
+
      \var measuredTauLeptons : the vector of the reconstructed visible decay products of the two tau leptons
      \var measuredMET        : the spatial vector of the measured MET
      \var covMET             : the covariance matrix of the MET (as determined from the MEt significance for instance)
-     \verbosity              : indicating the verbosity level 
+     \verbosity              : indicating the verbosity level
 
-     In fit mode additional optional values may be set before the fit is performed. During construction the class is initialized with 
+     In fit mode additional optional values may be set before the fit is performed. During construction the class is initialized with
      default values as indicated in braces (below):
 
      \var metPower : indicating an additional power to enhance the MET likelihood (default is 1.)
-     \var addLogM  : specifying whether to use the LogM penalty term or not (default is true)     
+     \var addLogM  : specifying whether to use the LogM penalty term or not (default is true)
 
      A typical way to obtain the covariance matrix of the MET is to follow the MET significance algorithm as provided by RecoMET.
-     The SVfitStandaloneLikelihood class is for internal use only. The general use calse is to access it from the class 
-     SVfitStandaloneAlgorithm as defined in interface/SVfitStandaloneAlgorithm.h in the same package. The SVfitLikelihood class 
-     keeps all necessary information to calculate the combined likelihood but does not perform any fit nor integration. It is 
-     interfaced to the ROOT minuit minimization package or to the VEGAS integration packages via the global function pointer 
-     gSVfitStandaloneLikelihood as defined in src/SVfitStandaloneLikelihood.cc in the same package. 
+     The SVfitStandaloneLikelihood class is for internal use only. The general use calse is to access it from the class
+     SVfitStandaloneAlgorithm as defined in interface/SVfitStandaloneAlgorithm.h in the same package. The SVfitLikelihood class
+     keeps all necessary information to calculate the combined likelihood but does not perform any fit nor integration. It is
+     interfaced to the ROOT minuit minimization package or to the VEGAS integration packages via the global function pointer
+     gSVfitStandaloneLikelihood as defined in src/SVfitStandaloneLikelihood.cc in the same package.
   */
 
-  class SVfitStandaloneLikelihood 
+  class SVfitStandaloneLikelihood
   {
    public:
     /// error codes that can be read out by SVfitAlgorithm
@@ -241,7 +241,7 @@ namespace svFitStandalone
       MatrixInversion = 0x00000001,
       LeptonNumber    = 0x00000010
     };
-    /// constructor with a minimla set of configurables 
+    /// constructor with a minimla set of configurables
     SVfitStandaloneLikelihood(const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons, const svFitStandalone::Vector& measuredMET, const TMatrixD& covMET, bool verbosity);
     /// default destructor
     ~SVfitStandaloneLikelihood() {}
@@ -250,30 +250,30 @@ namespace svFitStandalone
 
     /// add an additional logM(tau,tau) term to the nll to suppress tails on M(tau,tau) (default is false)
     void addLogM(bool value, double power = 1.) { addLogM_ = value; powerLogM_ = power; }
-    /// add derrivative of delta-function 
+    /// add derrivative of delta-function
     /// WARNING: to be used when SVfit is run in "integration" mode only
     void addDelta(bool value) { addDelta_ = value; }
-    /// add a penalty term in case phi runs outside of interval 
+    /// add a penalty term in case phi runs outside of interval
     /// WARNING: to be used when SVfit is run in "fit" mode only
-    void addPhiPenalty(bool value) { addPhiPenalty_ = value; }        
+    void addPhiPenalty(bool value) { addPhiPenalty_ = value; }
     /// add sin(theta) term to likelihood for tau lepton decays
     /// WARNING: to be used when SVfit is run in "fit" mode only
-    void addSinTheta(bool value) { addSinTheta_ = value; }  
+    void addSinTheta(bool value) { addSinTheta_ = value; }
     /// marginalize unknown mass of hadronic tau decay products (ATLAS case)
-    void marginalizeVisMass(bool value, const TH1* l1lutVisMass, const TH1* l2lutVisMass);  
+    void marginalizeVisMass(bool value, const TH1* l1lutVisMass, const TH1* l2lutVisMass);
     /// take resolution on energy and mass of hadronic tau decays into account
     void shiftVisMass(bool value, const TH1* l1lutVisMassRes, const TH1* l2lutVisMassRes);
     void shiftVisPt(bool value, const TH1* l1lutVisPtRes, const TH1* l2lutVisPtRes);
-    /// add a penalty term in case phi runs outside of interval 
+    /// add a penalty term in case phi runs outside of interval
     /// modify the MET term in the nll by an additional power (default is 1.)
-    void metPower(double value) { metPower_=value; };    
+    void metPower(double value) { metPower_=value; };
 
     /// flag to force prob to be zero in case of unphysical solutions
     /// (to be used in integration, but not in fit mode, as MINUIT will get confused otherwise)
     void requirePhysicalSolution(bool value) { requirePhysicalSolution_ = value; }
 
-    /// fit function to be called from outside. Has to be const to be usable by minuit. This function will call the actual 
-    /// functions transform and prob internally 
+    /// fit function to be called from outside. Has to be const to be usable by minuit. This function will call the actual
+    /// functions transform and prob internally
     double prob(const double* x, bool fixToMtest = false, double mtest = -1.) const;
     /// read out potential likelihood errors
     unsigned error() const { return errorCode_; }
@@ -283,27 +283,27 @@ namespace svFitStandalone
     /// return vector of measured tau leptons
     const std::vector<svFitStandalone::MeasuredTauLepton>& measuredTauLeptons() const { return measuredTauLeptons_; }
     /// return vector of fitted tau leptons, which will be the actual fit result. This function is a subset of transform.
-    /// It needs to be factored out though as transform has to be const to be usable by minuit and therefore is not allowed 
-    /// change the class members.  
+    /// It needs to be factored out though as transform has to be const to be usable by minuit and therefore is not allowed
+    /// change the class members.
     void results(std::vector<svFitStandalone::LorentzVector>& fittedTauLeptons, const double* x) const;
 
    protected:
-    /// transformation from x to xPrime, x are the actual fit parameters, xPrime are the transformed parameters that go into 
+    /// transformation from x to xPrime, x are the actual fit parameters, xPrime are the transformed parameters that go into
     /// the prob function. Has to be const to be usable by minuit.
     const double* transform(double* xPrime, const double* x, bool fixToMtest, double mtest) const;
-    /// combined likelihood function. The same function os called for fit and integratino mode. Has to be const to be usable 
-    /// by minuit/VEGAS/MarkovChain. The additional boolean phiPenalty is added to prevent singularities at the +/-pi boundaries 
-    /// of kPhi within the fit parameters (kFitParams). It is only used in fit mode. In integration mode the passed on value 
-    /// is always 0. 
+    /// combined likelihood function. The same function os called for fit and integratino mode. Has to be const to be usable
+    /// by minuit/VEGAS/MarkovChain. The additional boolean phiPenalty is added to prevent singularities at the +/-pi boundaries
+    /// of kPhi within the fit parameters (kFitParams). It is only used in fit mode. In integration mode the passed on value
+    /// is always 0.
     double prob(const double* xPrime, double phiPenalty) const;
-    
+
    protected:
     /// additional power to enhance MET term in the nll (default is 1.)
     double metPower_;
     /// add a logM penalty term in the nll
     bool addLogM_;
     double powerLogM_;
-    /// delta-function derrivative 
+    /// delta-function derrivative
     bool addDelta_;
     /// sin(theta) term in the nll
     bool addSinTheta_;
@@ -318,7 +318,7 @@ namespace svFitStandalone
     std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons_;
     /// measured MET
     svFitStandalone::Vector measuredMET_;
-    /// transfer matrix for MET in (inverse covariance matrix) 
+    /// transfer matrix for MET in (inverse covariance matrix)
     TMatrixD invCovMET_;
     /// determinant of the covariance matrix of MET
     double covDet_;

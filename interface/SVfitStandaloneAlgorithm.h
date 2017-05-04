@@ -117,13 +117,13 @@ class SVfitStandaloneAlgorithm
       4: Reached maximum number of function calls before reaching convergence
       5: Any other failure
   */
-  int fitStatus() { return fitStatus_; }
+  int fitStatus() const { return fitStatus_; }
   /// return whether this is a valid solution or not
-  bool isValidSolution() { return (nllStatus_ == 0 && fitStatus_ <= 0); }
+  bool isValidSolution() const { return (nllStatus_ == 0 && fitStatus_ <= 0); }
   /// return whether this is a valid solution or not
-  bool isValidFit() { return fitStatus_ == 0; }
+  bool isValidFit() const { return fitStatus_ == 0; }
   /// return whether this is a valid solution or not
-  bool isValidNLL() { return nllStatus_ == 0; }
+  bool isValidNLL() const { return nllStatus_ == 0; }
   /// return mass of the di-tau system
   double mass() const { return mass_; }
   /// return uncertainty on the mass of the fitted di-tau system

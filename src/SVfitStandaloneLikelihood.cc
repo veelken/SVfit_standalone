@@ -14,15 +14,15 @@ const SVfitStandaloneLikelihood* SVfitStandaloneLikelihood::gSVfitStandaloneLike
 /// indicate first iteration for integration or fit cycle for debugging
 static bool FIRST = true;
 
-SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredTauLepton>& measuredTauLeptons, const Vector& measuredMET, const TMatrixD& covMET, bool verbosity)
-  : metPower_(1.0),
-    addLogM_(false),
+SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredTauLepton>& measuredTauLeptons, const Vector& measuredMET, const TMatrixD& covMET, bool verbosity) 
+  : metPower_(1.0), 
+    addLogM_(false), 
     powerLogM_(1.),
     addDelta_(true),
     addSinTheta_(false),
     addPhiPenalty_(true),
-    verbosity_(verbosity),
-    idxObjFunctionCall_(0),
+    verbosity_(verbosity), 
+    idxObjFunctionCall_(0), 
     invCovMET_(2,2),
     errorCode_(0),
     requirePhysicalSolution_(false),
@@ -48,8 +48,8 @@ SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredT
   // determine transfer matrix for MET
   invCovMET_= covMET;
   covDet_ = invCovMET_.Determinant();
-  if ( covDet_ != 0 ) {
-    invCovMET_.Invert();
+  if ( covDet_ != 0 ) { 
+    invCovMET_.Invert(); 
   } else{
     std::cout << " >> ERROR: cannot invert MET covariance Matrix (det=0)." << std::endl;
     errorCode_ |= MatrixInversion;
@@ -58,7 +58,7 @@ SVfitStandaloneLikelihood::SVfitStandaloneLikelihood(const std::vector<MeasuredT
   gSVfitStandaloneLikelihood = this;
 }
 
-void
+void 
 SVfitStandaloneLikelihood::marginalizeVisMass(bool value, const TH1* l1lutVisMass, const TH1* l2lutVisMass)
 {
   marginalizeVisMass_ = value;
@@ -68,7 +68,7 @@ SVfitStandaloneLikelihood::marginalizeVisMass(bool value, const TH1* l1lutVisMas
   }
 }
 
-void
+void 
 SVfitStandaloneLikelihood::shiftVisMass(bool value, const TH1* l1lutVisMassRes, const TH1* l2lutVisMassRes)
 {
   shiftVisMass_ = value;
@@ -78,7 +78,7 @@ SVfitStandaloneLikelihood::shiftVisMass(bool value, const TH1* l1lutVisMassRes, 
   }
 }
 
-void
+void 
 SVfitStandaloneLikelihood::shiftVisPt(bool value, const TH1* l1lutVisPtRes, const TH1* l2lutVisPtRes)
 {
   shiftVisPt_ = value;
@@ -98,14 +98,14 @@ SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixTo
   for ( size_t idx = 0; idx < measuredTauLeptons_.size(); ++idx ) {
     const MeasuredTauLepton& measuredTauLepton = measuredTauLeptons_[idx];
 
-    // map to local variables to be more clear on the meaning of the individual parameters. The fit parameters are ayered
+    // map to local variables to be more clear on the meaning of the individual parameters. The fit parameters are ayered 
     // for each tau decay
     double nunuMass, labframeXFrac, labframePhi;
     double visMass_unshifted = measuredTauLepton.mass();
     double visMass = visMass_unshifted; // visible momentum in lab-frame
-    double labframeVisMom_unshifted = measuredTauLepton.momentum();
+    double labframeVisMom_unshifted = measuredTauLepton.momentum(); 
     double labframeVisMom = labframeVisMom_unshifted; // visible momentum in lab-frame
-    double labframeVisEn  = measuredTauLepton.energy(); // visible energy in lab-frame
+    double labframeVisEn  = measuredTauLepton.energy(); // visible energy in lab-frame    
     if ( measuredTauLepton.type() == kTauToElecDecay || measuredTauLepton.type() == kTauToMuDecay ) {
       labframeXFrac = x[idx*kMaxFitParams + kXFrac];
       nunuMass = x[idx*kMaxFitParams + kMNuNu];
@@ -115,22 +115,23 @@ SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixTo
       nunuMass = 0.;
       labframePhi = x[idx*kMaxFitParams + kPhi];
       if ( marginalizeVisMass_ || shiftVisMass_ ) {
-        visMass = x[idx*kMaxFitParams + kVisMassShifted];
-      }
+	visMass = x[idx*kMaxFitParams + kVisMassShifted];
+      } 
       if ( shiftVisPt_ ) {
-        double shiftInv = 1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt];
-        double shift = ( shiftInv > 1.e-1 ) ? (1./shiftInv) : 1.e+1;
-        labframeVisMom *= shift;
-        //visMass *= shift; // CV: take mass and momentum to be correlated
-        //labframeVisEn = TMath::Sqrt(labframeVisMom*labframeVisMom + visMass*visMass);
-        labframeVisEn *= shift;
+	double shiftInv = 1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt];
+	double shift = ( shiftInv > 1.e-1 ) ?
+	  (1./shiftInv) : 1.e+1;
+	labframeVisMom *= shift;
+	//visMass *= shift; // CV: take mass and momentum to be correlated
+	//labframeVisEn = TMath::Sqrt(labframeVisMom*labframeVisMom + visMass*visMass);
+	labframeVisEn *= shift;
       }
     }
     bool isValidSolution = true;
     // add protection against unphysical mass of visible tau decay products
-    if ( visMass < electronMass || visMass > tauLeptonMass ) {
+    if ( visMass < electronMass || visMass > tauLeptonMass ) { 
       isValidSolution = false;
-    }
+    }  
     // add protection against unphysical visible energy fractions
     if ( !(labframeXFrac >= 0. && labframeXFrac <= 1.) ) {
       isValidSolution = false;
@@ -144,7 +145,7 @@ SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixTo
     if ( (enTau_lab*enTau_lab) < tauLeptonMass2 ) {
       enTau_lab = tauLeptonMass;
       isValidSolution = false;
-    }
+    }  
     double pTau_lab = TMath::Sqrt(square(enTau_lab) - tauLeptonMass2);
     double gamma = enTau_lab/tauLeptonMass;
     double beta = TMath::Sqrt(1. - 1./(gamma*gamma));
@@ -182,27 +183,27 @@ SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixTo
     xPrime[ idx == 0 ? kMaxNLLParams         : (kMaxNLLParams + 1)   ] = labframeXFrac;
     xPrime[ idx == 0 ? (kMaxNLLParams + 2)   : (kMaxNLLParams + 3)   ] = isValidSolution;
   }
-
-  Vector fittedMET = fittedDiTauSystem.Vect() - (measuredTauLeptons_[0].p() + measuredTauLeptons_[1].p());
+ 
+  Vector fittedMET = fittedDiTauSystem.Vect() - (measuredTauLeptons_[0].p() + measuredTauLeptons_[1].p()); 
   //if ( verbosity_ >= 2 ) {
   //  std::cout << "fittedMET: Px = " << fittedMET.x() << ", Py = " << fittedMET.y() << std::endl;
   //}
   // fill event-wise nll parameters
-  xPrime[ kDMETx   ] = measuredMET_.x() - fittedMET.x();
+  xPrime[ kDMETx   ] = measuredMET_.x() - fittedMET.x(); 
   xPrime[ kDMETy   ] = measuredMET_.y() - fittedMET.y();
   if ( fixToMtest ) xPrime[ kMTauTau ] = mtest;       // CV: evaluate delta-function derrivate in case of VEGAS integration for nominal test mass,
   else xPrime[ kMTauTau ] = fittedDiTauSystem.mass(); //     not for fitted mass, to improve numerical stability of integration (this is what the SVfit plugin version does)
 
   //if ( verbosity_ && FIRST ) {
   //  std::cout << " >> input values for transformed variables: " << std::endl;
-  //  std::cout << "    MET[x] = " <<  fittedMET.x() << " (fitted)  " << measuredMET_.x() << " (measured) " << std::endl;
-  //  std::cout << "    MET[y] = " <<  fittedMET.y() << " (fitted)  " << measuredMET_.y() << " (measured) " << std::endl;
-  //  std::cout << "    fittedDiTauSystem: ["
-  //          << " px = " << fittedDiTauSystem.px()
-  //          << " py = " << fittedDiTauSystem.py()
-  //          << " pz = " << fittedDiTauSystem.pz()
-  //          << " En = " << fittedDiTauSystem.energy()
-  //          << " ]" << std::endl;
+  //  std::cout << "    MET[x] = " <<  fittedMET.x() << " (fitted)  " << measuredMET_.x() << " (measured) " << std::endl; 
+  //  std::cout << "    MET[y] = " <<  fittedMET.y() << " (fitted)  " << measuredMET_.y() << " (measured) " << std::endl; 
+  //  std::cout << "    fittedDiTauSystem: [" 
+  //	        << " px = " << fittedDiTauSystem.px() 
+  //	        << " py = " << fittedDiTauSystem.py() 
+  //	        << " pz = " << fittedDiTauSystem.pz() 
+  //	        << " En = " << fittedDiTauSystem.energy() 
+  //	        << " ]" << std::endl; 
   //  std::cout << " >> nll parameters after transformation: " << std::endl;
   //  std::cout << "    x[kNuNuMass1  ] = " << xPrime[kNuNuMass1  ] << std::endl;
   //  std::cout << "    x[kVisMass1   ] = " << xPrime[kVisMass1   ] << std::endl;
@@ -218,10 +219,10 @@ SVfitStandaloneLikelihood::transform(double* xPrime, const double* x, bool fixTo
 }
 
 double
-SVfitStandaloneLikelihood::prob(const double* x, bool fixToMtest, double mtest) const
+SVfitStandaloneLikelihood::prob(const double* x, bool fixToMtest, double mtest) const 
 {
   // in case of initialization errors don't start to do anything
-  if ( error() ) {
+  if ( error() ) { 
     return 0.;
   }
   //if ( verbosity_ ) {
@@ -229,23 +230,23 @@ SVfitStandaloneLikelihood::prob(const double* x, bool fixToMtest, double mtest) 
   //}
   ++idxObjFunctionCall_;
   //if ( verbosity_ && FIRST ) {
-  //  std::cout << " >> ixdObjFunctionCall : " << idxObjFunctionCall_ << std::endl;
+  //  std::cout << " >> ixdObjFunctionCall : " << idxObjFunctionCall_ << std::endl;  
   //}
-  // prevent kPhi in the fit parameters (kFitParams) from trespassing the
+  // prevent kPhi in the fit parameters (kFitParams) from trespassing the 
   // +/-pi boundaries
   double phiPenalty = 0.;
   if ( addPhiPenalty_ ) {
     for ( size_t idx = 0; idx < measuredTauLeptons_.size(); ++idx ) {
       if ( TMath::Abs(idx*kMaxFitParams + x[kPhi]) > TMath::Pi() ) {
-        phiPenalty += (TMath::Abs(x[kPhi]) - TMath::Pi())*(TMath::Abs(x[kPhi]) - TMath::Pi());
+	phiPenalty += (TMath::Abs(x[kPhi]) - TMath::Pi())*(TMath::Abs(x[kPhi]) - TMath::Pi());
       }
     }
   }
   // xPrime are the transformed variables from which to construct the nll
-  // transform performs the transformation from the fit parameters x to the
+  // transform performs the transformation from the fit parameters x to the 
   // nll parameters xPrime. prob is the actual combined likelihood. The
   // phiPenalty prevents the fit to converge to unphysical values beyond
-  // +/-pi
+  // +/-pi 
   double xPrime[kMaxNLLParams + 4];
   const double* xPrime_ptr = transform(xPrime, x, fixToMtest, mtest);
   if ( xPrime_ptr ) {
@@ -255,7 +256,7 @@ SVfitStandaloneLikelihood::prob(const double* x, bool fixToMtest, double mtest) 
   }
 }
 
-double
+double 
 SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
 {
   //if ( verbosity_ && FIRST ) {
@@ -267,42 +268,46 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
   double prob_TF = 1.;
   for ( size_t idx = 0; idx < measuredTauLeptons_.size(); ++idx ) {
     switch ( measuredTauLeptons_[idx].type() ) {
-      case kTauToHadDecay :
-        prob_PS_and_tauDecay *= probTauToHadPhaseSpace(
-                  xPrime[idx == 0 ? kDecayAngle1 : kDecayAngle2],
-      xPrime[idx == 0 ? kNuNuMass1 : kNuNuMass2],
-      xPrime[idx == 0 ? kVisMass1 : kVisMass2],
-      xPrime[idx == 0 ? kMaxNLLParams : (kMaxNLLParams + 1)],
-      addSinTheta_,
-      (verbosity_ && FIRST));
-        assert(!(marginalizeVisMass_ && shiftVisMass_));
-        if ( marginalizeVisMass_ ) {
-          prob_TF *= probVisMass(xPrime[idx == 0 ? kDeltaVisMass1 : kDeltaVisMass2],
-                                 idx == 0 ? l1lutVisMass_ : l2lutVisMass_,
-                                 (verbosity_ && FIRST));
-        }
-        if ( shiftVisMass_ ) {
-          prob_TF *= probVisMassShift(xPrime[idx == 0 ? kDeltaVisMass1 : kDeltaVisMass2],
-                                      idx == 0 ? l1lutVisMassRes_ : l2lutVisMassRes_,
-                                      (verbosity_ && FIRST));
-        }
-        if ( shiftVisPt_ ) {
-          prob_TF *= probVisPtShift(xPrime[idx == 0 ? kRecTauPtDivGenTauPt1 : kRecTauPtDivGenTauPt2],
-                                    idx == 0 ? l1lutVisPtRes_ : l2lutVisPtRes_,
-                                    (verbosity_ && FIRST));
-        }
-        break;
-      case kTauToElecDecay :
-      case kTauToMuDecay :
-        prob_PS_and_tauDecay *= probTauToLepMatrixElement(xPrime[idx == 0 ? kDecayAngle1 : kDecayAngle2],
-                                                          xPrime[idx == 0 ? kNuNuMass1 : kNuNuMass2],
-                                                          xPrime[idx == 0 ? kVisMass1 : kVisMass2],
-                                                          xPrime[idx == 0 ? kMaxNLLParams : (kMaxNLLParams + 1)],
-                                                          addSinTheta_,
-                                                          (verbosity_ && FIRST));
-        break;
-      default :
-        break;
+    case kTauToHadDecay :
+      prob_PS_and_tauDecay *= probTauToHadPhaseSpace(
+                xPrime[idx == 0 ? kDecayAngle1 : kDecayAngle2], 
+		xPrime[idx == 0 ? kNuNuMass1 : kNuNuMass2], 
+		xPrime[idx == 0 ? kVisMass1 : kVisMass2], 
+		xPrime[idx == 0 ? kMaxNLLParams : (kMaxNLLParams + 1)], 
+		addSinTheta_, 
+		(verbosity_ && FIRST));
+      assert(!(marginalizeVisMass_ && shiftVisMass_));
+      if ( marginalizeVisMass_ ) {
+	prob_TF *= probVisMass(
+                  xPrime[idx == 0 ? kDeltaVisMass1 : kDeltaVisMass2], 
+		  idx == 0 ? l1lutVisMass_ : l2lutVisMass_,
+		  (verbosity_ && FIRST));
+      }
+      if ( shiftVisMass_ ) {
+	prob_TF *= probVisMassShift(
+                  xPrime[idx == 0 ? kDeltaVisMass1 : kDeltaVisMass2], 
+		  idx == 0 ? l1lutVisMassRes_ : l2lutVisMassRes_,
+		  (verbosity_ && FIRST));
+      }
+      if ( shiftVisPt_ ) {
+	prob_TF *= probVisPtShift(
+		  xPrime[idx == 0 ? kRecTauPtDivGenTauPt1 : kRecTauPtDivGenTauPt2], 
+		  idx == 0 ? l1lutVisPtRes_ : l2lutVisPtRes_, 
+		  (verbosity_ && FIRST));
+      }
+      break;
+    case kTauToElecDecay :
+    case kTauToMuDecay :
+      prob_PS_and_tauDecay *= probTauToLepMatrixElement(
+		xPrime[idx == 0 ? kDecayAngle1 : kDecayAngle2], 
+		xPrime[idx == 0 ? kNuNuMass1 : kNuNuMass2], 
+		xPrime[idx == 0 ? kVisMass1 : kVisMass2], 
+		xPrime[idx == 0 ? kMaxNLLParams : (kMaxNLLParams + 1)], 
+		addSinTheta_, 
+		(verbosity_ && FIRST));
+      break;
+    default :
+      break;
     }
   }
   prob_TF *= probMET(xPrime[kDMETx], xPrime[kDMETy], covDet_, invCovMET_, metPower_, (verbosity_&& FIRST));
@@ -311,22 +316,22 @@ SVfitStandaloneLikelihood::prob(const double* xPrime, double phiPenalty) const
     jacobiFactor = (2.*xPrime[kMaxNLLParams + 1]/xPrime[kMTauTau]);
   }
   double prob = prob_PS_and_tauDecay*prob_TF*jacobiFactor;
-  // add additional logM term if configured such
+  // add additional logM term if configured such 
   if ( addLogM_ && powerLogM_ > 0. ) {
     if ( xPrime[kMTauTau] > 0. ) {
       prob *= TMath::Power(1.0/xPrime[kMTauTau], powerLogM_);
     }
   }
-  // add additional phiPenalty in case kPhi in the fit parameters
-  // (kFitParams) trespassed the physical boundaries from +/-pi
+  // add additional phiPenalty in case kPhi in the fit parameters 
+  // (kFitParams) trespassed the physical boundaries from +/-pi 
   if ( phiPenalty > 0. ) {
     prob *= TMath::Exp(-phiPenalty);
   }
   //if ( verbosity_ >= 2 && FIRST ) {
-  //  std::cout << "prob: PS+decay = " << prob_PS_and_tauDecay << ","
-  //          << " TF = " << prob_TF << ", Jacobi = " << jacobiFactor << " --> returning " << prob << std::endl;
+  //  std::cout << "prob: PS+decay = " << prob_PS_and_tauDecay << "," 
+  //	        << " TF = " << prob_TF << ", Jacobi = " << jacobiFactor << " --> returning " << prob << std::endl;
   //}
-  // set FIRST to false after the first complete evaluation of the likelihood
+  // set FIRST to false after the first complete evaluation of the likelihood 
   FIRST = false;
   return prob;
 }
@@ -340,31 +345,32 @@ SVfitStandaloneLikelihood::results(std::vector<LorentzVector>& fittedTauLeptons,
   for ( size_t idx = 0; idx < measuredTauLeptons_.size(); ++idx ) {
     const MeasuredTauLepton& measuredTauLepton = measuredTauLeptons_[idx];
 
-    // map to local variables to be more clear on the meaning of the individual parameters. The fit parameters are ayered
+    // map to local variables to be more clear on the meaning of the individual parameters. The fit parameters are ayered 
     // for each tau decay
-    double nunuMass                 = x[ idx*kMaxFitParams + kMNuNu ];       // nunu inv mass (can be const 0 for had tau decays)
+    double nunuMass                 = x[ idx*kMaxFitParams + kMNuNu ];       // nunu inv mass (can be const 0 for had tau decays) 
     double labframeXFrac            = x[ idx*kMaxFitParams + kXFrac ];       // visible energy fraction x in labframe
-    double labframePhi              = x[ idx*kMaxFitParams + kPhi   ];       // phi in labframe
-    double visMass                  = measuredTauLepton.mass();
-    double labframeVisMom_unshifted = measuredTauLepton.momentum();
+    double labframePhi              = x[ idx*kMaxFitParams + kPhi   ];       // phi in labframe 
+    double visMass                  = measuredTauLepton.mass(); 
+    double labframeVisMom_unshifted = measuredTauLepton.momentum(); 
     double labframeVisMom           = labframeVisMom_unshifted; // visible momentum in lab-frame
-    double labframeVisEn            = measuredTauLepton.energy(); // visible energy in lab-frame
+    double labframeVisEn            = measuredTauLepton.energy(); // visible energy in lab-frame    
     if ( measuredTauLepton.type() == kTauToHadDecay ) {
       if ( marginalizeVisMass_ || shiftVisMass_ ) {
-        visMass = x[idx*kMaxFitParams + kVisMassShifted];
+	visMass = x[idx*kMaxFitParams + kVisMassShifted];
       }
       if ( shiftVisPt_ ) {
-        double shiftInv = 1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt];
-        double shift = ( shiftInv > 1.e-1 ) ? (1./shiftInv) : 1.e+1;
+	double shiftInv = 1. + x[idx*kMaxFitParams + kRecTauPtDivGenTauPt];
+        double shift = ( shiftInv > 1.e-1 ) ?
+	  (1./shiftInv) : 1.e+1;
         labframeVisMom *= shift;
         //visMass *= shift; // CV: take mass and momentum to be correlated
         //labframeVisEn = TMath::Sqrt(labframeVisMom*labframeVisMom + visMass*visMass);
         labframeVisEn *= shift;
       }
     }
-    if ( visMass < 5.1e-4 ) {
-      visMass = 5.1e-4;
-    }
+    if ( visMass < 5.1e-4 ) { 
+      visMass = 5.1e-4; 
+    } 
     bool isValidSolution = true;
     double gjAngle_lab = gjAngleLabFrameFromX(labframeXFrac, visMass, nunuMass, labframeVisMom, labframeVisEn, tauLeptonMass, isValidSolution);
     double enTau_lab = labframeVisEn/labframeXFrac;

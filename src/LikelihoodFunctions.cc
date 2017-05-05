@@ -10,10 +10,10 @@ using namespace svFitStandalone;
 
 //#define SVFIT_DEBUG 1
 
-double
+double 
 probMET(double dMETX, double dMETY, double covDet, const TMatrixD& covInv, double power, bool verbosity)
 {
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "<probMET>:" << std::endl;
     std::cout << " dMETX = " << dMETX << std::endl;
@@ -22,27 +22,27 @@ probMET(double dMETX, double dMETY, double covDet, const TMatrixD& covInv, doubl
     std::cout << " covInv:" << std::endl;
     covInv.Print();
   }
-#endif
+#endif 
   double nll = 0.;
   if ( covDet != 0. ) {
-    nll = TMath::Log(2.*TMath::Pi()) + 0.5*TMath::Log(TMath::Abs(covDet))
+    nll = TMath::Log(2.*TMath::Pi()) + 0.5*TMath::Log(TMath::Abs(covDet)) 
          + 0.5*(dMETX*(covInv(0,0)*dMETX + covInv(0,1)*dMETY) + dMETY*(covInv(1,0)*dMETX + covInv(1,1)*dMETY));
   } else {
     nll = std::numeric_limits<float>::max();
   }
   double prob = TMath::Exp(-power*nll);
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "--> prob = " << prob << std::endl;
   }
-#endif
-  return prob;
+#endif 
+  return prob; 
 }
 
-double
+double 
 probTauToLepMatrixElement(double decayAngle, double nunuMass, double visMass, double x, bool applySinTheta, bool verbosity)
 {
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "<probTauToLepMatrixElement>:" << std::endl;
     std::cout << " decayAngle = " << decayAngle << std::endl;
@@ -54,18 +54,18 @@ probTauToLepMatrixElement(double decayAngle, double nunuMass, double visMass, do
 #endif
   double nuMass2 = nunuMass*nunuMass;
   // protect against rounding errors that may lead to negative masses
-  if ( nunuMass < 0. ) nunuMass = 0.;
+  if ( nunuMass < 0. ) nunuMass = 0.; 
   double prob = 0.;
   if ( nunuMass < TMath::Sqrt((1. - x)*tauLeptonMass2) ) { // LB: physical solution
     prob = (13./tauLeptonMass4)*(tauLeptonMass2 - nuMass2)*(tauLeptonMass2 + 2.*nuMass2)*nunuMass;
-  } else {
+  } else {    
     double nunuMass_limit  = TMath::Sqrt((1. - x)*tauLeptonMass2);
     double nunuMass2_limit = nunuMass_limit*nunuMass_limit;
     prob = (13./tauLeptonMass4)*(tauLeptonMass2 - nunuMass2_limit)*(tauLeptonMass2 + 2.*nunuMass2_limit)*nunuMass_limit;
     prob /= (1. + 1.e+6*TMath::Power(nunuMass - nunuMass_limit, 2.));
   }
   if ( applySinTheta ) prob *= (0.5*TMath::Sin(decayAngle));
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "--> prob = " << prob << std::endl;
   }
@@ -73,10 +73,10 @@ probTauToLepMatrixElement(double decayAngle, double nunuMass, double visMass, do
   return prob;
 }
 
-double
+double 
 probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, double x, bool applySinTheta, bool verbosity)
 {
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "<probTauToHadPhaseSpace>:" << std::endl;
     std::cout << " decayAngle = " << decayAngle << std::endl;
@@ -97,7 +97,7 @@ probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, doubl
     prob /= (1. + 1.e+6*TMath::Power(x - visEnFracX_limit, 2.));
   }
   if ( applySinTheta ) prob *= (0.5*TMath::Sin(decayAngle));
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "--> prob = " << prob << std::endl;
   }
@@ -108,7 +108,7 @@ probTauToHadPhaseSpace(double decayAngle, double nunuMass, double visMass, doubl
 namespace
 {
   double extractProbFromLUT(double x, const TH1* lut)
-  {
+  {    
     //std::cout << "<extractProbFromLUT>:" << std::endl;
     //std::cout << " lut = " << lut->GetName() << " (type = " << lut->ClassName() << ")" << std::endl;
     //std::cout << " x = " << x << std::endl;
@@ -121,17 +121,17 @@ namespace
   }
 }
 
-double
+double 
 probVisMass(double visMass, const TH1* lutVisMass, bool verbosity)
 {
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "<probVisMass>:" << std::endl;
     std::cout << " visMass = " << visMass << std::endl;
   }
 #endif
   double prob = ( lutVisMass ) ? extractProbFromLUT(visMass, lutVisMass) : 1.0;
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "--> prob = " << prob << std::endl;
   }
@@ -139,17 +139,17 @@ probVisMass(double visMass, const TH1* lutVisMass, bool verbosity)
   return prob;
 }
 
-double
+double 
 probVisMassShift(double deltaVisMass, const TH1* lutVisMassRes, bool verbosity)
 {
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "<probVisMassShift>:" << std::endl;
     std::cout << " deltaVisMass = " << deltaVisMass << std::endl;
   }
 #endif
   double prob = ( lutVisMassRes ) ? extractProbFromLUT(deltaVisMass, lutVisMassRes) : 1.0;
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "--> prob = " << prob << std::endl;
   }
@@ -157,20 +157,21 @@ probVisMassShift(double deltaVisMass, const TH1* lutVisMassRes, bool verbosity)
   return prob;
 }
 
-double
+double 
 probVisPtShift(double recTauPtDivGenTauPt, const TH1* lutVisPtRes, bool verbosity)
 {
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "<probVisPtShift>:" << std::endl;
     std::cout << " recTauPtDivGenTauPt = " << recTauPtDivGenTauPt << std::endl;
   }
 #endif
   double prob = ( lutVisPtRes ) ? extractProbFromLUT(recTauPtDivGenTauPt, lutVisPtRes) : 1.0;
-  // CV: account for Jacobi factor
-  double genTauPtDivRecTauPt = ( recTauPtDivGenTauPt > 0. ) ? (1./recTauPtDivGenTauPt) : 1.e+1;
+  // CV: account for Jacobi factor 
+  double genTauPtDivRecTauPt = ( recTauPtDivGenTauPt > 0. ) ? 
+    (1./recTauPtDivGenTauPt) : 1.e+1;
   prob *= genTauPtDivRecTauPt;
-#ifdef SVFIT_DEBUG
+#ifdef SVFIT_DEBUG 
   if ( verbosity ) {
     std::cout << "--> prob = " << prob << std::endl;
   }

@@ -18,8 +18,8 @@ namespace svFitStandalone
   const double electronMass = 0.51100e-3; // GeV
   const double electronMass2 = electronMass*electronMass;
   const double muonMass = 0.10566; // GeV
-  const double muonMass2 = muonMass*muonMass;
-
+  const double muonMass2 = muonMass*muonMass; 
+  
   const double chargedPionMass = 0.13957; // GeV
   const double chargedPionMass2 = chargedPionMass*chargedPionMass;
   const double neutralPionMass = 0.13498; // GeV
@@ -67,7 +67,7 @@ namespace svFitStandalone
   double pVisRestFrame(double, double, double);
 
   /// Determine the tau direction given our parameterization
-  Vector motherDirection(const Vector&, double, double);
+  Vector motherDirection(const Vector&, double, double); 
 
   /// Compute the tau four vector given the tau direction and momentum
   LorentzVector motherP4(const Vector&, double, double);

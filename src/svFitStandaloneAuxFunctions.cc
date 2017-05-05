@@ -6,7 +6,7 @@
 namespace svFitStandalone
 {
   //-----------------------------------------------------------------------------
-
+  
   double roundToNdigits(double x, int n)
   {
     double tmp = TMath::Power(10., n);
@@ -57,7 +57,7 @@ namespace svFitStandalone
     return ROOT::Math::VectorUtil::boost(p4ToBoost, -boost);
   }
 
-  double gjAngleLabFrameFromX(double x, double visMass, double invisMass, double pVis_lab, double enVis_lab, double motherMass, bool& isValidSolution)
+  double gjAngleLabFrameFromX(double x, double visMass, double invisMass, double pVis_lab, double enVis_lab, double motherMass, bool& isValidSolution) 
   {
     // CV: the expression for the Gottfried-Jackson angle as function of X = Etau/Evis
     //     was obtained by solving equation (1) of AN-2010/256:
@@ -101,7 +101,7 @@ namespace svFitStandalone
     return pVis;
   }
 
-  Vector motherDirection(const Vector& pVisLabFrame, double angleVisLabFrame, double phiLab)
+  Vector motherDirection(const Vector& pVisLabFrame, double angleVisLabFrame, double phiLab) 
   {
     // The direction is defined using polar coordinates in a system where the visible energy
     // defines the Z axis.
@@ -138,10 +138,10 @@ namespace svFitStandalone
   }
 
   void extractHistogramProperties(const TH1* histogram, const TH1* histogram_density,
-                                  double& xMaximum, double& xMaximum_interpol,
+                                  double& xMaximum, double& xMaximum_interpol, 
                                   double& xMean,
                                   double& xQuantile016, double& xQuantile050, double& xQuantile084,
-                                  double& xMean3sigmaWithinMax, double& xMean5sigmaWithinMax,
+                                  double& xMean3sigmaWithinMax, double& xMean5sigmaWithinMax, 
                                   int verbosity)
   {
     // compute median, -1 sigma and +1 sigma limits on reconstructed mass
@@ -162,30 +162,30 @@ namespace svFitStandalone
       xQuantile050 = 0.;
       xQuantile084 = 0.;
     }
-
+    
     xMean = histogram->GetMean();
-
+    
     if ( histogram_density->Integral() > 0. ) {
       int binMaximum = histogram_density->GetMaximumBin();
       xMaximum = histogram_density->GetBinCenter(binMaximum);
       double yMaximum = histogram_density->GetBinContent(binMaximum);
-      double yMaximumErr = ( histogram->GetBinContent(binMaximum) > 0. ) ?
+      double yMaximumErr = ( histogram->GetBinContent(binMaximum) > 0. ) ?      
         (yMaximum*histogram->GetBinError(binMaximum)/histogram->GetBinContent(binMaximum)) : 0.;
       if ( verbosity ) std::cout << "yMaximum = " << yMaximum << " +/- " << yMaximumErr << " @ xMaximum = " << xMaximum << std::endl;
       if ( binMaximum > 1 && binMaximum < histogram_density->GetNbinsX() ) {
         int binLeft       = binMaximum - 1;
         double xLeft      = histogram_density->GetBinCenter(binLeft);
-        double yLeft      = histogram_density->GetBinContent(binLeft);
-
+        double yLeft      = histogram_density->GetBinContent(binLeft);    
+        
         int binRight      = binMaximum + 1;
         double xRight     = histogram_density->GetBinCenter(binRight);
-        double yRight     = histogram_density->GetBinContent(binRight);
-
+        double yRight     = histogram_density->GetBinContent(binRight); 
+        
         double xMinus     = xLeft - xMaximum;
         double yMinus     = yLeft - yMaximum;
         double xPlus      = xRight - xMaximum;
         double yPlus      = yRight - yMaximum;
-
+        
         xMaximum_interpol = xMaximum + 0.5*(yPlus*square(xMinus) - yMinus*square(xPlus))/(yPlus*xMinus - yMinus*xPlus);
       } else {
         xMaximum_interpol = xMaximum;

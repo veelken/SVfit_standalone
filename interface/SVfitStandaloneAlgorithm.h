@@ -124,6 +124,8 @@ class SVfitStandaloneAlgorithm
   bool isValidFit() const { return fitStatus_ == 0; }
   /// return whether this is a valid solution or not
   bool isValidNLL() const { return nllStatus_ == 0; }
+  
+  // DO NOT CALL THE FOLLOWING FUNCTION AFTER MARKOV CHAIN INTEGRATION BUT USE THE QUANTITIES ADAPTER AS IN THE TEST CODE
   /// return mass of the di-tau system
   double mass() const { return mass_; }
   /// return uncertainty on the mass of the fitted di-tau system

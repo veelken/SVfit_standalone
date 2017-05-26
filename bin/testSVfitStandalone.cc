@@ -53,8 +53,8 @@ void singleEvent()
   // integration by markov chain MC
   algo.integrateMarkovChain();
 
-  double mass = algo.mass(); // full mass of tau lepton pair in units of GeV
-  double transverseMass = algo.transverseMass(); // transverse mass of tau lepton pair in units of GeV
+  double mass = static_cast<svFitStandalone::MCPtEtaPhiMassAdapter*>(algo.getMCQuantitiesAdapter())->getMass(); // full mass of tau lepton pair in units of GeV
+  double transverseMass = static_cast<svFitStandalone::MCPtEtaPhiMassAdapter*>(algo.getMCQuantitiesAdapter())->getTransverseMass(); // transverse mass of tau lepton pair in units of GeV
   if ( algo.isValidSolution() ) {
     std::cout << "found valid solution: mass = " << mass << " (expected value = 124.646), transverse mass = " << transverseMass << " (expected value = 123.026)" << std::endl;
   } else {

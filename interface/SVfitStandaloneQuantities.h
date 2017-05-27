@@ -130,6 +130,8 @@ namespace svFitStandalone
     double ExtractUncertainty() const;
     double ExtractLmax() const;
 
+    bool isValidSolution() const;
+
     mutable TH1* histogram_ = nullptr;
   };
 
@@ -192,6 +194,8 @@ namespace svFitStandalone
     std::vector<double> ExtractValues() const;
     std::vector<double> ExtractUncertainties() const;
     std::vector<double> ExtractLmaxima() const;
+
+    bool isValidSolution() const;
 
    protected:
     std::vector<SVfitQuantity*> quantities_;

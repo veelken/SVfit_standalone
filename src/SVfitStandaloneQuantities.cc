@@ -222,6 +222,11 @@ namespace svFitStandalone
     return extractLmax(histogram_);
   }
 
+  bool SVfitQuantity::isValidSolution() const
+  {
+    return (ExtractLmax() > 0.0);
+  }
+
   TH1* HiggsPtSVfitQuantity::CreateHistogram(std::vector<svFitStandalone::LorentzVector> const& measuredTauLeptons, svFitStandalone::Vector const& measuredMET) const
   {
     return makeHistogram("SVfitStandaloneAlgorithm_histogramPt", 1., 1.e+3, 1.025);
@@ -350,6 +355,11 @@ namespace svFitStandalone
   	std::transform(quantities_.begin(), quantities_.end(), results.begin(),
                    [](SVfitQuantity* quantity) { return quantity->ExtractLmax(); });
     return results;
+  }
+  bool MCQuantitiesAdapter::isValidSolution() const
+  {
+    return std::accumulate(quantities_.begin(), quantities_.end(), true,
+                           [](bool result, SVfitQuantity* quantity) { return result && quantity->isValidSolution(); });
   }
 
   MCPtEtaPhiMassAdapter::MCPtEtaPhiMassAdapter() :
